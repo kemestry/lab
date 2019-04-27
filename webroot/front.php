@@ -24,11 +24,13 @@ $app->get('/', function($REQ, $RES, $ARG) {
 
 // App Home
 $app->get('/home', 'App\Controller\Home')
-->add('App\Middleware\Auth')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 
-$app->get('/intent', 'App\Controller\Home:intent')->add('App\Middleware\Session');
+$app->get('/intent', 'App\Controller\Home:intent')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 
 
 // Authentication
@@ -112,37 +114,24 @@ $app->group('/api', function() {
 
 
 // Transfer Group
-$app->group('/transfer', function() {
-
-	$this->get('', 'App\Controller\Transfer');
-
-	$this->get('/accept', 'App\Controller\Transfer\Accept');
-	$this->post('/accept', 'App\Controller\Transfer\Accept');
-
-	$this->get('/{guid}', 'App\Controller\Transfer\View');
-
-	//$app->get('/transfer/import/{guid}', 'App\Controller\Transfer\Import')
-	//	->add('Middleware_Auth')
-	//	;
-
-})
-->add('App\Middleware\Auth')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+$app->group('/transfer', 'App\Module\Transfer')
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 
 
 // Sample Group
 $app->group('/sample', 'App\Module\Sample')
-->add('App\Middleware\Auth')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 
 
 // Result Group
 $app->group('/result', 'App\Module\Result')
-->add('App\Middleware\Auth')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Session');
 
 
 // No Session Here
