@@ -45,17 +45,14 @@ $app->map(['GET','POST'], '/intent', 'App\Controller\Intent')
 $app->group('/auth', function() {
 
 	// Unique Auth/Open for this site
-	$this->get('/open', 'App\Controller\Auth\Open');
-	$this->post('/open', 'App\Controller\Auth\Open');
+	$this->map(['GET', 'POST'], '/open', 'App\Controller\Auth\Open');
 
 	//$this->map(['GET', 'POST'], '/connect', 'OpenTHC\Controller\Auth\Connect');
 	$this->map(['GET', 'POST'], '/connect', 'App\Controller\Auth\Connect');
 
 	// oAuth Stuff
-	$this->get('/oauth/open', 'App\Controller\Auth\oAuth2Open');
-	$this->get('/back', 'App\Controller\Auth\oAuth2\Back');
-
-	//$this->get('/oauth/open', 'App\Controller\Auth\oAuth2\Open');
+	$this->get('/oauth/open', 'App\Controller\Auth\oAuth2\Open');
+	$this->get('/oauth/back', 'App\Controller\Auth\oAuth2\Back');
 
 	$this->get('/fail', 'OpenTHC\Controller\Auth\Fail');
 	$this->get('/ping', 'OpenTHC\Controller\Auth\Ping');

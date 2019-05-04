@@ -46,7 +46,7 @@ class oAuth2 extends \OpenTHC\Controller\Base
 	{
 		$cfg = \OpenTHC\Config::get('oauth');
 
-		$u = sprintf('https://%s/auth/back?%s', $_SERVER['SERVER_NAME'], http_build_query(array('r' => $r)));
+		$u = sprintf('https://%s/auth/oauth/back?%s', $_SERVER['SERVER_NAME'], http_build_query(array('r' => $r)));
 		$u = trim($u, '?');
 		$p = new \League\OAuth2\Client\Provider\GenericProvider([
 			'clientId' => $cfg['client'] ?: $_SERVER['SERVER_NAME'],

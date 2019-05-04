@@ -68,10 +68,6 @@ class Back extends \App\Controller\Auth\oAuth2
 			$_SESSION['gid'] = $x['Company']['id'];
 			$_SESSION['email'] = $x['Contact']['username'];
 
-			if (in_array('qa', $x['scope'])) {
-				$_SESSION['qa'] = true;
-			}
-
 			if (!empty($x['Contact']['meta']['rce'])) {
 				$_SESSION['rce'] = $x['Contact']['meta']['rce'];
 				$_SESSION['rce-auth'] = $x['Contact']['meta']['rce-auth'];
