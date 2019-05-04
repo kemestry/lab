@@ -1,17 +1,25 @@
 <?php
 /**
- * Front Controller for qa.openthc.org
+ * Front Controller for lab.openthc.org
  */
 
 require_once(dirname(dirname(__FILE__)) . '/boot.php');
-
-\App::db();
-
 
 // Slim Application
 //$cfg = array();
 $cfg = array('debug' => true);
 $app = new \OpenTHC\App($cfg);
+
+// Database Connection
+$con = $app->getContainer();
+$con['DB'] = function($c) {
+	$cfg = \OpenTHC\Config::get('database_main');
+	$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	$u = $cfg['username'];
+	$p = $cfg['password'];
+	$dbc = new \Edoceo\Radix\DB\SQL($c, $u, $p);
+	return $dbc;
+};
 
 // Pub Home
 $app->get('/', function($REQ, $RES, $ARG) {
@@ -28,8 +36,7 @@ $app->get('/home', 'App\Controller\Home')
 	->add('App\Middleware\Auth')
 	->add('App\Middleware\Session');
 
-$app->get('/intent', 'App\Controller\Home:intent')
-	->add('App\Middleware\Auth')
+$app->map(['GET','POST'], '/intent', 'App\Controller\Intent')
 	->add('App\Middleware\Session');
 
 
@@ -58,6 +65,7 @@ $app->group('/auth', function() {
 
 
 // Sample Submit
+// 'App\Module\API'
 $app->group('/api', function() {
 
 	$this->get('', function($REQ, $RES) {
@@ -129,28 +137,28 @@ $app->group('/sample', 'App\Module\Sample')
 
 // Result Group
 $app->group('/result', 'App\Module\Result')
-	->add('App\Middleware\Auth')
 	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
 	->add('App\Middleware\Session');
 
 
 // No Session Here
 $app->get('/share', 'App\Controller\Share')
-->add('App\Middleware\Auth')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 
 $app->get('/share/{guid}', 'App\Controller\Result\Share')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Session');
 
 // Sync
 $app->get('/sync', 'App\Controller\Sync')
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Session');
 
 $app->any('/sync/exec', 'App\Controller\Sync:exec')
-->add('App\Middleware\Session');
+	->add('App\Middleware\Session');
 
 
 // No Session Here
