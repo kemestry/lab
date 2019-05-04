@@ -21,6 +21,7 @@ $con['DB'] = function($c) {
 	return $dbc;
 };
 
+
 // Pub Home
 $app->get('/', function($REQ, $RES, $ARG) {
 	$data = array(
@@ -51,6 +52,7 @@ $app->group('/auth', function() {
 	$this->map(['GET', 'POST'], '/connect', 'App\Controller\Auth\Connect');
 
 	// oAuth Stuff
+	$this->get('/oauth/open', 'App\Controller\Auth\oAuth2Open');
 	$this->get('/back', 'App\Controller\Auth\oAuth2\Back');
 
 	//$this->get('/oauth/open', 'App\Controller\Auth\oAuth2\Open');
