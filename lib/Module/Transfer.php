@@ -10,14 +10,15 @@ class Transfer extends \OpenTHC\Module\Base
 	function __invoke($a)
 	{
 		$a->get('', 'App\Controller\Transfer');
+		$a->map(['GET','POST'], '/sync', 'App\Controller\Transfer:sync');
 
-		$a->get('/accept', 'App\Controller\Transfer\Accept');
-		$a->post('/accept', 'App\Controller\Transfer\Accept');
+		$a->get('/{id}', 'App\Controller\Transfer\View');
+		$a->post('/{id}', 'App\Controller\Transfer\View');
 
-		$a->get('/{guid}', 'App\Controller\Transfer\View');
+		// $a->map(['GET', 'POST'], '/{id}/sync', 'App\Controller\Transfer\Sync');
 
-		//$app->get('/transfer/import/{guid}', 'App\Controller\Transfer\Import')
-		//	->add('Middleware_Auth')
-		//	;
+		$a->get('/{id}/accept', 'App\Controller\Transfer\Accept');
+		$a->post('/{id}/accept', 'App\Controller\Transfer\Accept');
+
 	}
 }

@@ -86,8 +86,7 @@ $app->group('/api', function() {
 		//$this->get('/qa/sample', function($REQ, $RES, $ARG) {
 		//	die('List QA Samples');
 		//})->add($MWA);
-		$this->get('/result/{guid}.pdf', function($REQ, $RES, $ARG) {
-			$ARG['code'] = preg_replace('/\s+/', '', $ARG['guid']);
+		$this->get('/result/{id}.pdf', function($REQ, $RES, $ARG) {
 			return require_once(APP_ROOT . '/api/qa/result.pdf.php');
 		});
 
@@ -98,7 +97,6 @@ $app->group('/api', function() {
 
 		// Select Specific QA Sample
 		$this->get('/qa/{code}', function($REQ, $RES, $ARG) {
-			$ARG['code'] = preg_replace('/\s+/', '', $ARG['code']);
 			return require_once(APP_ROOT . '/api/qa/sample.php');
 		});
 
@@ -141,13 +139,20 @@ $app->group('/result', 'App\Module\Result')
 	->add('App\Middleware\Session');
 
 
+// Search
+$app->get('/search', 'App\Controller\Search')
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
+
+
 // No Session Here
 $app->get('/share', 'App\Controller\Share')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Auth')
 	->add('App\Middleware\Session');
 
-$app->get('/share/{guid}', 'App\Controller\Result\Share')
+$app->get('/share/{id}', 'App\Controller\Result\Share')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Session');
 

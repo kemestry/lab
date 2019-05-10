@@ -16,8 +16,8 @@ class Result extends \OpenTHC\Module\Base
 
 		$a->get('/download', 'App\Controller\Result\Download');
 
-		$a->map([ 'GET', 'POST'], '/view', 'App\Controller\Result\View');
-		$a->map([ 'GET', 'POST'], '/{guid}', 'App\Controller\Result\View');
+		$a->map([ 'GET', 'POST'], '/{id}', 'App\Controller\Result\View');
+		$a->get('/{id}/sync', 'App\Controller\Result\Sync');
 
 	}
 }

@@ -1,0 +1,55 @@
+{#
+	Show List of Pending Inbound Transfer
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<h1>Transfer :: {{ Transfer.global_id }} <small>[{{ Transfer.status }}]</small></h1>
+
+<div class="row">
+<div class="col">
+	<h2>From: {{ Transfer.global_from_mme_id }}</h2>
+</div>
+<div class="col">
+	<h2>Ship To: {{ Transfer.global_to_mme_id }}</h2>
+</div>
+</div>
+
+<table class="table table-sm">
+<thead>
+	<tr>
+		<th>Sender ID</th>
+		<th>Strain</th>
+		<th>Descrpition</th>
+		<th class="r">Sent</th>
+		<th class="r">Received</th>
+	</tr>
+</thead>
+<tbody>
+{% for iti in Transfer.inventory_transfer_items %}
+	<tr>
+		<td>
+			{{ iti.global_id }}<br>
+			Source Lot: {{ iti.global_inventory_id }}<br>
+			Sample Lot: <strong><a href="/sample/{{ iti.global_received_inventory_id }}">{{ iti.global_received_inventory_id }}</a></strong>
+		</td>
+		<td>{{ iti.strain_name }}</td>
+		<td>{{ iti.description }}</td>
+		<td class="r">{{ iti.qty }}</td>
+		<!-- <td><pre>{{ dump(iti) }}</pre></td> -->
+		<td class="r">{{ iti.received_qty }}</td>
+		</td>
+	</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<div class="form-actions">
+	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
+	<button class="btn btn-outline-success btn-transfer-accept" disabled><i class="fas fa-check-square"></i> Accept</button>
+	<button class="btn btn-outline-danger btn-transfer-accept" disabled><i class="fas fa-ban"></i> Void</button>
+</div>
+
+{% endblock %}
