@@ -34,8 +34,8 @@ class Open extends \OpenTHC\Controller\Base
 			}
 
 			// Test Connection
-			$rce = new \OpenTHC\RCE($tok);
-			$res = $rce->ping();
+			$cre = new \OpenTHC\RCE($tok);
+			$res = $cre->ping();
 
 			// Save and redirect
 			if ('success' == $res['status']) {

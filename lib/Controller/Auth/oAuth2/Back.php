@@ -68,19 +68,19 @@ class Back extends \App\Controller\Auth\oAuth2
 			$_SESSION['gid'] = $x['Company']['id'];
 			$_SESSION['email'] = $x['Contact']['username'];
 
-			if (!empty($x['Contact']['meta']['rce'])) {
-				$_SESSION['rce'] = $x['Contact']['meta']['rce'];
-				$_SESSION['rce-auth'] = $x['Contact']['meta']['rce-auth'];
+			if (!empty($x['Contact']['meta']['cre'])) {
+				$_SESSION['cre'] = $x['Contact']['meta']['cre'];
+				$_SESSION['cre-auth'] = $x['Contact']['meta']['cre-auth'];
 			}
 
-			if (!empty($_SESSION['rce'])) {
+			if (!empty($_SESSION['cre'])) {
 
 				// Authenticate via PIPE
-				$rce = new \OpenTHC\RCE();
-				$x = $rce->auth(array(
-					'rce' => $_SESSION['rce'],
-					'license' => $_SESSION['rce-auth']['license'],
-					'client-key' => $_SESSION['rce-auth']['secret'],
+				$cre = new \OpenTHC\RCE();
+				$x = $cre->auth(array(
+					'cre' => $_SESSION['cre'],
+					'license' => $_SESSION['cre-auth']['license'],
+					'client-key' => $_SESSION['cre-auth']['secret'],
 				));
 
 				if ('success' == $x['status']) {
@@ -88,12 +88,12 @@ class Back extends \App\Controller\Auth\oAuth2
 				} else {
 					// var_dump($_SESSION);
 					// var_dump($x);
-					_exit_text('RCE Connection Failure. Please contact support [AOB#092]', 500);
+					_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
 				}
 
-				$lic = '/config/license/' . $_SESSION['rce-auth']['license'];
+				$lic = '/config/license/' . $_SESSION['cre-auth']['license'];
 				var_dump($lic);
-				$res = $rce->get($lic);
+				$res = $cre->get($lic);
 				var_dump($res);
 
 				if ('success' == $x['status']) {

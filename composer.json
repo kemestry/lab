@@ -1,7 +1,7 @@
 {
 	"name": "openthc/lab",
 	"description": "OpenTHC",
-	"license": "GPL",
+	"license": "GPL-3.0-only",
 	"autoload": {
 		"psr-4": {
 			"App\\": "./lib"

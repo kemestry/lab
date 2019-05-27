@@ -18,10 +18,10 @@ class Accept extends \OpenTHC\Controller\Base
 		$arg = array($_SESSION['License']['ulid'], $ARG['id']);
 		$T0 = SQL::fetch_row('SELECT * FROM transfer_incoming WHERE license_id_target = ? AND id = ?', $arg);
 
-		$rce = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
-		// Fresh data from RCE
-		$res = $rce->get('/transfer/incoming/' . $ARG['id']);
+		// Fresh data from CRE
+		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
 		if ('success' != $res['status']) {
 			print_r($res);
 			die("Cannot Load Transfer");
@@ -29,9 +29,9 @@ class Accept extends \OpenTHC\Controller\Base
 		//var_dump($res);
 		$T1 = $res['result'];
 
-		$res = $rce->get('/config/zone');
+		$res = $cre->get('/config/zone');
 		if ('success' != $res['status']) {
-			_exit_text('Cannot load Zone list from RCE [CTA#033]', 501);
+			_exit_text('Cannot load Zone list from CRE [CTA#033]', 501);
 		}
 		$zone_list = $res['result'];
 
@@ -57,7 +57,7 @@ class Accept extends \OpenTHC\Controller\Base
 	*/
 	private function accept($RES, $ARG)
 	{
-		$rce = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
 		$args = array(
 			'global_id' => $ARG['id'],
@@ -82,7 +82,7 @@ class Accept extends \OpenTHC\Controller\Base
 		}
 
 		$path = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
-		$res = $rce->post($path, array('json' => $args));
+		$res = $cre->post($path, array('json' => $args));
 
 		if ('success' != $res['status']) {
 			_exit_text($res);

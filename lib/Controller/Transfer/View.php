@@ -9,9 +9,9 @@ class View extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		$rce = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
-		$res = $rce->get('/transfer/incoming/' . $ARG['id']);
+		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
 		if ('success' != $res['status']) {
 			print_r($res);
 			die("Cannot Load Transfer");
