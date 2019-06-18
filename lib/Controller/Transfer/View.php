@@ -21,8 +21,7 @@ class View extends \OpenTHC\Controller\Base
 			'Page' => array('title' => sprintf('Transfer %s', $ARG['id'])),
 			'Transfer' => $res['result'],
 		);
-
-		_exit_text($data);
+		// _exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/transfer/view.html', $data);
 

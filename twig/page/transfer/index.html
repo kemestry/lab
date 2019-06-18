@@ -37,7 +37,7 @@
 {% for t in transfer_list %}
 
 	<tr>
-	<td>{{ t.status_void ? "VOID/" }}<a href="/transfer/{{ t.id }}">{{ t.id }}</a></td>
+	<td><a href="/transfer/{{ t.id }}">{{ t.id }}</a>{{ t.meta.void ? " - VOID" }}</td>
 	<td>{{ t.date }}</td>
 	<td>
 		{{ t.origin_license.name }}
@@ -45,7 +45,7 @@
 	<td>
 		{{ t.target_license.name }}
 	</td>
-	<td>{{ t.meta.status_void ? "VOID/" }}{{ t.meta.manifest_type }}</td>
+	<td>{{ t.meta.manifest_type }}</td>
 	<td>{{ t.meta.status }}</td>
 	<td class="r">
 		{% if "in-transit" ==  t.meta.status %}

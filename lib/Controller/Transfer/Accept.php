@@ -11,20 +11,20 @@ class Accept extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		if ('POST' == $_SERVER['REQUEST_METHOD']) {
-			return $this->accept($RES, $ARG);
-		}
+		// if ('POST' == $_SERVER['REQUEST_METHOD']) {
+		// 	return $this->accept($RES, $ARG);
+		// }
 
-		$arg = array($_SESSION['License']['ulid'], $ARG['id']);
+		$arg = array($_SESSION['License']['id'], $ARG['id']);
 		$T0 = SQL::fetch_row('SELECT * FROM transfer_incoming WHERE license_id_target = ? AND id = ?', $arg);
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
 		// Fresh data from CRE
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
+		var_dump($res);
 		if ('success' != $res['status']) {
-			print_r($res);
-			die("Cannot Load Transfer");
+			_ext_text('Cannot Load Transfer [CTA#027]');
 		}
 		//var_dump($res);
 		$T1 = $res['result'];
@@ -35,8 +35,8 @@ class Accept extends \OpenTHC\Controller\Base
 		}
 		$zone_list = $res['result'];
 
-		$Origin = SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_origin']));
-		$Target = SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_target']));
+		$Origin = new \OpenTHC\License($T0['license_id_origin']); // SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_origin']));
+		$Target = new \OpenTHC\License($T0['license_id_target']); // SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_target']));
 
 		$data = array(
 			'Page' => array('title' => 'Transfer :: Accept'),
@@ -53,9 +53,9 @@ class Accept extends \OpenTHC\Controller\Base
 	}
 
 	/**
-		Actually Accept the Inventory
-	*/
-	private function accept($RES, $ARG)
+	 * Actually Accept the Inventory
+	 */
+	function accept($REQ, $RES, $ARG)
 	{
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
@@ -66,6 +66,7 @@ class Accept extends \OpenTHC\Controller\Base
 
 		foreach ($_POST as $k => $v) {
 
+			// Find Post keys matching pattern "lot-receive-guid-<Transfer_Incoming_Item ID>"
 			if (preg_match('/lot-receive-guid-(\w+)/', $k, $m)) {
 
 				$id = $m[1];
@@ -81,8 +82,13 @@ class Accept extends \OpenTHC\Controller\Base
 			}
 		}
 
+		//var_dump($args);
+		// exit;
+
 		$path = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
 		$res = $cre->post($path, array('json' => $args));
+		var_dump($res);
+		exit;
 
 		if ('success' != $res['status']) {
 			_exit_text($res);
@@ -95,9 +101,9 @@ class Accept extends \OpenTHC\Controller\Base
 
 			SQL::insert('qa_sample', array(
 				'id' => $lot['global_received_inventory_id'],
-				'company_id' => $_SESSION['company']['id'],
-				'company_ulid' => $_SESSION['company']['ulid'],
-				'license_ulid' => $_SESSION['license']['ulid'],
+				'guid' => $lot['global_received_inventory_id'],
+				'company_id' => $_SESSION['Company']['id'],
+				'license_id' => $_SESSION['License']['id'],
 				'name' => $lot['description'],
 				'meta' => \json_encode($lot),
 			));
