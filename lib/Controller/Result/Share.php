@@ -42,11 +42,15 @@ class Share extends \OpenTHC\Controller\Base
 			return $this->_container->view->render($RES, 'page/result/404.html', $data);
 		}
 
-		// _exit_text($meta);
-
 		$data = array();
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Result'] = $meta['Result'];
+		unset($data['Result']['coa_file']);
+
+		$coa_file = $QAR->getCOAFile();
+		if (!empty($coa_file) && is_file($coa_file) && is_readable($coa_file)) {
+			$data['Result']['coa_file'] = $coa_file;
+		}
 
 		$data['Sample'] = $meta['Sample'];
 		if (empty($data['Sample']['id'])) {
@@ -73,8 +77,7 @@ class Share extends \OpenTHC\Controller\Base
 			return $RES->withJSON($data, 200, JSON_PRETTY_PRINT);
 		case 'pdf':
 
-			$coa_file = $QAR->getCOAFile();
-			if (empty($coa_file) || !is_file($coa_file) || !is_readable($coa_file)) {
+			if (empty($data['Result']['coa_file'])) {
 				_exit_text('PDF Copy of COA Not Found, please contact the supplier or laboratory', 404);
 			}
 
@@ -84,7 +87,7 @@ class Share extends \OpenTHC\Controller\Base
 			header('content-transfer-encoding: binary');
 			header('content-type: application/pdf');
 
-			readfile($coa_file);
+			readfile($data['Result']['coa_file']);
 
 			exit(0);
 
@@ -111,8 +114,10 @@ class Share extends \OpenTHC\Controller\Base
 
 		$data['share_mail_link'] = http_build_query(array(
 			'subject' => sprintf('QA Results %s', $data['Result']['global_id']),
-			'body' => sprintf("\n\nHere is the link: https://qa.openthc.org/share/%s.html", $data['Result']['global_id']),
+			'body' => sprintf("\n\nHere is the link: https://lab.openthc.org/share/%s.html", $data['Result']['global_id']),
 		), null, '&', PHP_QUERY_RFC3986);
+
+		//_exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/result/share.html', $data);
 

@@ -11,8 +11,8 @@ class Result extends \OpenTHC\Module\Base
 	{
 		$a->get('', 'App\Controller\Result');
 
-		$a->get('/create', 'App\Controller\Result\Create');
-		$a->post('/create', 'App\Controller\Result\Create');
+		$a->get('/create/{sample_id}', 'App\Controller\Result\Create');
+		$a->post('/create/{sample_id}/save', 'App\Controller\Result\Create:save');
 
 		$a->get('/download', 'App\Controller\Result\Download');
 

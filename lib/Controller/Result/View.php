@@ -53,6 +53,11 @@ class View extends \OpenTHC\Controller\Base
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Sample']  = $meta['Sample'];
 		$data['Result']  = $meta['Result'];
+		$data['Result']['coa_file'] = $QAR->getCOAFile();
+		if (!is_file($data['Result']['coa_file'])) {
+			$data['Result']['coa_file'] = null;
+		}
+
 		$data['Product'] = $meta['Product'];
 		$data['Strain']  = $meta['Strain'];
 
@@ -104,6 +109,7 @@ class View extends \OpenTHC\Controller\Base
 				header('content-transfer-encoding: binary');
 				header('content-type: application/pdf');
 
+				//var_dump($coa_file);
 				readfile($coa_file);
 
 				exit(0);
@@ -116,8 +122,14 @@ class View extends \OpenTHC\Controller\Base
 		case 'coa-upload':
 		case 'file-upload':
 
-			var_dump($_FILES);
-			exit;
+			$src_name = strtolower($_FILES['file']['name']);
+			$qar_want = strtolower(preg_match('/\.(\w+)/', $lab_result_id, $m) ? $m[1] : $lab_result_id);
+
+			$chk_name = strpos($src_name, $qar_want);
+
+			if (false === $chk_name) {
+				_exit_text('Please put the Lab Result ID in the Filename for verification');
+			}
 
 			$QAR->setCOAFile($_FILES['file']['tmp_name']);
 

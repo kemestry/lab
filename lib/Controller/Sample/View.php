@@ -20,6 +20,7 @@ class View extends \OpenTHC\Controller\Base
 
 		switch ($_POST['a']) {
 		case 'drop':
+			// need to return the $RES object from these methods to do anything
 			$this->_dropSample($RES, $ARG, $cre);
 			break;
 		case 'void':
@@ -28,7 +29,6 @@ class View extends \OpenTHC\Controller\Base
 		}
 
 		$res = $cre->get('/lot/' . $id);
-		//var_dump($res);
 
 		$QAS = $res['result'];
 
@@ -58,7 +58,6 @@ class View extends \OpenTHC\Controller\Base
 		//$L = $res['result'];
 		$res = $cre->get('/config/license/' . $QAS['global_mme_id']);
 		$L = $res['result'];
-		//var_dump($L);
 
 		$data = array(
 			'Page' => array('title' => 'Sample :: View'),
@@ -68,6 +67,7 @@ class View extends \OpenTHC\Controller\Base
 			'License_Owner' => $L,
 			//'License_Labor' => $L0,
 		);
+		// _exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 
