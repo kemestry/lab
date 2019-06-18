@@ -30,8 +30,12 @@ error_reporting(E_ALL & ~ E_NOTICE);
 require_once(APP_ROOT . '/vendor/autoload.php');
 
 // Still need this Static Connection :(
-$cfg = \OpenTHC\Config::get('database_main');
-$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
-$u = $cfg['username'];
-$p = $cfg['password'];
-\Edoceo\Radix\DB\SQL::init($c, $u, $p);
+try {
+	$cfg = \OpenTHC\Config::get('database_main');
+	$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	$u = $cfg['username'];
+	$p = $cfg['password'];
+	\Edoceo\Radix\DB\SQL::init($c, $u, $p);
+} catch (Exception $e) {
+	_exit_text('Fatal, Cannot Connect to Database [APP#040]', 500);
+}

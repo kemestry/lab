@@ -175,7 +175,8 @@ $app->get('/sync', 'App\Controller\Sync')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Session');
 
-$app->any('/sync/exec', 'App\Controller\Sync:exec')
+$app->post('/sync', 'App\Controller\Sync:exec')
+	->add('App\Middleware\Menu')
 	->add('App\Middleware\Session');
 
 
@@ -184,6 +185,12 @@ $app->get('/about', function($REQ, $RES, $ARG) {
 	$data = array('Page' => array('title' => 'About'));
 	return $this->view->render($RES, 'page/about.html', $data);
 })->add('App\Middleware\Menu');
+
+
+// Dump Routes?
+if ('routes' == $_GET['_dump']) {
+	$app->dumpRoutes();
+}
 
 
 // Execute Slim

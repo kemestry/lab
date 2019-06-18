@@ -41,29 +41,9 @@ class Intent extends \OpenTHC\Controller\Base
 
 				switch ($_POST['a']) {
 				case 'coa-upload':
-
-					$coa_file = sprintf('%s/var/%06d/%s.pdf', APP_ROOT, $QAR['company_id'], $QAR['guid']);
-					if (is_file($coa_file)) {
-						_exit_text('Cannot Upload, Contact Support [LCI#033]', 409);
-					}
-
-					$coa_path = dirname($coa_file);
-					if (!is_dir($coa_path)) {
-						mkdir($coa_path, 0755, true);
-					}
-					\move_uploaded_file($_FILES['file']['tmp_name'], $coa_file);
-
-					// Evaluate PDF
-					$cmd = array();
-					$cmd[] = '/usr/bin/pdftk';
-					$cmd[] = escapeshellarg($coa_file);
-					$cmd[] = 'dump_data';
-					$buf = shell_exec(implode(' ', $cmd));
-
-					// PageMediaRect: 0 0 612 792
-					// PageMediaDimensions: 612 792
-					if (preg_match('//')) {
-					}
+					// Whenever this triggers, fix it to use Lab_Result->getCOAFile();
+					$Lab_Result->setCOAFile($_FILES['file']['tmp_name']);
+					throw new Exception('Invalid Upload, Add COA File [LCI#044]');
 
 				}
 

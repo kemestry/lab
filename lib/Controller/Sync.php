@@ -20,7 +20,6 @@ class Sync extends \OpenTHC\Controller\Base
 
 	}
 
-
 	function exec($REQ, $RES, $ARG)
 	{
 		session_write_close();
@@ -52,7 +51,7 @@ class Sync extends \OpenTHC\Controller\Base
 					'created_at' => $rec['_source']['created_at'],
 					'guid' => $rec['guid'],
 					'name' => $rec['guid'],
-					'meta_result_rbe' => json_encode($rec['_source'])
+					'meta_result_cre' => json_encode($rec['_source'])
 				));
 			}
 
