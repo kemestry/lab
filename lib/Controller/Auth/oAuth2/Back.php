@@ -77,28 +77,25 @@ class Back extends \App\Controller\Auth\oAuth2
 
 				// Authenticate via PIPE
 				$cre = new \OpenTHC\RCE();
-				$x = $cre->auth(array(
+				$cfg = array(
 					'cre' => $_SESSION['cre'],
 					'license' => $_SESSION['cre-auth']['license'],
-					'client-key' => $_SESSION['cre-auth']['secret'],
-				));
+					'license-key' => $_SESSION['cre-auth']['secret'],
+				);
+				$x = $cre->auth($cfg);
 
 				if ('success' == $x['status']) {
 					$_SESSION['pipe-token'] = $x['result'];
 				} else {
-					// var_dump($_SESSION);
-					// var_dump($x);
 					_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
 				}
 
+				// Find the License in the CRE
 				$lic = '/config/license/' . $_SESSION['cre-auth']['license'];
-				var_dump($lic);
 				$res = $cre->get($lic);
-				var_dump($res);
 
-				if ('success' == $x['status']) {
+				if ('success' == $res['status']) {
 					$L = \OpenTHC\License::findByGUID($res['result']['guid']);
-					var_dump($L);
 					$_SESSION['License'] = $L->toArray();
 				} else {
 					_exit_text('License Not Found. Please contact support [AOB#107]', 500);

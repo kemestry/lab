@@ -22,7 +22,7 @@ class Accept extends \OpenTHC\Controller\Base
 
 		// Fresh data from CRE
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
-		var_dump($res);
+		//var_dump($res);
 		if ('success' != $res['status']) {
 			_ext_text('Cannot Load Transfer [CTA#027]');
 		}
@@ -82,13 +82,9 @@ class Accept extends \OpenTHC\Controller\Base
 			}
 		}
 
-		//var_dump($args);
-		// exit;
 
 		$path = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
 		$res = $cre->post($path, array('json' => $args));
-		var_dump($res);
-		exit;
 
 		if ('success' != $res['status']) {
 			_exit_text($res);

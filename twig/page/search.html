@@ -18,7 +18,7 @@ if (!empty($q)) {
 	}
 
 	// Load from LCB Data-Dump
-	$url = 'https://qa.openthc.org/api/qa/' . rawurlencode($q) . '/result';
+	$url = 'https://lab.openthc.org/api/qa/' . rawurlencode($q) . '/result';
 	//Radix::dump($url);
 	$res = HTTP::get($url);
 	switch ($res['info']['http_code']) {
