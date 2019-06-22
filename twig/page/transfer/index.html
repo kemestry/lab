@@ -47,9 +47,9 @@
 	</td>
 	<td>{{ t.meta.manifest_type }}</td>
 	<td>{{ t.meta.status }}</td>
-	<td class="r">
+	<td class="r" style="padding-top: 11px;">
 		{% if "in-transit" ==  t.meta.status %}
-			<a class="btn btn-sm btn-outline-primary" href="/transfer/{{ t.id }}/accept"><i class="fas fa-arrow-right"></i> Accept</a>
+			<a class="btn btn-sm btn-outline-primary" href="/transfer/{{ t.id }}/accept"><i class="fas fa-arrow-right"></i> Transfer</a>
 		{% endif %}
 	</td>
 	</tr>

@@ -1,0 +1,158 @@
+<div class="row qa-result-head">
+<div class="col-md-6">
+	<h3 style="color:{{ status_color }}; margin:0; padding: 0.25em 0 0.25em 0.5em">
+	Lab Result: {{ global_id }} {{ status_text }}
+	<small>{{ testing_status }} / {{ status }}</small>
+	</h3>
+</div>
+<div class="col-md-6 r">
+	<h3 style="margin:0; padding: 0.25em 0 0.25em 0.5em">
+	{{ lab_license_name }}
+	#{{ lab_license_code }}
+	</h3>
+</div>
+</div>
+
+{% if lab_results_attested %}
+	<h3>Results Attested</h3>
+{% endif %}
+
+<table class="table table-sm">
+<tr>
+	<th colspan="2">Cannabinoids</th>
+</tr>
+<tr>
+	<td>THC Total</t>
+	<td class="r">
+	<strong>
+	{% if qa_unit_pct %}
+		{{ thc }}%
+	{% else %}
+		{{ thc }} mg/g
+	{% endif %}
+	</strong>
+	</td>
+</tr>
+
+<tr>
+	<td>CBD Total</t>
+	<td class="r">
+	<strong>
+	{% if qa_unit_pct %}
+		{{ cbd }}%
+	{% else %}
+		{{ cbd }} mg/g
+	{% endif %}
+	</strong>
+	</td>
+</tr>
+
+<tr>
+	<td>&Delta;9 THC</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_d9_thc_percent }}%
+	{% else %}
+		{{ cannabinoid_d9_thc_mg_g }} mg/g
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>&Delta;9 THC-A</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_d9_thca_percent }}%
+	{% elseif cannabinoid_d8_thc_mg_g %}
+		{{ cannabinoid_d9_thca_mg_g }} mg/g
+	{% else %}
+		-
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>&Delta;8 THC</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_d8_thc_percent }}%
+	{% elseif cannabinoid_d8_thc_mg_g  %}
+		{{ cannabinoid_d8_thc_mg_g }} mg/g
+	{% else %}
+		-
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>CBD</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_cbd_percent }}%
+	{% elseif cannabinoid_cbd_mg_g %}
+		{{ cannabinoid_cbd_mg_g }} mg/g
+	{% else %}
+		-
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>CBD-A</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_cbda_percent }}%
+	{% elseif cannabinoid_cbda_mg_g %}
+		{{ cannabinoid_cbda_mg_g }} mg/g
+	{% else %}
+		-
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>CBD-V</t>
+	<td class="r">
+	{% if qa_unit_pct %}
+		{{ cannabinoid_cbdv_percent }}%
+	{% elseif cannabinoid_cbdv_mg_g %}
+		{{ cannabinoid_cbdv_mg_g }} mg/g
+	{% else %}
+		-
+	{% endif %}
+</tr>
+
+<tr>
+	<td>Moisture Content</td>
+	<td class="r">{{ moisture_content_percent }}</td>
+</tr>
+<tr>
+	<td>Water Activity</t>
+	<td class="r">{{ moisture_content_water_activity_rate }}</td>
+</tr>
+
+
+</table>
+
+
+<form action="/inventory/qa" method="post">
+
+<div style="text-align:center;">
+	<div class="form-actions">
+		<input type="hidden" name="inventory_id" value="{{ inventory_id }}">
+		<input type="hidden" name="inventory_sample_qa_id" value="{{ qa_result_id }}">
+		{% if qa_result_id %}
+			<a class="btn btn-success inventory-qa-publish-exec" href="/inventory/qa/share?id={{ qa_result_id }}" title="Share the QA Results"><i class="fas fa-share-alt"></i> Share</a>
+			<button class="btn btn-success" name="a" title="Select the QA Results" type="submit" value="qa-select"><i class="fas fa-check-square-o"></i> Select</a>
+			<button class="btn btn-success" name="a" type="submit" value="qa-attest-pass"><i class="fas fa-handshake-o"></i> Assert Passed</button>
+			<a class="btn btn-primary" href="/inventory/qa/view?id={{ qa_result_id }}"><i class="fas fa-clipboard"></i> Details</a>
+			<a class="btn btn-primary" href="/inventory/qa/manual?id={{ inventory_id }}&amp;sample_id={{ qa_result_id }}"><i class="fas fa-handshake-o"></i> Manual Entry</a>
+		{% endif %}
+		<button class="btn btn-primary inventory-qa-refresh-exec" data-inventory-id="{{ inventory_id }}" id="inventory-qa-refresh-exec" title="Refresh the QA Results" type="button"><i class="fas fa-sync"></i> Refresh</button>
+		<!--
+		<button class="btn btn-warning" name="a" title="Request QA By-Pass" type="submit" value="qa-by-pass"><i class="fas fa-random"></i> By-Pass</button>
+		-->
+		<!--
+		<button class="btn btn-warning" name="a" title="QA Import" type="submit" value="qa-import"><i class="fas fa-upload"></i> Import</button>
+		-->
+		<!--
+		<button class="btn btn-danger" name="a" type="submit" value="void" title="VOID this QA Sample"><i class="fas fa-ban"></i> VOID SAMPLE</button>
+		-->
+	</div>
+</div>
+</form>

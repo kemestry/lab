@@ -1,0 +1,108 @@
+{#
+	Render a Lab Result
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body_head %}
+
+
+{% endblock %}
+
+{% block body %}
+
+<div class="row mt-4">
+<div class="col-md-6">
+	<h1>Result: {{ Result.guid }}</h1>
+	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
+</div>
+<div class="col-md-4">
+	<h3>Sample: {{ Sample.global_id }}</h4>
+	<p style="margin:0;">Origin: {{ Result.global_for_inventory_id }}</p>
+	<p style="margin:0;">Lab Inventory ID: {{ Result.global_inventory_id }}</p>
+</div>
+<div class="col-md-2 r">
+	<form method="post" target="_blank">
+		<a class="btn btn-outline-secondary" href="/share/{{ Result.guid }}.html"><i class="fas fa-share-alt"></i></a>
+		{% if Result.coa_file %}
+			<div class="btn-group">
+				<button class="btn btn-outline-success" name="a" type="submit" value="coa-download"><i class="fas fa-download"></i> COA</button>
+				<button class="btn btn-outline-success dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" type="button"></button>
+				<div class="dropdown-menu dropdown-menu-right">
+					<a class="dropdown-item" data-toggle="modal" data-target="#modal-coa-upload" href="#"><i class="fas fa-upload"></i> Upload COA</a>
+				</div>
+			</div>
+		{% else %}
+			<div class="btn-group">
+				<button class="btn btn-outline-warning" data-toggle="modal" data-target="#modal-coa-upload" name="a" title="No COA Uploaded" type="button" value="download-coa"><i class="fas fa-upload"></i> COA</button>
+			</div>
+		{% endif %}
+	</form>
+</div>
+</div>
+
+{% include "block/qa-product-summary.html" %}
+{% include "block/qa-potency-summary.html" %}
+
+<hr>
+
+<div>
+<h2>QA Metrics</h2>
+
+{% include "block/qa-result.html" %}
+
+<form method="post">
+<div class="form-actions">
+	<button class="btn btn-outline-secondary" name="a" type="submit" value="sync"><i class="fas fa-sync"></i> Sync</button>
+	<button class="btn btn-outline-primary" name="a" type="submit" value="share"><i class="fas fa-share-alt"></i> Share</button>
+	<button class="btn btn-outline-primary" name="a" data-toggle="modal" data-target="#modal-result-email" type="button"><i class="far fa-envelope"></i> Email</button>
+	<button class="btn btn-outline-secondary" name="a" data-toggle="modal" data-target="#modal-send-sms" type="button""><i class="fas fa-mobile"></i> Text/SMS</button>
+	<!--
+	<button class="btn btn-outline-primary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Modify</button>
+	<button class="btn btn-outline-secondary" name="a" type="submit" value="mute"><i class="fas fa-ban"></i> Mute</button>
+	<button class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-trash"></i> Void</button>
+	-->
+</div>
+</form>
+
+</div>
+
+<form enctype="multipart/form-data" method="post">
+<div class="modal" id="modal-coa-upload" role="dialog" tabindex="-1">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">COA Upload</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			</div>
+
+			<div class="modal-body">
+				<p>This Result doesn't have a COA uploaded in LeafData, you may want to ask the Lab to take care of that.</p>
+				<p>You can upload one here, to make it visible to retailers and consumer but it won't become part of the LeafData system.</p>
+				<div class="form-group">
+					<input class="form-control" name="file" type="file" >
+				</div>
+
+				<hr>
+
+				<p>Request from Lab</p>
+				<div class="form-group">
+					<input class="form-control" readonly value="https://lab.openthc.org/intent?_={{ coa_upload_hash }}">
+				</div>
+
+			</div>
+
+		<div class="modal-footer">
+			<button class="btn btn-outline-primary" name="a" type="submit" value="file-upload"><i class="fas fa-upload"></i> Upload</button>
+		</div>
+
+		</div>
+	</div>
+</div>
+</form>
+
+{% include "block/modal-send-email.html" %}
+{% include "block/modal-send-sms.html" %}
+
+{% endblock %}

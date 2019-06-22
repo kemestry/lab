@@ -1,0 +1,942 @@
+{#
+	Show the QA Results
+#}
+
+{% macro _qa_section_head(t, id) %}
+	<h3><button
+		class="btn btn-sm btn-outline-secondary btn-showhide"
+		data-toggle="collapse"
+		data-target="#{{ id }}"
+		type="button"><i class="fas fa-compress"></i></button> {{ t|raw }}</h3>
+{% endmacro %}
+
+{% macro _qa_pot_input(l, n, obj) %}
+
+<div class="form-group">
+	<label>{{ l|raw }}</label>
+	{% if obj.uom == "pct" %}
+		<div class="input-group">
+			<input class="form-control r" disabled name="{{ n }}_percent" type="text" value="{{ obj[ n ~ "_percent" ] }}">
+			<div class="input-group-append"><span class="input-group-text" style="min-width:5em;">%</span></div>
+		</div>
+	{% else %}
+		<div class="input-group">
+			<input class="form-control r" disabled name="{{ n }}_mg_g" type="text" value="{{ obj[ n ~ "_mg_g" ] }}">
+			<div class="input-group-append"><span class="input-group-text" style="min-width:5em;">mg/g</span></div>
+		</div>
+	{% endif %}
+</div>
+
+{% endmacro %}
+
+{% macro _qa_input_cfug(l, n, obj) %}
+<div class="form-group">
+	<label>{{ l|raw }}</label>
+	<div class="input-group">
+		<input class="form-control r" disabled name="{{ n }}" placeholder="" type="text" value="{{ obj[ n ] }}">
+		<div class="input-group-append"><span class="input-group-text">cfu/g</span></div>
+	</div>
+</div>
+{% endmacro %}
+
+
+{% import _self as _this %}
+
+<style>
+section {
+	border: 1px inset #999;
+	border-radius: 0.25em;
+	margin: 0 0 2em 0;
+	padding: 0.75em;
+}
+</style>
+
+
+<section>
+{{ _this._qa_section_head("Cannabinoids", "metric-wrap-cb") }}
+
+<div id="metric-wrap-cb">
+
+<div>
+	<p>Status: {{ Result.cannabinoid_status }}
+	<!--
+	<select id="cannabinoid_status" class="form-control section-status status" name="cannabinoid_status"><option value="">Not Started</option><option value="in_progress">In Progress</option><option value="completed" selected="selected">Completed</option></select>
+	-->
+</p>
+</div>
+
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("THC-A", "cannabinoid_d9_thca", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("THC-d9", "cannabinoid_d9_thc", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("THC-d8", "cannabinoid_d8_thc", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("THC-V", "cannabinoid_thcv", Result) }}
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBD", "cannabinoid_cbd", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBD-A", "cannabinoid_cbda", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBD-V", "cannabinoid_cbdv", Result) }}
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBC", "cannabinoid_cbc", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBG", "cannabinoid_cbg", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBG-A", "cannabinoid_cbga", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("CBN", "cannabinoid_cbn", Result) }}
+</div>
+</div>
+
+</div> <!-- /.metric-wrap-->
+</section>
+
+
+<section>
+
+{{ _this._qa_section_head("General", "metric-wrap-general") }}
+
+<div class="row collapse" id="metric-wrap-general">
+<div class="col-md-3">
+	<div class="form-group">
+		<label>Moisture Content</label>
+		<div class="input-group">
+			<input class="form-control r" disabled name="moisture_content_percent" placeholder="<= 15%" type="text" value="{{ Result.moisture_content_percent }}">
+			<div class="input-group-append"><span class="input-group-text">%</span></div>
+		</div>
+	</div>
+</div>
+<div class="col-md-3">
+	<div class="form-group">
+		<label>Water Activity</label>
+		<div class="input-group">
+			<input class="form-control r" disabled name="moisture_content_water_activity_rate" placeholder="<= 0.65" type="text" value="{{ Result.moisture_content_water_activity_rate }}">
+			<div class="input-group-append"><span class="input-group-text">a<sub>w</sub></span></div>
+		</div>
+	</div>
+</div>
+<div class="col-md-3">
+	<div class="form-group">
+		<label>Seeds</label>
+		<select class="form-control" disabled name="foreign_matter_seeds">
+			<option value="0">Passed</option>
+			<option value="1">Failed</option>
+		</select>
+	</div>
+</div>
+<div class="col-md-3">
+	<div class="form-group">
+		<label>Stems</label>
+		<select class="form-control" disabled name="foreign_matter_stems">
+			<option value="0">Passed</option>
+			<option value="1">Failed</option>
+		</select>
+	</div>
+</div>
+</div> <!-- /.row -->
+</section>
+
+
+<section>
+{{ _this._qa_section_head("Terpenes", "metric-wrap-t") }}
+
+<div class="collapse" id="metric-wrap-t">
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("B-Caryophyllene", "terpenoid_b_caryophyllene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("B-Myrcene", "terpenoid_b_myrcene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("B-Pinene", "terpenoid_b_pinene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Bisabolol", "terpenoid_bisabolol", Result) }}
+</div>
+</div> <!-- /.row -->
+
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Caryophyllene Oxide", "terpenoid_caryophyllene_oxide", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Humulene", "terpenoid_humulene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Limonene", "terpenoid_limonene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Linalool", "terpenoid_linalool", Result) }}
+</div>
+</div> <!-- /.row -->
+
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Pinene", "terpenoid_pinene", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_pot_input("Terpinolene", "terpenoid_terpinolene", Result) }}
+</div>
+</div> <!-- /.row -->
+</div> <!-- /#metric-wrap -->
+</section>
+
+<!--
+<section>
+{{ _this._qa_section_head("Metals") }}
+[metal_arsenic_ppm] =>
+[metal_cadmium_ppm] =>
+[metal_editor] =>
+[metal_lead_ppm] =>
+[metal_mercury_ppm] =>
+[metal_status] => not_started
+</section>
+-->
+
+<section>
+{{ _this._qa_section_head("Microbes", "metric-wrap-m") }}
+<!--
+<h3><i class="fas fa-compress"></i> Microbe: <small>not_started</small></h3>
+-->
+<div class="collapse" id="metric-wrap-m">
+<div class="row">
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("Aerobic Bacteria", "microbial_aerobic_bacteria_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("Bile Tolerant Bacteria", "microbial_bile_tolerant_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("pathogenic_e_coli", "microbial_pathogenic_e_coli_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("salmonella", "microbial_salmonella_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("total_coliform", "microbial_total_coliform_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("total_viable_plate_count", "microbial_total_viable_plate_count_cfu_g", Result) }}
+</div>
+<div class="col-md-3">
+	{{ _this._qa_input_cfug("total_yeast_mold", "microbial_total_yeast_mold_cfu_g", Result) }}
+</div>
+</div>
+
+</div> <!-- /#metric-wrap -->
+</section>
+
+<section>
+{{ _this._qa_section_head("Pesticides", "metric-wrap-p") }}
+
+<div class="collapse" id="metric-wrap-p">
+<div class="row">
+<div class="col-md-3">
+	<div class="form-group">
+		<label>abamectin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_abamectin_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>acephate</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_acephate_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>acequinocyl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_acequinocyl_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>acetamiprid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_acetamiprid_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>aldicarb</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_aldicarb_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>azoxystrobin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_azoxystrobin_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>bifenazate</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_bifenazate_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>bifenthrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_bifenthrin_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>bifentrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_bifentrin_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>boscalid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_boscalid_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>captan</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_captan_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>carbaryl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_carbaryl_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>carbofuran</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_carbofuran_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>chlorantraniliprole</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_chlorantraniliprole_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>chlorfenapyr</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_chlorfenapyr_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>chlorpyrifos</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_chlorpyrifos_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>clofentezine</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_clofentezine_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>cyfluthrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_cyfluthrin_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>cypermethrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_cypermethrin_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>daminozide</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_daminozide_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>ddvp_dichlorvos</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_ddvp_dichlorvos_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>diazinon</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_diazinon_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>dimethoate</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_dimethoate_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>dimethomorph</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_dimethomorph_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>ethoprophos</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_ethoprophos_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>etofenprox</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_etofenprox_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>etoxazole</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_etoxazole_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>fenhexamid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_fenhexamid_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>fenoxycarb</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_fenoxycarb_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>fenpyroximate</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_fenpyroximate_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>fipronil</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_fipronil_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>flonicamid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_flonicamid_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>fludioxonil</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_fludioxonil_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>hexythiazox</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_hexythiazox_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>imazalil</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_imazalil_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>imidacloprid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_imidacloprid_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>kresoxim_methyl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_kresoxim_methyl_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>malathion</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_malathion_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>metalaxyl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_metalaxyl_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>methiocarb</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_methiocarb_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>methomyl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_methomyl_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>methyl_parathion</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_methyl_parathion_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>mgk_264</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_mgk_264_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>myclobutanil</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_myclobutanil_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>naled</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_naled_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>oxamyl</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_oxamyl_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>paclobutrazol</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_paclobutrazol_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>pcnb</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_pcnb_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>permethrinsa</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_permethrinsa_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>phosmet</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_phosmet_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>piperonyl_butoxide</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_piperonyl_butoxide_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>piperonyl_butoxideb</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_piperonyl_butoxideb_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>prallethrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_prallethrin_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>propiconazole</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_propiconazole_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>propoxur</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_propoxur_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>pyrethrin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_pyrethrin_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>pyrethrinsbc</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_pyrethrinsbc_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>pyridaben</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_pyridaben_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spinetoram</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spinetoram_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spinosad</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spinosad_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spiromesifen</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spiromesifen_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spirotetramat</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spirotetramat_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spirotetramet</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spirotetramet_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>spiroxamine</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_spiroxamine_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>tebuconazole</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_tebuconazole_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>thiacloprid</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_thiacloprid_ppm" placeholder="" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>thiamethoxam</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_thiamethoxam_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>trifloxystrobin</label>
+		<div class="input-group">
+			<input class="form-control r" name="pesticide_trifloxystrobin_ppm" placeholder="" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div>
+</div>
+
+</div> <!-- /#metric-wrap -->
+</section>
+
+
+<section>
+{{ _this._qa_section_head("Solvents", "metric-wrap-s") }}
+
+<div class="collapse" id="metric-wrap-s">
+<div class="row">
+<div class="col-md-3">
+	<div class="form-group">
+		<label>Acetone</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_acetone_ppm" placeholder="<= 5000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Benzene</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_benzene_ppm" placeholder="<= 2" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Butanes</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_butanes_ppm" placeholder="<= 5000" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Chloroform</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_chloroform_ppm" placeholder="<= 2" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Cyclohexane</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_cyclohexane_ppm" placeholder="<= 3880" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Dichloromethane</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_dichloromethane_ppm" placeholder="<= 600" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Ethyl Acetate</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_ethyl_acetate_ppm" placeholder="<= 5000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Heptane</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_heptane_ppm" placeholder="<= 5000" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Heptanes</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_heptanes_ppm" placeholder="<= 5000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Hexanes</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_hexanes_ppm" placeholder="<= 290" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Isopropanol</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_isopropanol_ppm" placeholder="<= 5000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Methanol</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_methanol_ppm" placeholder="<= 3000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Pentanes</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_pentanes_ppm" placeholder="<= 5000" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Propane</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_propane_ppm" placeholder="<= 5000" type="text" value="">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Toluene</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_toluene_ppm" placeholder="<= 890" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div><div class="col-md-3">
+	<div class="form-group">
+		<label>Xylene</label>
+		<div class="input-group">
+			<input class="form-control r" name="solvent_xylene_ppm" placeholder="<= 2170" type="text" value="0.000">
+			<div class="input-group-append"><span class="input-group-text">ppm</span></div>
+		</div>
+	</div>
+</div>
+</div>
+
+</div> <!-- /#metric-wrap -->
+</section>

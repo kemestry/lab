@@ -1,0 +1,104 @@
+{#
+	Render a Lab Result
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="row mt-4">
+<div class="col">
+	<h1>Result: {{ Result.guid }}</h1>
+	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
+</div>
+<div class="col">
+	<h3>Sample: {{ Sample.guid }}</h4>
+	<p style="margin:0;">Origin: {{ Result.global_for_inventory_id }}</p>
+	<p style="margin:0;">Lab Inventory ID: {{ Result.global_inventory_id }}</p>
+</div>
+</div>
+
+{% include "block/qa-product-summary.html" %}
+
+<div class="row">
+<div class="col-md-8">
+	<div class="form-group">
+		<label>Share Link</label>
+		<div class="input-group">
+			<input class="form-control" readonly value="https://lab.openthc.org/share/{{ Result.global_id }}.html">
+			<div class="input-group-append">
+				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://lab.openthc.org/share/{{ Result.global_id }}.html" type="button"><i class="fas fa-clipboard"></i></button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col-md-4">
+	<div class="form-group">
+		<label>Print Link</label>
+		<div class="input-group">
+			{% if Result.coa_file %}
+				<a class="btn btn-block btn-outline-primary" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
+			{% else %}
+				<a class="btn btn-block btn-outline-secondary disabled" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
+			{% endif %}
+		</div>
+	</div>
+</div>
+</div>
+
+{% include "block/qa-potency-summary.html" %}
+
+<hr>
+
+{% include "block/qa-result.html" %}
+
+
+<div class="form-actions">
+	<button class="btn btn-outline-primary" name="a" data-toggle="modal" data-target="#modal-result-email" type="button"><i class="far fa-envelope"></i> Email</button>
+	<a class="btn btn-outline-primary" href="https://lab.openthc.org/share/{{ Result.global_id }}.png"><i class="fas fa-qrcode"></i> QR Code</a>
+	<a class="btn btn-outline-secondary" href="https://lab.openthc.org/share/{{ Result.global_id }}.json"> JSON</a>
+</div>
+
+{% include "block/modal-send-email.html" %}
+
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function() {
+	//$('div.collapse').addClass('show');
+	$('#metric-wrap-cb').addClass('show');
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script>
+
+var clipcopy = new ClipboardJS('.btn', {
+	text: function(node) {
+		return node.getAttribute('data-clipboard-text');
+	}
+});
+
+clipcopy.on('success', function(e) {
+
+	console.info('Action:', e.action);
+	console.info('Text:', e.text);
+	console.info('Trigger:', e.trigger);
+
+	var $btn = $(e.trigger);
+	$btn.tooltip({
+		title: 'Copied!',
+		trigger: 'manual',
+	});
+	$btn.tooltip('show');
+	setTimeout(function() {
+		$btn.tooltip('dispose');
+	}, 2000);
+
+
+	e.clearSelection();
+});
+</script>
+
+{% endblock %}
