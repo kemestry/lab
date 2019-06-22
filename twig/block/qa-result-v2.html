@@ -1,0 +1,230 @@
+{#
+	Show the QA Results
+#}
+
+{% import 'block/result-macros.html' as Helpers %}
+
+<style>
+section {
+	border: 1px inset #999;
+	border-radius: 0.25em;
+	margin: 0 0 2em 0;
+	padding: 0.75em;
+}
+</style>
+
+
+<section>
+{{ Helpers._qa_section_head("Cannabinoids", "metric-wrap-cb") }}
+
+<div id="metric-wrap-cb" class="show">
+
+<!-- Cannabinoids Form fields -->
+<div>
+	<!-- Status, etc. -->
+	<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("cannabinoid") }}
+		</div>
+
+	</div>
+	{% set index = 0 %}
+	{% for metricId, metric in MetricList.Cannabinoid %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(metric.name, metricId, metric) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Cannabinoid|length)-1)) %}
+		</div>
+		{% endif %}
+		{% set index = index + 1 %}
+	{% endfor %}
+</div>
+
+</div> <!-- /.metric-wrap-->
+</section>
+
+
+<section>
+
+{{ Helpers._qa_section_head("General", "metric-wrap-general") }}
+
+<div class="collapse" id="metric-wrap-general">
+
+	{% set index = 0 %}
+	{% for metricId, metric in MetricList.General %}
+
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+
+					{# These test results are pass/fail #}
+					{% if 'bool' is same as(metric.meta.uom) %}
+						{{ Helpers._qa_testing_status(metric) }}
+					{% else %}
+						{{ Helpers._qa_pot_input(metric.name, metricId, metric) }}
+					{% endif %}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.General|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+</div> <!-- /.row -->
+</section>
+
+
+<section>
+{{ Helpers._qa_section_head("Terpenes", "metric-wrap-t") }}
+
+<div class="collapse" id="metric-wrap-t">
+	<!-- Status, etc. -->
+	<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("terpene") }}
+		</div>
+	</div>
+
+<div>
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Terpene %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Terpene|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+</div>
+
+</div> <!-- /#metric-wrap -->
+</section>
+
+<!--
+<section>
+{{ Helpers._qa_section_head("Metals") }}
+[metal_arsenic_ppm] =>
+[metal_cadmium_ppm] =>
+[metal_editor] =>
+[metal_lead_ppm] =>
+[metal_mercury_ppm] =>
+[metal_status] => not_started
+</section>
+-->
+
+<section>
+{{ Helpers._qa_section_head("Microbes", "metric-wrap-m") }}
+<div class="collapse" id="metric-wrap-m">
+	<!-- Status, etc. -->
+	<div class="row">
+			<div class="col-md-3">
+				{{ Helpers._qa_section_status("microbe") }}
+			</div>
+	</div>
+
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Microbe %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Microbe|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+</div> <!-- /#metric-wrap -->
+</section>
+
+<section>
+{{ Helpers._qa_section_head("Pesticides", "metric-wrap-p") }}
+
+<div class="collapse" id="metric-wrap-p">
+<!-- Status, etc. -->
+<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("pesticide") }}
+		</div>
+</div>
+
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Pesticide %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Pesticide|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+
+</div> <!-- /#metric-wrap -->
+</section>
+
+
+<section>
+{{ Helpers._qa_section_head("Solvents", "metric-wrap-s") }}
+
+<div class="collapse" id="metric-wrap-s">
+<!-- Status, etc. -->
+<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("solvent") }}
+		</div>
+</div>
+
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Solvent %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Solvent|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+
+</div> <!-- /#metric-wrap -->
+</section>
+

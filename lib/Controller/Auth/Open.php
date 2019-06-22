@@ -22,7 +22,7 @@ class Open extends \OpenTHC\Controller\Base
 		switch ($_POST['a']) {
 		case 'open-pipe':
 
-			unset($_SESSION['pipe-token']);
+			// unset($_SESSION['pipe-token']);
 
 			// Validate Input
 			$tok = trim($_POST['pipe-token']);

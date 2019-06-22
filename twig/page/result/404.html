@@ -1,0 +1,33 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="hero-wrap">
+	<div class="hero-core">
+		<h1>Result Not Found</h1>
+		<h2>This result may not be uploaded yet</h2>
+	</div>
+</div>
+
+<div class="row">
+<div class="col">
+	<div class="card">
+	<div class="card-body">
+		<h5 class="card-title">Suppliers</h5>
+		<p class="card-text">Suppliers (Growers &amp; Processors) can connect their inventory systems to automatically import data.</p>
+		<a class="btn btn-outline-secondary" href="/auth/want">Connect QA Results</a>
+	</div>
+	</div>
+</div>
+<div class="col">
+	<div class="card">
+	<div class="card-body">
+		<h5 class="card-title">Laboratories</h5>
+		<p class="card-text">Your lab may have a one-time code from a supplier to use for uploading results.</p>
+		<a class="btn btn-outline-secondary" href="/result/upload?s={{ result_id }}">Upload Lab Results</a>
+	</div>
+	</div>
+</div>
+</div>
+
+{% endblock %}
