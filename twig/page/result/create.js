@@ -28,10 +28,10 @@ var disableFormsOnSectionStatus = function(event) {
 };
 
 // Enable read-only form fields
-// $("input, select").each(function() {
-// 	$(this).attr("readonly", false);
-// 	$(this).attr("disabled", false);
-// });
+$("#metric-wrap-general input,select").each(function() {
+	$(this).attr("readonly", false);
+	$(this).attr("disabled", false);
+});
 
 // // Disable the action button after user clicks
 // $(".form-actions .btn").on('click', function(event) {
