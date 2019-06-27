@@ -1,6 +1,8 @@
 <?php
 /**
  * Create a Result
+ * Built off schema assmptions found in the OpenTHC API
+ * https://github.com/openthc/api/blob/master/etc/lab-metric.tsv
  */
 
 namespace App\Controller\Result;
