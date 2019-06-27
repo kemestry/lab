@@ -244,8 +244,8 @@ class Create extends \OpenTHC\Controller\Base
 		$c = new \GuzzleHttp\Client(array(
 			'base_uri' => 'https://watest.leafdatazone.com',
 			'headers' => [
-				'x-mjf-mme-code' => 'LWTL', // $_ENV['leafdata-license'], // 'username',
-				'x-mjf-key' => 'yLvwqLv2nMyx1orsHxJD',// $_ENV['leafdata-license-secret'], // 'password'
+				'x-mjf-mme-code' => $_ENV['leafdata-license-lab'], // 'username',
+				'x-mjf-key' => $_ENV['leafdata-license-secret-lab'], // 'password'
 			],
 			'allow_redirects' => false,
 			'debug' => $_ENV['debug-http'],
