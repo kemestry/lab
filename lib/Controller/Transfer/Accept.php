@@ -24,7 +24,7 @@ class Accept extends \OpenTHC\Controller\Base
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
 		//var_dump($res);
 		if ('success' != $res['status']) {
-			_ext_text('Cannot Load Transfer [CTA#027]');
+			_exit_text('Cannot Load Transfer [CTA#027]');
 		}
 		//var_dump($res);
 		$T1 = $res['result'];
@@ -95,7 +95,7 @@ class Accept extends \OpenTHC\Controller\Base
 		$lot_list = $res['result']['inventory_transfer_items'];
 		foreach ($lot_list as $lot) {
 
-			SQL::insert('qa_sample', array(
+			SQL::insert('lab_sample', array(
 				'id' => $lot['global_received_inventory_id'],
 				'guid' => $lot['global_received_inventory_id'],
 				'company_id' => $_SESSION['Company']['id'],

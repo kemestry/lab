@@ -11,8 +11,12 @@ class Sync extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
+		if ($_GET['a'] == 'sync') {
+			return $this->exec($REQ, $RES, $ARG);
+		}
+
 		$data = array(
-			'Page' => array('title' => 'QA :: Sync'),
+			'Page' => array('title' => 'Sync'),
 			'r' => $_GET['r'],
 		);
 
@@ -27,7 +31,7 @@ class Sync extends \OpenTHC\Controller\Base
 		// Lab Results
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-		$res = $cre->get('/qa?source=true');
+		$res = $cre->get('/lab?source=true');
 
 		if ('success' != $res['status']) {
 
@@ -41,26 +45,25 @@ class Sync extends \OpenTHC\Controller\Base
 
 		foreach ($res['result'] as $rec) {
 
-			$chk = SQL::fetch_one('SELECT id FROM qa_result WHERE id = ?', array($rec['guid']));
+			$chk = SQL::fetch_one('SELECT id FROM lab_result WHERE id = ?', array($rec['guid']));
 			if (empty($chk)) {
 				// Add with current company as owner
-				SQL::insert('qa_result', array(
+				SQL::insert('lab_result', array(
 					'id' => $rec['guid'],
-					'company_id' => $_SESSION['gid'],
-					// 'license_id' =>
+					'license_id' => $_SESSION['License']['id'], //   $L_Lab['id'],
 					'created_at' => $rec['_source']['created_at'],
-					'guid' => $rec['guid'],
 					'name' => $rec['guid'],
-					'meta_result_cre' => json_encode($rec['_source'])
+					'type' => '-',
+					'meta' => json_encode(array('Result' => $rec['_source'])),
 				));
 			}
 
 			// Link QA to this Company
-			$sql = 'SELECT * FROM qa_result_company WHERE lab_result_id = ? AND company_id = ?';
+			$sql = 'SELECT * FROM lab_result_company WHERE lab_result_id = ? AND company_id = ?';
 			$arg = array($rec['guid'], $_SESSION['gid']);
 			$chk = SQL::fetch_row($sql, $arg);
 			if (empty($chk)) {
-				$sql = 'INSERT INTO qa_result_company (lab_result_id, company_id) values (?, ?)';
+				$sql = 'INSERT INTO lab_result_company (lab_result_id, company_id) values (?, ?)';
 				$arg = array($rec['guid'], $_SESSION['gid']);
 				SQL::query($sql, $arg);
 			}

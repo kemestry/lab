@@ -36,16 +36,8 @@ class Intent extends \OpenTHC\Controller\Base
 			switch ($arg['a']) {
 			case 'coa-upload':
 
-				$QAR = new \App\QA_Result($arg['r']);
+				$QAR = new \App\Lab_Result($arg['r']);
 				//var_dump($QAR); exit;
-
-				switch ($_POST['a']) {
-				case 'coa-upload':
-					// Whenever this triggers, fix it to use Lab_Result->getCOAFile();
-					$Lab_Result->setCOAFile($_FILES['file']['tmp_name']);
-					throw new Exception('Invalid Upload, Add COA File [LCI#044]');
-
-				}
 
 				$file = 'page/intent/coa-upload.html';
 				$data = array(
@@ -54,6 +46,15 @@ class Intent extends \OpenTHC\Controller\Base
 						'id' => $QAR['guid'],
 					)
 				);
+
+
+				switch ($_POST['a']) {
+				case 'coa-upload':
+					// Whenever this triggers, fix it to use Lab_Result->getCOAFile();
+					$QAR->setCOAFile($_FILES['file']['tmp_name']);
+					$data['alert'] = 'success';
+
+				}
 
 				return $this->_container->view->render($RES, $file, $data);
 

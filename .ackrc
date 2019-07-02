@@ -19,6 +19,7 @@
 --sort-files
 
 --ignore-dir=.git
+--ignore-dir=coa
 --ignore-dir=doxygen
 --ignore-dir=node_modules
 --ignore-dir=scrape

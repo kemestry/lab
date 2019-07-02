@@ -24,7 +24,7 @@ class Share extends \OpenTHC\Controller\Base
 			return $this->_container->view->render($RES, 'page/share/example.html', $data);
 		}
 
-		$QAR = new \App\QA_Result($ARG['id']);
+		$QAR = new \App\Lab_Result($ARG['id']);
 		if (empty($QAR['id'])) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#030]'),

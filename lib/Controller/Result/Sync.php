@@ -24,7 +24,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
-		$res = $cre->get('/qa/' . $ARG['id']);
+		$res = $cre->get('/lab/' . $ARG['id']);
 		if (empty($res)) {
 			_exit_text('Cannot Load QA from CRE [CRS#029]', 500);
 		}
@@ -47,9 +47,9 @@ class Sync extends \OpenTHC\Controller\Base
 		//_exit_text(print_r($Result, true));
 
 		// This is the ID as the Lab Inventory Lot
-		$sql = 'SELECT * FROM qa_sample WHERE company_id = :c AND id = :g';
+		$sql = 'SELECT * FROM lab_sample WHERE license_id = :c AND id = :g';
 		$arg = array(
-			':c' => $_SESSION['id'],
+			':c' => $_SESSION['License']['id'],
 			':g' => $Result['global_inventory_id'],
 		);
 		//$res = $cre->get('/lot/' . $Result['global_inventory_id']);
@@ -124,6 +124,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/marijuana_mix':
 		// Result Based Type, these are all kinds of fucked up data from LD
+		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana/':
 		case 'extraction/marijuana/':
 		case 'extraction/harvest_materials/flower_lots':
@@ -175,10 +176,9 @@ class Sync extends \OpenTHC\Controller\Base
 		);
 		var_dump($ret);
 
-		$QAR = new \App\QA_Result($Result['id']);
+		$QAR = new \App\Lab_Result($Result['id']);
 		$QAR['license_id'] = $License_Lab['id'];
-		$QAR['license_id_lab'] = $License_Lab['id'];
-		$QAR['flag'] = intval($QAR['flag'] | \App\QA_Result::FLAG_SYNC);
+		$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
 		$QAR['meta'] = json_encode($ret);
 		$QAR['created_at'] = $Result['created_at'];
 		$QAR->save();
@@ -277,6 +277,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/harvest_materials/flower_lots':
 		case 'extraction/intermediate_product/flower':
 		case 'extraction/marijuana/':
+		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana/':
 		case 'plant/marijuana/':
 		case 'propagation material/marijuana/':

@@ -12,6 +12,7 @@
 {% endblock %}
 
 {% block body %}
+<div class="container">
 
 <h1>Results</h1>
 <p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p>
@@ -40,7 +41,7 @@
 {% for s in result_list %}
 	<tr>
 		<td>
-			<a href="/result/{{ s.guid }}">{{ s.guid }}</a><br>
+			<a href="/result/{{ s.id }}">{{ s.id }}</a><br>
 			<a href="/sample/{{ s.global_for_inventory_id }}">{{ s.global_for_inventory_id }}</a><br>
 		</td>
 		<td>{{ s.created_at }}</td>
@@ -50,14 +51,15 @@
 		<td class="r">{{ s.cbd }}</td>
 		<td class="r">{{ s.status_html|raw }}</td>
 		<td class="r">
-			<button class="btn btn-sm {{ s.flag_sync ? "btn-outline-secondary" : "btn-outline-warning" }} btn-sync" data-guid="{{ s.guid }}" data-sync="{{ s.flag_sync }}" type="button"><i class="fas fa-sync"></i></button>
-			<a class="btn btn-sm btn-outline-secondary" href="/share/{{ s.guid }}" target="_blank"><i class="fas fa-share-alt"></i></a>
+			<button class="btn btn-sm {{ s.flag_sync ? "btn-outline-secondary" : "btn-outline-warning" }} btn-sync" data-id="{{ s.id }}" data-sync="{{ s.flag_sync }}" type="button"><i class="fas fa-sync"></i></button>
+			<a class="btn btn-sm btn-outline-secondary" href="/share/{{ s.id }}" target="_blank"><i class="fas fa-share-alt"></i></a>
 		</td>
 	</tr>
 {% endfor %}
 </tbody>
 </table>
 
+</div>
 {% endblock %}
 
 {% block foot_script %}
@@ -76,7 +78,7 @@ function syncExec($b, cbf)
 		a: 'sync',
 	};
 
-	$.post(sync_base + $b.data('guid'), arg, function() {
+	$.post(sync_base + $b.data('id'), arg, function() {
 		$b.find('i').removeClass('fa-spin');
 		$b.removeClass('btn-outline-warning btn-outline-danger');
 		if ((cbf) && (typeof cbf === 'function')) {

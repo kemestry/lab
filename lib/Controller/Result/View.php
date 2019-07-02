@@ -18,7 +18,7 @@ class View extends \OpenTHC\Controller\Base
 		}
 
 		// Get Result
-		$QAR = new \App\QA_Result($id);
+		$QAR = new \App\Lab_Result($id);
 		if (empty($QAR['id'])) {
 			_exit_text('QA Result Not Found', 404);
 		}
@@ -138,7 +138,7 @@ class View extends \OpenTHC\Controller\Base
 			break;
 
 		case 'mute':
-			$QAR->setFlag(\App\QA_Result::FLAG_MUTE);
+			$QAR->setFlag(\App\Lab_Result::FLAG_MUTE);
 			$QAR->save();
 			break;
 		case 'share':
