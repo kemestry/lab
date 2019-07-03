@@ -13,7 +13,7 @@ class Result extends \OpenTHC\Controller\Base
 	{
 		$data = array(
 			'Page' => array('title' => 'Results'),
-			'sync' => false,
+			'sync_want' => false,
 			'result_list' => array(),
 		);
 
@@ -88,8 +88,8 @@ SQL;
 			$rec['status_html'] = implode(' ', $stat);
 
 			$rec['flag_sync'] = ($rec['flag'] & \App\Lab_Result::FLAG_SYNC);
-			if ($rec['flag_sync']) {
-				$data['sync'] = true;
+			if (empty($rec['flag_sync'])) {
+				$data['sync_want'] = true;
 			}
 
 			$data['result_list'][] = $rec;

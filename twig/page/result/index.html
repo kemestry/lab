@@ -17,7 +17,7 @@
 <h1>Results</h1>
 <p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p>
 
-{% if sync %}
+{% if sync_want %}
 	<p class="alert alert-warning">Not all items are fully loaded from backend system, update in progress</p>
 {% endif %}
 
@@ -66,7 +66,7 @@
 {{ parent() }}
 <script>
 var sync_base = '/result/';
-var sync_wait = 2000;
+var sync_wait = 1000;
 
 function syncExec($b, cbf)
 {

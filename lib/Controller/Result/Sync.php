@@ -241,6 +241,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'plant/marijuana':
 			return 'Flower';
 		case 'harvest_materials/other_material':
+		case 'harvest_materials/other_material_lots':
 			return 'Trim';
 		case 'end_product/capsules':
 			return 'Capsules';
