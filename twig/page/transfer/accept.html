@@ -5,31 +5,11 @@
 {% extends "layout/html.html" %}
 
 {% block body %}
+<div class="container" style="min-height: 70vh;">
 
 <h1>Transfer :: {{ Transfer.global_id }} <small>[{{ Transfer.manifest_type }} / {{ Transfer.status }}]</small></h1>
 
-<div class="row">
-<div class="col">
-	<div class="form-group">
-		<label>From:</label>
-		<div class="input-group">
-			<input class="form-control" readonly value="{{ Origin_License.name }} #{{ Origin_License.code }}">
-			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ Origin_License.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
-		</div>
-		<small>{{ Transfer.global_from_mme_id }}</small>
-	</div>
-</div>
-<div class="col">
-	<div class="form-group">
-		<label>Ship To:</label>
-		<div class="input-group">
-			<input class="form-control" readonly value="{{ Target_License.name }} #{{ Target_License.code }}">
-			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ Demand_License.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
-		</div>
-		<small>{{ Transfer.global_to_mme_id }}</small>
-	</div>
-</div>
-</div>
+{% include "block/transfer-origin-target.html" %}
 
 <hr>
 
@@ -88,12 +68,13 @@
 
 
 <div class="form-actions">
-	<button class="btn btn-outline-success btn-transfer-accept" disabled><i class="fas fa-check-square"></i> Accept</button>
-	<button class="btn btn-outline-danger btn-transfer-accept" disabled><i class="fas fa-ban"></i> Void</button>
+	<button class="btn btn-outline-success btn-transfer-accept" disabled name="a" type="submit" value="transfer-accept"><i class="fas fa-check-square"></i> Accept</button>
+	<button class="btn btn-outline-danger btn-transfer-accept" disabled name="a" type="submit" value="transfer-void"><i class="fas fa-ban"></i> Void</button>
 </div>
 
 </form>
 
+</div>
 {% endblock %}
 
 {% block foot_script %}

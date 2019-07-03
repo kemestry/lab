@@ -1,0 +1,11 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="container mt-4" style="min-height:60vh;">
+{% if detail %}
+	{{ detail|markdown }}
+{% endif %}
+</div>
+
+{% endblock %}

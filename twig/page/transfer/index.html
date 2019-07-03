@@ -5,30 +5,69 @@
 {% extends "layout/html.html" %}
 
 {% block body_head %}
+<div style="position:relative;">
+<div style="position:absolute; right: 0.25em; top: 0.25em;">
+	<button class="btn btn-outline-secondary btn-transfer-sync"><i class="fas fa-sync"></i></button>
+</div>
+</div>
 {% endblock %}
 
 {% block body %}
+<div style="min-height: 80vh;">
 
-<div style="position:relative;">
-<div style="position:absolute; right: 0.25em; top: 0.25em;">
-	<form action="/transfer/sync" method="post">
-	<button class="btn btn-outline-secondary"><i class="fas fa-sync"></i></button>
-	</form>
-</div>
-</div>
+<style>
+.table-transfer-list {
+	font-size: 1.2rem;
+}
+</style>
 
 <h1>Transfers</h1>
 <p>These are pending inbound transfers, the material should be accepted and processed</p>
 
+<div class="filter-wrap d-flex">
+
+<!--
+<div>
+	<button class="btn btn-outline-secondary filter-knob"><i class="fas fa-filter"></i></button>
+</div>
+
+<div class="filter-info">
+	<input class="form-control" readonly value="Active">
+</div>
+
+<div class="filter-edit form-inline" style="display:none;">
+	<select class="form-control" name="stat">
+		<option value="200">Active</option>
+		<option value="307">Received</option>
+	</select>
+	<input class="form-control">
+	<button class="btn btn-outline-primary"><i class="fas fa-search"></i></button>
+</div>
+-->
+
+<div class="transfer-stat">
+	<div class="btn-group">
+		<a class="btn btn-outline-secondary" href="?stat=100">Pending: {{ transfer_stat.100 }}</a>
+		<a class="btn btn-outline-success" href="?stat=200">Ready: {{ transfer_stat.200 }}</a>
+		<a class="btn btn-outline-primary" href="?stat=307">Received: {{ transfer_stat.307 }}</a>
+		<a class="btn btn-outline-danger" href="?stat=410">Void: {{ transfer_stat.410 }}</a>
+		<a class="btn btn-outline-secondary" href="?stat=*">All</a>
+	</div>
+</div>
+
+
+</div>
+
+
+
 <div class="table-responsive">
-<table class="table table-sm">
+<table class="table table-sm table-transfer-list">
 <thead class="thead-dark">
 	<tr>
 		<th>Transfer</th>
 		<th>Date</th>
 		<th>From</th>
 		<th>Ship To</th>
-		<th>Type</th>
 		<th>Status</th>
 		<th></th>
 	</tr>
@@ -45,11 +84,10 @@
 	<td>
 		{{ t.target_license.name }}
 	</td>
-	<td>{{ t.meta.manifest_type }}</td>
-	<td>{{ t.meta.status }}</td>
-	<td class="r" style="padding-top: 11px;">
+	<td>{{ t.meta.manifest_type }} / {{ t.meta.status }} #{{ t.stat }}</td>
+	<td class="r">
 		{% if "in-transit" ==  t.meta.status %}
-			<a class="btn btn-sm btn-outline-primary" href="/transfer/{{ t.id }}/accept"><i class="fas fa-arrow-right"></i> Transfer</a>
+			<a class="btn btn-sm btn-outline-primary" href="/transfer/{{ t.id }}/accept"><i class="fas fa-arrow-right"></i> Accept</a>
 		{% endif %}
 	</td>
 	</tr>
@@ -59,4 +97,29 @@
 </table>
 </div>
 
+</div>
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function () {
+	$('.filter-knob').on('click', function() {
+		var mode = $(this).data('mode');
+		switch (mode) {
+		case 'edit':
+			$('.filter-edit').hide();
+			$('.filter-info').show();
+			$(this).data('mode', 'view');
+			break;
+		case 'view':
+		default:
+			$('.filter-info').hide();
+			$('.filter-edit').show();
+			$(this).data('mode', 'edit');
+			break;
+		}
+	});
+});
+</script>
 {% endblock %}

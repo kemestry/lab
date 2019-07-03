@@ -5,18 +5,11 @@
 {% extends "layout/html.html" %}
 
 {% block body %}
-<div class="container">
+<div class="container" style="min-height:70vh;">
 
 <h1>Transfer :: {{ Transfer.global_id }} <small>[{{ Transfer.status }}]</small></h1>
 
-<div class="row">
-<div class="col">
-	<h2>From: {{ Transfer.global_from_mme_id }}</h2>
-</div>
-<div class="col">
-	<h2>Ship To: {{ Transfer.global_to_mme_id }}</h2>
-</div>
-</div>
+{% include "block/transfer-origin-target.html" %}
 
 <table class="table table-sm">
 <thead>

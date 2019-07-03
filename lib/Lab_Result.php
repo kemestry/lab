@@ -9,14 +9,14 @@ use Edoceo\Radix;
 use Edoceo\Radix\DB\SQL;
 use Edoceo\Radix\Net\HTTP;
 
-class QA_Result extends \OpenTHC\SQL\Record
+class Lab_Result extends \OpenTHC\SQL\Record
 {
-	const TABLE = 'qa_result';
+	const TABLE = 'lab_result';
 
 	const FLAG_SYNC = 0x00100000;
 	const FLAG_MUTE = 0x04000000;
 
-	protected $_table = 'qa_result';
+	protected $_table = 'lab_result';
 
 	//protected $_Inventory;
 	public $_Result;
@@ -25,8 +25,8 @@ class QA_Result extends \OpenTHC\SQL\Record
 	{
 		parent::__construct($oid);
 
-		if (!empty($this->_data['meta_result_cre'])) {
-			$this->_Result = json_decode($this->_data['meta_result_cre'], true);
+		if (!empty($this->_data['meta'])) {
+			$this->_Result = json_decode($this->_data['meta'], true);
 			$this->_Result['id'] = $this->_data['id'];
 		}
 
@@ -63,9 +63,15 @@ class QA_Result extends \OpenTHC\SQL\Record
 			mkdir($coa_path, 0755, true);
 		}
 
+		// $pdf_source_type = _find_mime_type($coa_files);
+		// case 'application/pdf':
+		// case 'image/png':
+		// case 'image/jpeg':
+
 		rename($pdf_source, $coa_file);
 
 		// @todo Inspect the document
+
 
 		// /usr/bin/pdf2txt
 		// Then evaluate Text Content?
@@ -118,8 +124,8 @@ class QA_Result extends \OpenTHC\SQL\Record
 
 		$this->_Inventory['meta'] = json_decode($this->_Inventory['meta'], true);
 
-		// The meta_result_cre Field is filled in with the State CRE data via API
-		$this->_Inventory['meta_result_cre'] = json_decode($this->_Inventory['meta_result_cre'], true);
+		// The meta Field is filled in with the State CRE data via API
+		$this->_Inventory['meta'] = json_decode($this->_Inventory['meta'], true);
 
 		// The meta_result_lab Field is filled in with the Lab Submitted data via WebUI/API
 		// $this->_Inventory['lab_license'] = $this->_Inventory['meta']['lab_license'];

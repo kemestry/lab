@@ -5,26 +5,31 @@
 
 namespace App\Controller\Transfer;
 
-use Edoceo\Radix\DB\SQL;
+use Edoceo\Radix\Session;
+//use Edoceo\Radix\DB\SQL;
 
 class Accept extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
+		$data = array(
+			'Page' => array('title' => 'Transfer :: Accept'),
+		);
 		// if ('POST' == $_SERVER['REQUEST_METHOD']) {
 		// 	return $this->accept($RES, $ARG);
 		// }
 
 		$arg = array($_SESSION['License']['id'], $ARG['id']);
-		$T0 = SQL::fetch_row('SELECT * FROM transfer_incoming WHERE license_id_target = ? AND id = ?', $arg);
+		$T0 = $this->_container->DB->fetchRow('SELECT * FROM transfer_incoming WHERE license_id = ? AND id = ?', $arg);
 
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
 		// Fresh data from CRE
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
-		//var_dump($res);
 		if ('success' != $res['status']) {
-			_exit_text('Cannot Load Transfer [CTA#027]');
+			Session::flash('fail', 'Cannot Load Transfer [CTA#027]');
+			Session::flash('fail', 'You may need to <a href="/auth/open">sign in again</a>');
+			return $this->_container->view->render($RES, 'page/fail.html', $data);
 		}
 		//var_dump($res);
 		$T1 = $res['result'];
@@ -35,8 +40,8 @@ class Accept extends \OpenTHC\Controller\Base
 		}
 		$zone_list = $res['result'];
 
-		$Origin = new \OpenTHC\License($T0['license_id_origin']); // SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_origin']));
-		$Target = new \OpenTHC\License($T0['license_id_target']); // SQL::fetch_row('SELECT * FROM license WHERE ulid = ?', array($T0['license_id_target']));
+		$Target = new \OpenTHC\License($T0['license_id']);
+		$Origin = new \OpenTHC\License($T0['license_id_origin']);
 
 		$data = array(
 			'Page' => array('title' => 'Transfer :: Accept'),
@@ -57,8 +62,6 @@ class Accept extends \OpenTHC\Controller\Base
 	 */
 	function accept($REQ, $RES, $ARG)
 	{
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-
 		$args = array(
 			'global_id' => $ARG['id'],
 			'inventory_transfer_items' => array(),
@@ -83,28 +86,32 @@ class Accept extends \OpenTHC\Controller\Base
 		}
 
 
-		$path = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
-		$res = $cre->post($path, array('json' => $args));
+		$url = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
+
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$res = $cre->post($url, array('json' => $args));
 
 		if ('success' != $res['status']) {
 			_exit_text($res);
 		}
 
+		$dbc = $this->_container->DB;
 
 		// Add Lots to my Samples
 		$lot_list = $res['result']['inventory_transfer_items'];
 		foreach ($lot_list as $lot) {
 
-			SQL::insert('lab_sample', array(
+			$dbc->insert('lab_sample', array(
 				'id' => $lot['global_received_inventory_id'],
-				'guid' => $lot['global_received_inventory_id'],
-				'company_id' => $_SESSION['Company']['id'],
+				// 'guid' => $lot['global_received_inventory_id'],
 				'license_id' => $_SESSION['License']['id'],
+				'company_id' => $_SESSION['Company']['id'],
 				'name' => $lot['description'],
 				'meta' => \json_encode($lot),
 			));
-
 		}
+
+		Session::flash('info', 'Transfer Accepted');
 
 		return $RES->withRedirect('/transfer/' . $ARG['id']);
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * Transfer Sync
-*/
+ */
 
 namespace App\Controller\Transfer;
 
@@ -43,14 +43,16 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		$res = $this->_cre->transfer();
 
-		$transfer_list = array();
 		if (empty($res['result']) || !is_array($res['result'])) {
-			var_dump($_SESSION);
-			var_dump($res);
-			die("Cannot Load Transfers\n");
+			return $RES->withJSON(array(
+				'status' => 'failure',
+				'detail' => 'Failed to fetch Transfer List',
+				'result' => null,
+			), 500);
 		}
 
-		$resOut = [];
+		$transfer_list = array();
+
 		foreach ($res['result'] as $rec) {
 
 			var_dump($_SESSION);
@@ -60,7 +62,7 @@ class Sync extends \OpenTHC\Controller\Base
 			var_dump($rec);
 			$arg = array(':l' => $_SESSION['License']['id'], ':g' => $rec['guid']);
 			// Select a incoming transfer by the Lab User's lic ID, and it's unique guid.
-			$chk = SQL::fetch_one('SELECT id,hash FROM transfer_incoming WHERE license_id_target = :l AND id = :g', $arg);
+			$chk = $this->_container->DB->fetchOne('SELECT id,hash FROM transfer_incoming WHERE license_id = :l AND id = :g', $arg);
 			if (empty($chk)) {
 
 				$LOrigin = \OpenTHC\License::findByGUID($rec['global_from_mme_id']);
@@ -80,28 +82,28 @@ class Sync extends \OpenTHC\Controller\Base
 
 				$rec = array(
 					'id' => $rec['guid'],
+					'license_id' => $LTarget['id'], // Me
 					'license_id_origin' => $LOrigin['id'],
-					'license_id_target' => $LTarget['id'],
 					'created_at' => $rec['created_at'],
 					'hash' => $rec['hash'],
-					'meta' => json_encode($rec)
+					'meta' => json_encode($rec),
+					'stat' => $this->_map_stat($rec)
 				);
-				SQL::insert('transfer_incoming', $rec);
-				$resOut[] = $rec;
+				$this->_container->DB->insert('transfer_incoming', $rec);
 
 			} else {
 
 				$upd = array(
 					':id' => $rec['guid'],
 					':h' => $rec['hash'],
-					':m' => json_encode($rec)
+					':m' => json_encode($rec),
+					':s' => $this->_map_stat($rec)
 				);
 
-				$sql = 'UPDATE transfer_incoming SET hash = :h, meta = :m WHERE id = :id';
+				$sql = 'UPDATE transfer_incoming SET hash = :h, meta = :m, stat = :s WHERE id = :id';
 				var_dump($upd);
 
-				$resOut[] = $upd;
-				SQL::query($sql, $upd);
+				$this->_container->DB->query($sql, $upd);
 			}
 
 		}
@@ -122,9 +124,6 @@ class Sync extends \OpenTHC\Controller\Base
 		//	$data = array();
 		//	return $this->_container->view->render($RES, 'page/transfer/empty.html', $data);
 		//}
-		// if ($_SERVER['REQUEST_METHOD'] == "GET") {
-		// 	_exit_text($resOut);
-		// }
 
 
 		return $RES->withRedirect('/transfer');
@@ -153,9 +152,9 @@ class Sync extends \OpenTHC\Controller\Base
 		$sql.= ' FROM transfer_incoming';
 		$sql.= ' JOIN license ON transfer_incoming.license_id_origin = license.id';
 		$sql.= ' WHERE transfer_incoming.id = :g';
-		$sql.= ' AND transfer_incoming.license_id_target = :l';
+		$sql.= ' AND transfer_incoming.license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id'], ':g' => $ARG['id']);
-		$data['transfer'] = SQL::fetch_row($sql, $arg);
+		$data['transfer'] = $this->_container->DB->fetchRow($sql, $arg);
 
 		$res = $this->_cre->get('/transfer/incoming/' . $data['transfer']['id']);
 		// Load Transfer Items
@@ -164,34 +163,14 @@ class Sync extends \OpenTHC\Controller\Base
 			_exit_text('Failed to Load Transfer, Please Try Again', 500);
 		}
 
-		var_dump($res);
-		exit;
-
 		$T = $res['result'];
 
-		if (!empty($T['void'])) {
-			$data['transfer']['stat'] = 410;
-		} else {
-			switch ($T['status']) {
-			case 'open':
-				$data['transfer']['stat'] = 100;
-				break;
-			case 'ready-for-pickup':
-				$data['transfer']['stat'] = 200;
-				break;
-			case 'in-transit':
-				$data['transfer']['stat'] = 301;
-				break;
-			case 'received':
-				$data['transfer']['stat'] = 307;
-				break;
-			}
-		}
+		$data['transfer']['stat'] = $this->_map_stat($T);
 
 		// Cleanup for re-add
 		$sql = 'DELETE FROM transfer_incoming_item WHERE transfer_id = :t';
 		$arg = array($data['transfer']['id']);
-		SQL::query($sql, $arg);
+		$this->_container->DB->query($sql, $arg);
 
 		$full_price = 0;
 		foreach ($res['result']['inventory_transfer_items'] as $rec) {
@@ -267,23 +246,23 @@ class Sync extends \OpenTHC\Controller\Base
 
 			$add['meta'] = json_encode($add['meta']);
 
-			SQL::insert('transfer_incoming_item', $add);
+			$this->_container->DB->insert('transfer_incoming_item', $add);
 
 		}
 
 		$sql = 'SELECT count(id) FROM transfer_incoming_item WHERE transfer_id = :t';
 		$arg = array(':t' => $data['transfer']['id']);
-		$c0 = SQL::fetch_one($sql, $arg);
+		$c0 = $this->_container->DB->fetchOne($sql, $arg);
 
 		$sql = "SELECT count(id) FROM transfer_incoming_item WHERE transfer_id = :t AND meta->'Item'->>'is_sample' = '1'";
 		$arg = [':t' => $data['transfer']['id']];
-		$c1 = SQL::fetch_one($sql, $arg);
+		$c1 = $this->_container->DB->fetchOne($sql, $arg);
 
 		if (($c0 > 0) && ($c0 == $c1)) {
 			$data['transfer']['flag'] = $data['transfer']['flag'] | \App\Transfer::FLAG_SAMPLE;
 		}
 
-		SQL::query('UPDATE transfer_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
+		$this->_container->DB->query('UPDATE transfer_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
 			':t' => $data['transfer']['id'],
 			':f1' => ($data['transfer']['flag'] | \App\Transfer::FLAG_SYNC),
 			':s' => $data['transfer']['stat'],
@@ -296,5 +275,30 @@ class Sync extends \OpenTHC\Controller\Base
 		}
 
 		return $RES->withRedirect('/transfer/' . $ARG['id']);
+	}
+
+	function _map_stat($T)
+	{
+		if (!empty($T['void'])) {
+			return 410;
+		} else {
+			$ts = sprintf('%s/%s', $T['manifest_type'], $T['status']);
+			switch ($ts) {
+			case 'delivery/open':
+			case 'pick-up/open':
+			case 'transporter/open':
+				return 100;
+			case 'pick-up/ready-for-pickup':
+			case 'delivery/in-transit':
+				return 200;
+				return 301;
+			case 'delivery/received':
+			case 'pick-up/received':
+			case 'transporter/received':
+				return 307;
+			default:
+				throw new \Exception(sprintf('Unexpected Transfer Type / Status "%s"', $ts));
+			}
+		}
 	}
 }
