@@ -70,7 +70,7 @@ $app->group('/auth', function() {
 
 	$this->get('/fail', 'OpenTHC\Controller\Auth\Fail');
 	$this->get('/ping', 'OpenTHC\Controller\Auth\Ping');
-	$this->get('/shut', 'OpenTHC\Controller\Auth\Shut');
+	$this->get('/shut', 'App\Controller\Auth\Shut');
 
 })
 ->add('App\Middleware\Menu')
