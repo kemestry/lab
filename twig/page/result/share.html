@@ -5,8 +5,9 @@
 {% extends "layout/html.html" %}
 
 {% block body %}
+<div class="container mt-4">
 
-<div class="row mt-4">
+<div class="row">
 <div class="col">
 	<h1>Result: {{ Result.guid }}</h1>
 	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
@@ -55,10 +56,13 @@
 
 <div class="form-actions">
 	<button class="btn btn-outline-primary" name="a" data-toggle="modal" data-target="#modal-result-email" type="button"><i class="far fa-envelope"></i> Email</button>
-	<a class="btn btn-outline-primary" href="https://lab.openthc.org/share/{{ Result.global_id }}.png"><i class="fas fa-qrcode"></i> QR Code</a>
+	<button class="btn btn-outline-primary" data-toggle="modal" data-target="#modal-scan-qr" type="button"><i class="fas fa-qrcode"></i> QR Code</button>
 	<a class="btn btn-outline-secondary" href="https://lab.openthc.org/share/{{ Result.global_id }}.json"> JSON</a>
 </div>
 
+</div>
+
+{% include "block/modal-scan-qr.html" %}
 {% include "block/modal-send-email.html" %}
 
 {% endblock %}
@@ -73,14 +77,13 @@ $(function() {
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 <script>
-
-var clipcopy = new ClipboardJS('.btn', {
-	text: function(node) {
-		return node.getAttribute('data-clipboard-text');
-	}
+var clipcopy = new ClipboardJS('.btn-clipcopy');
+clipcopy.on('error', function(e) {
+	alert(e);
 });
-
 clipcopy.on('success', function(e) {
+
+	e.clearSelection();
 
 	console.info('Action:', e.action);
 	console.info('Text:', e.text);
@@ -96,9 +99,34 @@ clipcopy.on('success', function(e) {
 		$btn.tooltip('dispose');
 	}, 2000);
 
+});
+
+var clipcopy_2 = new ClipboardJS('.btn-clipcopy', {
+	container: document.getElementById('modal-scan-qr')
+});
+clipcopy_2.on('error', function(e) {
+	alert(e);
+});
+clipcopy_2.on('success', function(e) {
 
 	e.clearSelection();
+
+	console.info('2Action:', e.action);
+	console.info('2Text:', e.text);
+	//console.info('2Trigger:', e.trigger);
+
+	var $btn = $(e.trigger);
+	$btn.tooltip({
+		title: 'Copied!',
+		trigger: 'manual',
+	});
+	$btn.tooltip('show');
+	setTimeout(function() {
+		$btn.tooltip('dispose');
+	}, 2000);
+
 });
+
 </script>
 
 {% endblock %}
