@@ -79,57 +79,7 @@ $app->group('/auth', function() {
 
 // Sample Submit
 // 'App\Module\API'
-$app->group('/api', function() {
-
-	$this->get('', function($REQ, $RES) {
-		$data = array('Page' => array('title' => 'API'));
-		return $this->view->render($RES, 'page/home-api.html', $data);
-	});
-
-	$this->group('/v1', function() {
-
-		// Return List of Samples
-		$this->get('/qa', function($REQ, $RES, $ARG) {
-			return require_once(APP_ROOT . '/api/qa/search.php');
-		})->add('App\Middleware\Auth');
-
-		//$this->post('/qa', function($REQ, $RES, $ARG) {
-		//	die('Create QA Sample');
-		//})->add($MWA);
-
-		//$this->get('/qa/sample', function($REQ, $RES, $ARG) {
-		//	die('List QA Samples');
-		//})->add($MWA);
-		$this->get('/result/{id}.pdf', function($REQ, $RES, $ARG) {
-			return require_once(APP_ROOT . '/api/qa/result.pdf.php');
-		});
-
-		// Create a Sample
-		//$this->post('/qa/sample', function($REQ, $RES, $ARG) {
-		//	require_once(APP_ROOT . '/api/qa/sample-create.php');
-		//})->add('Middleware_Auth');
-
-		// Select Specific QA Sample
-		$this->get('/qa/{code}', function($REQ, $RES, $ARG) {
-			return require_once(APP_ROOT . '/api/qa/sample.php');
-		});
-
-		// Select QA Sample+Result
-		$this->get('/qa/{code}/result', function($REQ, $RES, $ARG) {
-			require_once(APP_ROOT . '/api/qa/sample.php');
-		});
-
-		// Update QA Result
-		//$this->post('/qa/{code}/result', function($REQ, $RES, $ARG) {
-		//	require_once(APP_ROOT . '/api/qa/result.php');
-		//})->add('Middleware_Auth');
-
-	})
-	->add('MiddlewareJSON')
-	->add('MiddlewareLogHTTP')
-	;
-
-});
+$app->group('/api', 'App\Module\API');
 
 
 // Transfer Group

@@ -1,0 +1,101 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="container mt-4">
+
+{% filter markdown %}
+
+# API
+
+The API provides an easy method to create or update QA Samples in the OpenTHC system.
+The Laboratory Portal API uses the [OpenTHC API](https://api.openthc.org/) specification.
+
+The API Base is
+
+	BASE=https://lab.openthc.org/api/v2015
+
+Your application will need to get authentication tokens.
+
+## Create a QA Sample
+
+This will register a Sample in the system, the identifier submitted should be the ID of the Sample item.
+Parent Lot identifiers, or related lot identifers may be added/updated later.
+
+	curl \$BASE/qa/submit \
+		-X POST \
+		-H "Authorization: Bearer \$HASH" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"company": { /* Data */ },
+			"laboratory": { /* Data */ },
+			"sample": {
+				"guid": "0123456789ABCDEF",
+				"strain": "Something"
+			},
+			"result": { /* Data */ }
+		}'
+
+## Update QA Result
+
+Submit QA Test Results here
+
+	curl \$BASE/qa/{guid}/result \
+		-X POST \
+		-H "Authorization: Bearer \$HASH" \
+		-H "Content-Type: application/json" \
+		-d '{
+		"company": { /* Laboratory Company Descriptor */ },
+		"contact": { /* Laboratory Contact Descriptor */ },
+		"ts_updated": "2017-01-01 12:34:56",
+		"metric": {
+			"general": { /* Data */ },
+			"microbe": { /* Data */ },
+			"potency": { /* Data */ },
+			"solvent": {
+				"acetone": "52.52",
+				"benzene": "53.53",
+				"butane": "54.54",
+				"chloroform": "55.55",
+				"ethane": "56.56",
+				"ethanol": "57.57",
+				"heptane": "58.58",
+				"hexane": "59.59",
+				"Isobutane": "60.60",
+				"isopentane": "61.61",
+				"isopropanolethane": "62.62",
+				"pentane": "63.63",
+				"propane": "64.64",
+				"toluene": "65.65"
+			},
+			"terpene": {
+				"bisabolol": "66.66",
+				"borneol": "67.67",
+				"camphene": "68.68",
+				"carene": "69.69",
+				"caryophyllene": "70.7",
+				"cineole": "7.1",
+				"eucalyptol": "7.2",
+				"humulene": "7.3",
+				"isophytol": "7.4",
+				"limonene": "7.5",
+				"linalool": "7.6",
+				"myrcene-alpha": "7.7",
+				"myrcene-beta": "7.8",
+				"nerolidol": "7.9",
+				"phellandrene": "8",
+				"pinene-alpha": "81.1",
+				"pinene-beta": "82.2",
+				"pugelone": "83.3",
+				"sabinene": "84.4",
+				"terpineol": "85.5"
+			}
+		}
+	}'
+
+
+{% endfilter %}
+
+</div>
+
+{% endblock %}
