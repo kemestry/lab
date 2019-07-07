@@ -43,9 +43,21 @@
 <div class="form-actions">
 	<a class="btn btn-outline-secondary" href="/transfer/{{ Transfer.global_id }}/sync"><i class="fas fa-sync"></i> Sync</a>
 	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
-	<button class="btn btn-outline-success btn-transfer-accept" disabled><i class="fas fa-check-square"></i> Accept</button>
-	<button class="btn btn-outline-danger btn-transfer-accept" disabled><i class="fas fa-ban"></i> Void</button>
+	<a class="btn btn-outline-success btn-transfer-accept disabled" disabled href="/transfer/{{ Transfer.global_id }}/accept"><i class="fas fa-check-square"></i> Accept</a>
+	<a class="btn btn-outline-danger btn-transfer-accept disabled" disabled href="/transfer/{{ Transfer.global_id }}/accept"><i class="fas fa-ban"></i> Void</a>
 </div>
 
 </div>
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function() {
+	if ('in-transit' == '{{ Transfer.status }}') {
+		$('.btn-transfer-accept').removeAttr('disabled');
+		$('.btn-transfer-accept').removeClass('disabled');
+	}
+});
+</script>
 {% endblock %}

@@ -10,8 +10,6 @@ class Transfer extends \OpenTHC\Module\Base
 	function __invoke($a)
 	{
 		$a->get('', 'App\Controller\Transfer');
-
-		// Sync all Transfers if 'id' parameter is not set, or the single transfer
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Transfer\Sync');
 
 		$a->get('/{id}', 'App\Controller\Transfer\View');

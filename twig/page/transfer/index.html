@@ -22,9 +22,8 @@
 </style>
 
 <h1>Transfers</h1>
-<p>These are pending inbound transfers, the material should be accepted and processed</p>
 
-<div class="filter-wrap d-flex">
+<div class="filter-wrap d-flex mb-2">
 
 <!--
 <div>
@@ -58,8 +57,6 @@
 
 </div>
 
-
-
 <div class="table-responsive">
 <table class="table table-sm table-transfer-list">
 <thead class="thead-dark">
@@ -84,7 +81,7 @@
 	<td>
 		{{ t.target_license.name }}
 	</td>
-	<td>{{ t.meta.manifest_type }} / {{ t.meta.status }} #{{ t.stat }}</td>
+	<td>{{ t.meta.manifest_type }} / {{ t.meta.status }}</td>
 	<td class="r">
 		{% if "in-transit" ==  t.meta.status %}
 			<a class="btn btn-sm btn-outline-primary" href="/transfer/{{ t.id }}/accept"><i class="fas fa-arrow-right"></i> Accept</a>

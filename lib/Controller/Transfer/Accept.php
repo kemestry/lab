@@ -92,6 +92,8 @@ class Accept extends \OpenTHC\Controller\Base
 		$res = $cre->post($url, array('json' => $args));
 
 		if ('success' != $res['status']) {
+			Session::flash('fail', $cre->formatError($res));
+			return $RES->withRedirect('/transfer/' . $ARG['id']);
 			_exit_text($res);
 		}
 
@@ -103,15 +105,15 @@ class Accept extends \OpenTHC\Controller\Base
 
 			$dbc->insert('lab_sample', array(
 				'id' => $lot['global_received_inventory_id'],
-				// 'guid' => $lot['global_received_inventory_id'],
 				'license_id' => $_SESSION['License']['id'],
 				'company_id' => $_SESSION['Company']['id'],
 				'name' => $lot['description'],
 				'meta' => \json_encode($lot),
 			));
+
 		}
 
-		Session::flash('info', 'Transfer Accepted');
+		Session::flash('info', 'Transfer Accepted, it could take LeafData 10 minutes to recognize');
 
 		return $RES->withRedirect('/transfer/' . $ARG['id']);
 
