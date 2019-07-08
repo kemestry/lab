@@ -21,6 +21,7 @@ class Create extends \OpenTHC\Controller\Base
 		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made
 		// it more difficult to refactor this for other RCEs.
 		foreach ($metricTab as $index => $metric) {
+
 			$type = $metric['type'];
 			$key = $metric['id'];
 			$meta = json_decode($metric['meta'], true);
@@ -46,26 +47,25 @@ class Create extends \OpenTHC\Controller\Base
 			$MetricList[$type][$key] = $metric;
 		}
 
-		$sql = 'SELECT * FROM qa_sample WHERE company_id = :c0 AND id = :g0';
-		$arg = array(':c0' => $_SESSION['gid'], ':g0' => $ARG['sample_id']);
+		// @todo should be License ID
+		$sql = 'SELECT * FROM lab_sample WHERE company_id = :c0 AND id = :g0';
+		$arg = array(':c0' => $_SESSION['gid'], ':g0' => $_GET['sample_id']);
 		$chk = SQL::fetch_row($sql, $arg);
 
-		$Sample = new \App\QA_Sample($chk);
-		$meta = $Sample['meta'];
-		$meta = \json_decode($meta, true);
+		$Sample = new \App\Lab_Sample($chk);
+		$meta = \json_decode($Sample['meta'], true);
 
 		$data['Sample']  = $Sample;
 		$data['Sample_meta'] = $meta;
 		$data['MetricList'] = $MetricList;
-		$data['sample_id'] = $ARG['sample_id'];
-		// $data['CannabinoidList'] = $CannabinoidMetrics;
+
 		//$data['Result']  = $res['Result'];
 		//$data['Product'] = $QAR['Product'];
-		// echo '<pre>';
-		// var_dump($MetricList);
-		// exit(0);
 
 		$file = 'page/result/create.html';
+
+		//_exit_text($data);
+
 		return $this->_container->view->render($RES, $file, $data);
 
 	}
@@ -226,8 +226,8 @@ class Create extends \OpenTHC\Controller\Base
 		$hash = md5($resultsCache);
 
 		// Get and validate the QA Sample
-		$sampleId = $ARG['sample_id'];
-		$sql = 'SELECT * from qa_sample WHERE id = :id AND license_id = :lic';
+		$sampleId = $_GET['sample_id'];
+		$sql = 'SELECT * from lab_sample WHERE id = :id AND license_id = :lic';
 		$args = [
 			':id' => $sampleId,
 			':lic' => $_SESSION['License']['id'],
@@ -276,7 +276,7 @@ class Create extends \OpenTHC\Controller\Base
 			// 'testing_status' 	=> 'completed', // $this->metricToLeafMetric($post['testing_status']),
 
 			"external_id" => 'test',
-			"testing_status" => $post['testing_status'],
+			// "testing_status" => $post['testing_status'],
 			"notes" => "test notes",
 
 			"tested_at" => '06/10/2019 12:34pm',
@@ -391,4 +391,3 @@ class Create extends \OpenTHC\Controller\Base
 
 
 }
-

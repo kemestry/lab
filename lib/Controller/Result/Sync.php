@@ -1,7 +1,7 @@
 <?php
 /**
  * Sync One QA Result
-*/
+ */
 
 namespace App\Controller\Result;
 
@@ -23,7 +23,6 @@ class Sync extends \OpenTHC\Controller\Base
 		}
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-
 		$res = $cre->get('/lab/' . $ARG['id']);
 		if (empty($res)) {
 			_exit_text('Cannot Load QA from CRE [CRS#029]', 500);
@@ -34,17 +33,34 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$Result = $res['result'];
 		$Result['id'] = $Result['global_id'];
-		$Result['guid'] = $Result['global_id'];
 		$Result['type_nice'] = $this->_result_type($Result);
 
-		// Find the Lab that Owns It
-		$License_Lab = \OpenTHC\License::findByGUID($Result['global_mme_id']);
-		if (empty($License_Lab['id'])) {
-			_exit_text("Cannot find: '{$Result['global_from_mme_id']}'", 404);
-		}
-		// @todo Need to Verify that it's a LAB type license.
+		$License_Lab = array();
+		if (preg_match('/^WAATTESTED\./', $Result['id'])) {
+			// Fake it
+			$License_Lab = \OpenTHC\License::findByGUID('WAWA1.MM1'); // WA State
+		} elseif ('Laboratory' == $_SESSION['License']['type']) {
+			// Am I a Lab?
+			$License_Lab = $_SESSION['License'];
+		} else {
 
-		//_exit_text(print_r($Result, true));
+			// Find the Lab that Owns It
+			if (empty($Result['global_mme_id'])) {
+				//var_dump($res);
+				//die("EMPTYLAB ADA");
+				_exit_text('Empty Lab Data [CRS#051]', 500);
+			}
+
+			// Real!
+			$License_Lab = \OpenTHC\License::findByGUID($Result['global_mme_id']);
+			if (empty($License_Lab['id'])) {
+				var_dump($Result);
+				exit;
+				_exit_text("Cannot find Laboratory: '{$Result['global_mme_id']}'", 404);
+			}
+		}
+
+		// @todo Need to Verify that it's a LAB type license.
 
 		// This is the ID as the Lab Inventory Lot
 		$sql = 'SELECT * FROM lab_sample WHERE license_id = :c AND id = :g';
@@ -64,9 +80,6 @@ class Sync extends \OpenTHC\Controller\Base
 		$res = $cre->get('/lot/' . $Sample['id']);
 		if ('success' == $res['status']) {
 			$Sample = array_merge($res['result'], $Sample);
-			// if (!empty($Sample['global_id'])) {
-			// 	$Sample['guid'] = $Sample['global_id'];
-			// }
 		}
 
 		//This is the Lot at the Origin
@@ -131,6 +144,10 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/end_product/usable_marijuana':
 		case 'extraction/intermediate_product/flower':
 		case 'extraction/intermediate_product/marijuana_mix':
+		// Wacky New Shit from v1.37.5
+		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
+		case 'intermediate/ end product/harvest_materials/flower_lots':
+		case 'intermediate/ end product/marijuana/':
 
 			// PCT
 			$Result['uom'] = 'pct';
@@ -195,7 +212,7 @@ class Sync extends \OpenTHC\Controller\Base
 		var_dump($QAR);
 		exit;
 
-		return $RES->withRedirect('/result/' . $QAR['guid']);
+		return $RES->withRedirect('/result/' . $QAR['id']);
 
 	}
 
@@ -271,6 +288,10 @@ class Sync extends \OpenTHC\Controller\Base
 
 	protected function _result_type($R)
 	{
+		if (preg_match('/^WAATTESTED/', $R['id'])) {
+			return '-leafdata-fix-';
+		}
+
 		$rt = sprintf('%s/%s/%s', $R['batch_type'], $R['type'], $R['intermediate_type']);
 		$rt = trim($rt);
 		switch ($rt) {
@@ -280,6 +301,9 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/marijuana/':
 		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana/':
+		case 'intermediate/ end product/end_product/usable_marijuana':
+		case 'intermediate/ end product/harvest_materials/flower_lots':
+		case 'intermediate/ end product/marijuana/':
 		case 'plant/marijuana/':
 		case 'propagation material/marijuana/':
 		case 'marijuana/':
@@ -287,6 +311,10 @@ class Sync extends \OpenTHC\Controller\Base
 			break;
 		case 'extraction/intermediate_product/marijuana_mix':
 			return 'Mix';
+		 // Attested Stuff
+		// case 'intermediate/ end product/end_product/':
+		// case 'intermediate/ end product/harvest_materials/':
+		// 	return '-leafdata-fix-';
 		default:
 			_exit_text("Invalid Result Type: '$rt' [CRS#282]", 500);
 		}
@@ -302,14 +330,14 @@ class Sync extends \OpenTHC\Controller\Base
 //		// FOIA based
 //		$x = $meta['lab_license'];
 //		if (!empty($x)) {
-//			$this->_Laboratory['guid'] = $x;
+//			$this->_Laboratory['id'] = $x;
 //			$this->_Laboratory['name'] = '';
 //		}
 //
 //		// Internal Based
 //		$x = $meta['lab'];
 //		if (is_array($x)) {
-//			$this->_Laboratory['guid'] = $x['guid'];
+//			$this->_Laboratory['id'] = $x['id'];
 //			$this->_Laboratory['name'] = $x['name'];
 //		}
 //
@@ -318,7 +346,7 @@ class Sync extends \OpenTHC\Controller\Base
 //		////Radix::dump($res);
 //		//$res = json_decode($res['body'], true);
 //		//$this->Laboratory = $res['result'];
-//		//$this->Laboratory['guid'] = $Inv['lab_license'];
+//		//$this->Laboratory['id'] = $Inv['lab_license'];
 	}
 
 }

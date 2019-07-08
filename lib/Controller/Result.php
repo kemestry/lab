@@ -5,18 +5,17 @@
 
 namespace App\Controller;
 
-use Edoceo\Radix\DB\SQL;
-
 class Result extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
 		$data = array(
-			'Page' => array('title' => 'Results'),
+			'Page' => array('title' => 'Lab Results'),
 			'sync_want' => false,
 			'result_list' => array(),
 		);
 
+		// Stuff my Company is linked to?
 		$sql = <<<SQL
 SELECT lab_result.*
 FROM lab_result
@@ -25,8 +24,8 @@ WHERE lab_result_company.company_id = :c
 ORDER BY created_at DESC, lab_result.id
 SQL;
 
-		$arg = array(':c' => $_SESSION['gid']);
-		$res = SQL::fetch_all($sql, $arg);
+		$arg = array(':c' => $_SESSION['Company']['id']);
+		$res = $this->_container->DB->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
 			$QAR = new \App\Lab_Result($rec);

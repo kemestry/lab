@@ -8,7 +8,7 @@
 
 <div class="row mt-4">
 <div class="col-md-6">
-	<h1>Result: {{ Result.guid }}</h1>
+	<h1>Result: {{ Result.id }}</h1>
 	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
 </div>
 <div class="col-md-4">
@@ -18,7 +18,7 @@
 </div>
 <div class="col-md-2 r">
 	<form method="post" target="_blank">
-		<a class="btn btn-outline-secondary" href="/share/{{ Result.guid }}.html"><i class="fas fa-share-alt"></i></a>
+		<a class="btn btn-outline-secondary" href="/share/{{ Result.id }}.html"><i class="fas fa-share-alt"></i></a>
 		{% if Result.coa_file %}
 			<div class="btn-group">
 				<button class="btn btn-outline-success" name="a" type="submit" value="coa-download"><i class="fas fa-download"></i> COA</button>

@@ -3,18 +3,14 @@
 #}
 
 {% extends "layout/html.html" %}
-
-{% block body_head %}
-
-
-{% endblock %}
-
-{% block body %}
 {% import 'block/result-macros.html' as Helpers %}
 
-<div class="row mt-4">
+{% block body %}
+<div class="container mt-4">
+
+<div class="row">
 <div class="col-md-6">
-	<h1>Result: {{ Result.guid ?: "--" }}</h1>
+	<h1>Result: {{ Result.id ?: "--" }}</h1>
 	<h2>{{ Helpers._qa_section_status("testing") }}</h2>
 </div>
 <div class="col-md-4">
@@ -24,11 +20,6 @@
 </div>
 <div class="col-md-2 r">
 	<form method="post" target="_blank">
-		<a
-			style="display: {{ Result.guid|length > 0 ? 'inherit' : 'none' }};"
-			class="btn btn-outline-secondary"
-			href="/share/{{ Result.guid }}.html"><i class="fas fa-share-alt"></i>
-		</a>
 		{% if Result.coa_file %}
 			<div class="btn-group">
 				<button class="btn btn-outline-success" name="a" type="submit" value="coa-download"><i class="fas fa-download"></i> COA</button>
@@ -53,7 +44,7 @@
 
 <div>
 <h2>QA Metrics</h2>
-<form method="post" action="/result/create/{{ Sample.id }}/save">
+<form method="post">
 	{% include "block/qa-result-v2.html" %}
 	<div class="form-actions">
 		<button class="btn btn-outline-secondary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Save</button>
@@ -98,10 +89,10 @@
 </div>
 </form>
 
+</div>
 {% endblock %}
 
 {% block foot_script %}
-
 {{ parent() }}
 
 <script>
