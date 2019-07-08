@@ -23,7 +23,7 @@ class Sync extends \OpenTHC\Controller\Base
 		if (!empty($_SESSION['sync-sample-time'])) {
 			$span = $_SERVER['REQUEST_TIME'] - $_SESSION['sync-sample-time'];
 			if ($span <= 900) {
-				return $RES->withRedirect('/sample');
+				//return $RES->withRedirect('/sample');
 				return $RES->withJSON(array(
 					'status' => 'success',
 					'result' => 0,
@@ -47,46 +47,41 @@ class Sync extends \OpenTHC\Controller\Base
 
 		}
 
-		// Import Lots
+		// Import Lots (only once!)
 		foreach ($res['result'] as $rec) {
 
 			$Lot = $rec['_source'];
 
-			$chk = SQL::fetch_one('SELECT id FROM qa_sample WHERE license_ulid = ? AND guid = ?', array($_SESSION['License']['ulid'], $rec['guid']));
+			$chk = SQL::fetch_one('SELECT id FROM lab_sample WHERE license_id = ? AND id = ?', array($_SESSION['License']['id'], $rec['guid']));
 			if (empty($chk)) {
 
 				$x = $cre->get('/config/product/' . $Lot['global_inventory_type_id']);
 				$Product = $x['result'];
 
-				$x = $cre->get('/config/strain/' . $Lot['global_strain_id']);
-				$Strain = $x['result'];
+				$Strain = null;
+				if (!empty($Lot['global_strain_id'])) {
+					$x = $cre->get('/config/strain/' . $Lot['global_strain_id']);
+					$Strain = $x['result'];
+				}
 
-				SQL::insert('qa_sample', array(
+				$add = array(
+					'id' => $rec['guid'],
 					'company_id' => $_SESSION['gid'],
 					'company_ulid' => $_SESSION['Company']['ulid'],
-					'license_ulid' => $_SESSION['License']['ulid'],
-					'guid' => $rec['guid'],
+					'license_id' => $_SESSION['License']['id'],
 					'meta' => json_encode(array(
 						'Lot' => $Lot,
 						'Product' => $Product,
 						'Strain' => $Strain,
 					)),
-				));
-//			} else {
+				);
 
-				// $meta = json_encode(array(
-				// 	'Lot' => $Lot,
-				// 	'Product' => $Product,
-				// 	'Strain' => $Strain,
-				// ));
-				// $sql = 'UPDATE qa_sample SET meta = :m WHERE id = :pk';
-				// $arg = array(':pk' => $chk, ':m' => $meta);
-				// SQL::query($sql, $arg);
+				SQL::insert('lab_sample', $add);
 
 			}
 		}
 
-		return $RES->withRedirect('/sample');
+		//return $RES->withRedirect('/sample');
 
 		return $RES->withJSON(array(
 			'status' => 'success',

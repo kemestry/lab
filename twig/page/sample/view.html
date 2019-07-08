@@ -1,0 +1,96 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+<div class="container">
+
+<h1>
+Sample: {{ Sample.global_id }}
+{{ Sample.medically_compliant ? "<i class='fas fa-medkit'></i>"|raw }}
+</h1>
+<p>Original: <code>{{ Sample.global_original_id }}</code>
+{% if Sample.external_id or Sample.legacy_id %}
+	{{ Sample.external_id ? ("External ID: <code>" ~ Sample.external_id ~ "</code>")|raw }}
+	{{ Sample.legacy_id ? ("Legacy ID: <code>" ~ Sample.legacy_id ~ "</code>")|raw }}
+{% endif %}
+from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
+</p>
+
+{% if Sample._lost %}
+	<div class="alert alert-warning">
+		This Sample appears to have upstream data lost.
+	</div>
+{% endif %}
+
+<div class="row">
+<div class="col">
+	{% if Sample.global_lab_result_id %}
+		<div class="alert alert-success">Result: <a class="alert-link" href="/result/{{ Sample.global_lab_result_id }}">{{ Sample.global_lab_result_id }}</a></div>
+	{% else %}
+		<h2 class="alert alert-info">Result: -Pending-</h2>
+	{% endif %}
+</div>
+</div>
+
+<div class="row">
+<div class="col">
+	<div class="form-group">
+		<label>Product</label>
+		<div class="input-group">
+			<input class="form-control" readonly value="{{ Product.name }}">
+			<div class="input-group-append">
+				<div class="input-group-text">{{ Sample.medically_compliant ? 'Med' : 'Rec' }}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col">
+	<div class="form-group">
+		<label>Strain</label>
+		<input class="form-control" readonly value="{{ Strain.name }}">
+	</div>
+</div>
+<div class="col">
+	<div class="form-group">
+		<label>Type</label>
+		<input class="form-control" readonly value="{{ Product.type }} / {{ Product.intermediate_type }}">
+	</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col">
+	<div class="form-group">
+		<label>Quantity</label>
+		<div class="input-group">
+			<input class="form-control r" readonly value="{{ Sample.qty }}">
+			<div class="input-group-append">
+				<div class="input-group-text">{{ Product.uom }}</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col">
+	<div class="form-group">
+		<label>net_weight</label>
+		<input class="form-control r" readonly value="{{ Sample.net_weight }}">
+	</div>
+</div>
+<div class="col">
+	<div class="form-group">
+		<label>total_marijuana_in_grams</label>
+		<input class="form-control r" readonly value="{{ Sample.total_marijuana_in_grams }}">
+	</div>
+</div>
+</div>
+
+<form method="post">
+<div class="form-actions">
+	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.global_id }}"><i class="fas fa-plus"></i> Add Results</a>
+	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
+	<button class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
+	<button class="btn btn-outline-danger" name="a" type="submit" value="drop"><i class="fas fa-trash"></i> Delete</button>
+</div>
+</form>
+
+</div>
+{% endblock %}

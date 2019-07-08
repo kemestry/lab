@@ -1,0 +1,76 @@
+{#
+	Show List of Sample Lots
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div style="position:relative;">
+<div style="position:absolute; right: 0.25em; top: 0.25em;">
+	<form action="/sample/sync" method="post">
+	<button class="btn btn-outline-secondary"><i class="fas fa-sync"></i></button>
+	</form>
+</div>
+</div>
+
+<h1>Samples</h1>
+
+<div class="data-filter-input-wrap">
+<div class="data-filter-info">
+	<button class="btn btn-sm btn-outline-secondary" type="button"><i class="fas fa-filter"></i></button> <em>Active</em>, <em>Untested</em>.
+</div>
+<div class="data-filter-form collapse">
+	<select class="form-control"></select>
+	<select class="form-control"></select>
+	<select class="form-control"></select>
+</div>
+</div>
+
+<p>A List of all Active Samples, use Filters or Search to find old stuff.</p>
+
+<table class="table table-sm">
+<thead class="thead-dark">
+	<tr>
+		<th>IDs</th>
+		<th>Type</th>
+		<th class="r">Quantity</th>
+		<th>Options</th>
+		<th></th>
+	</tr>
+</thead>
+<tbody>
+{% for s in sample_list %}
+	<tr>
+		<td><a href="/sample/{{ s.id }}">{{ s.id }}</a>
+			<br>Origin: {{ s.meta.global_inventory_id ?: s.meta.Lot.global_original_id }}
+			{{ (s.meta.Lot.external_id ? "<br>External:" ~ s.meta.Lot.external_id)|raw }}
+			{{ (s.meta.Lot.legacy_id ? "<br>Legacy:" ~ s.meta.Lot.legacy_id)|raw }}
+		</td>
+		<td>{{ s.meta.Product.name }} / {{ s.meta.global_inventory_type_id }}</td>
+		<td class="r">{{ s.meta.Lot.qty }} / {{ s.meta.Lot.uom }}</td>
+		<td>
+			{{ s.meta.medically_compliant ? "Medical" }}
+		</td>
+		<td class="r">
+		{% if s.meta.global_lab_result_id %}
+			<a class="btn btn-sm btn-outline-success" href="/result/view/{{ s.meta.global_lab_result_id }}" style="width:6em;"><i class="fas fa-search"></i> View</a>
+		{% else %}
+			<a class="btn btn-sm btn-outline-primary" href="/result/create?sample_id={{ s.id }}" style="width:6em;"><i class="fas fa-check-circle-o"></i> Add</a>
+		{% endif %}
+		</td>
+	</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function() {
+	$.post('/sample/sync');
+});
+</script>
+{% endblock %}

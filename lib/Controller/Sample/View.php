@@ -16,7 +16,6 @@ class View extends \OpenTHC\Controller\Base
 			_exit_text('Invalid Request', 400);
 		}
 
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
 
 		switch ($_POST['a']) {
 		case 'drop':
@@ -28,21 +27,28 @@ class View extends \OpenTHC\Controller\Base
 			break;
 		}
 
-		$res = $cre->get('/lot/' . $id);
-
-		$QAS = $res['result'];
-
-		// This might be BS
-		if (empty($QAS['global_inventory_id']) || empty($QAS['global_for_inventory_id'])) {
-			$QAS['_lost'] = true;
-			//if (empty($S['global_inventory_id'])) {
-			//	$S['global_inventory_id'] = '-lost-';
-			//}
-			//if (empty($S['global_for_inventory_id'])) {
-			//	$S['global_for_inventory_id'] = '-lost-';
-			//}
+		$Lab_Sample = new \App\Lab_Sample($id);
+		if (empty($Lab_Sample)) {
+			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
-		//var_dump($S);
+
+		$LSm = json_decode($Lab_Sample['meta'], true);
+
+		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		// $res = $cre->get('/lot/' . $id);
+		//$QAS = $res['result'];
+
+		// // This might be BS
+		// if (empty($QAS['global_inventory_id']) || empty($QAS['global_for_inventory_id'])) {
+		// 	$QAS['_lost'] = true;
+		// 	//if (empty($S['global_inventory_id'])) {
+		// 	//	$S['global_inventory_id'] = '-lost-';
+		// 	//}
+		// 	//if (empty($S['global_for_inventory_id'])) {
+		// 	//	$S['global_for_inventory_id'] = '-lost-';
+		// 	//}
+		// }
+		// //var_dump($S);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
@@ -56,18 +62,19 @@ class View extends \OpenTHC\Controller\Base
 		// Find Owner Company
 		//$res = $cre->get('/config/license/' . $QAS['global_created_by_mme_id']);
 		//$L = $res['result'];
-		$res = $cre->get('/config/license/' . $QAS['global_mme_id']);
+		$res = $cre->get('/config/license/' . $LSm['Lot']['global_mme_id']);
 		$L = $res['result'];
 
 		$data = array(
 			'Page' => array('title' => 'Sample :: View'),
-			'Sample' => $QAS,
-			'Product' => $P,
-			'Strain' => $St,
+			'Sample' => $LSm['Lot'],
+			'Product' => $LSm['Product'],
+			'Strain' => $LSm['Strain'],
 			'License_Owner' => $L,
-			//'License_Labor' => $L0,
+			'License_Lab' => $L_Lab,
 		);
-		// _exit_text($data);
+
+		//_exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 
@@ -82,8 +89,8 @@ class View extends \OpenTHC\Controller\Base
 		$res = $cre->delete('/lot/' . $ARG['id']);
 		var_dump($res);
 
-		$sql = 'UPDATE qa_sample SET flag = flag | ? WHERE company_id = ? AND guid = ?';
-		$arg = array(\App\QA_Sample::FLAG_DEAD, $_SESSION['gid'], $ARG['id']);
+		$sql = 'UPDATE lab_sample SET flag = flag | ? WHERE company_id = ? AND id = ?';
+		$arg = array(\App\Lab_Sample::FLAG_DEAD, $_SESSION['gid'], $ARG['id']);
 		SQL::query($sql, $arg);
 
 		return $RES->withRedirect('/sample');
