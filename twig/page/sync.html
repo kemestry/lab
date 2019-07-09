@@ -1,0 +1,51 @@
+{#
+	Sync
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="container" style="min-height:70vh;">
+
+<div class="hero-wrap">
+	<div class="hero-core">
+		<h1><i class="fas fa-sync"></i> Data Sync</h1>
+		<h2>Give it a bit to sync-up your data</h2>
+		<h3 class="collapse">This could take a few minutes...</h3>
+	</div>
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function() {
+
+	$('.hero-core').find('i').addClass('fa-spin');
+
+	var arg = {};
+
+	$.post('/sync', arg, function(body) {
+		$('.hero-core h1').html('<i class="fas fa-check-circle"></i> Great Success!');
+		window.location = '/intent';
+	}).always(function() {
+		window.location = '/intent';
+	});
+
+	setTimeout(function() {
+		$('.hero-core h3').show();
+	}, 7500);
+
+	// setTimeout(function() {
+	// 	$('.hero-core h1').html('<i class="fas fa-exclamation-circle"></i> Lets Go Anyway!');
+	// 	window.location = '/intent';
+	// }, 15000);
+
+});
+</script>
+
+{% endblock %}

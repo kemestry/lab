@@ -5,8 +5,6 @@
 
 namespace App\Controller;
 
-use Edoceo\Radix\DB\SQL;
-
 class Sync extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
@@ -28,6 +26,8 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		session_write_close();
 
+		$dbc = $this->_container->DB;
+
 		// Lab Results
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
@@ -45,10 +45,11 @@ class Sync extends \OpenTHC\Controller\Base
 
 		foreach ($res['result'] as $rec) {
 
-			$chk = SQL::fetch_one('SELECT id FROM lab_result WHERE id = ?', array($rec['guid']));
+			$chk = $dbc->fetchOne('SELECT id FROM lab_result WHERE id = ?', array($rec['guid']));
 			if (empty($chk)) {
+				echo '+';
 				// Add with current company as owner
-				SQL::insert('lab_result', array(
+				$dbc->insert('lab_result', array(
 					'id' => $rec['guid'],
 					'license_id' => $_SESSION['License']['id'], //   $L_Lab['id'],
 					'created_at' => $rec['_source']['created_at'],
@@ -60,27 +61,23 @@ class Sync extends \OpenTHC\Controller\Base
 
 			// Link QA to this Company
 			$sql = 'SELECT * FROM lab_result_company WHERE lab_result_id = ? AND company_id = ?';
-			$arg = array($rec['guid'], $_SESSION['gid']);
-			$chk = SQL::fetch_row($sql, $arg);
+			$arg = array($rec['guid'], $_SESSION['Company']['id']);
+			$chk = $dbc->fetchRow($sql, $arg);
 			if (empty($chk)) {
+				echo '|';
 				$sql = 'INSERT INTO lab_result_company (lab_result_id, company_id) values (?, ?)';
-				$arg = array($rec['guid'], $_SESSION['gid']);
-				SQL::query($sql, $arg);
+				$arg = array($rec['guid'], $_SESSION['Company']['id']);
+				$dbc->query($sql, $arg);
 			}
 
 		}
-
-		// $r = $_GET['r'];
-		// if (empty($r)) {
-		// 	$r = '/home';
-		// }
 
 		$C = new \OpenTHC\Company($_SESSION['Company']);
 		$C->setOption('sync-qa-time', $_SERVER['REQUEST_TIME']);
 
 		$RES = $RES->withJSON(array(
 			'status' => 'success',
-			'result' => $r,
+			'result' => $res,
 		));
 
 		return $RES;
