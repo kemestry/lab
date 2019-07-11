@@ -12,7 +12,6 @@ class Sample extends \OpenTHC\Module\Base
 		$a->get('', 'App\Controller\Sample\Index');
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Sample\Sync');
 
-		$a->map([ 'GET', 'POST'], '/view', 'App\Controller\Sample\View');
 		$a->map([ 'GET', 'POST'], '/{id}', 'App\Controller\Sample\View');
 
 	}

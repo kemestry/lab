@@ -29,6 +29,29 @@ class View extends \OpenTHC\Controller\Base
 			return $this->_postHandler($RES, $QAR, $meta);
 		}
 
+
+		// COA Formats
+		if (!empty($_GET['f'])) {
+			switch ($_GET['f']) {
+			case 'coa':
+			case 'coa-pdf':
+				// Genereate HTML then PDF
+				// $coa = new \App\Output\COA()
+				// $coa->setResult($QAR);
+				// file_contents();
+				// render_with_puppetterrs()
+				return(null);
+				break;
+			case 'coa-html':
+				// Generate HTML PDF
+				// $coa = new \App\Output\COA()
+				// $coa->setResult($QAR);
+				// echo $coa;
+				exit(0);
+			}
+		}
+
+
 		// if (empty($QAR['id'])) {
 		// 	$data = array();
 		// 	$data['Page'] = array('title' => 'Result :: Not Found');
