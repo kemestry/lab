@@ -74,6 +74,7 @@ class Share extends \OpenTHC\Controller\Base
 		case 'json':
 			unset($data['Page']);
 			$data = $this->_data_clean($data);
+			_ksort_r($data);
 			return $RES->withJSON($data, 200, JSON_PRETTY_PRINT);
 		case 'pdf':
 

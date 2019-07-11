@@ -43,7 +43,7 @@ class Intent extends \OpenTHC\Controller\Base
 				$data = array(
 					'Page' => array('title' => 'COA Upload'),
 					'Result' => array(
-						'id' => $QAR['guid'],
+						'id' => $QAR['id'],
 					)
 				);
 

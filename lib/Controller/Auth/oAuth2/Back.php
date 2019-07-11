@@ -80,7 +80,7 @@ class Back extends \App\Controller\Auth\oAuth2
 				$cfg = array(
 					'cre' => $_SESSION['cre'],
 					'license' => $_SESSION['cre-auth']['license'],
-					'license-key' => $_SESSION['cre-auth']['secret'],
+					'license-key' => $_SESSION['cre-auth']['license-key'],
 				);
 				$x = $cre->auth($cfg);
 
