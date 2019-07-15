@@ -148,6 +148,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
 		case 'intermediate/ end product/harvest_materials/flower_lots':
 		case 'intermediate/ end product/marijuana/':
+		case 'plant/marijuana/':
 
 			// PCT
 			$Result['uom'] = 'pct';

@@ -1,0 +1,27 @@
+{#
+	Upload a bunch of COA files
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="container mt-4" style="min-height: 70vh;">
+<h1>{{ Page.title }}</h1>
+
+<div class="d-flex flex-wrap">
+{% for f in file_list %}
+	<div class="mb-2" style="border-top: 1px solid #333; flex: 1 1 20%;">
+		<div>{{ f }}</div>
+		<div class="img-fluid">
+			<a href="/result/upload/queue?f={{ f|url_encode }}">
+			<img src="/result/upload/preview?f={{ f|url_encode }}" style="max-width: 240px;">
+			</a>
+		</div>
+	</div>
+{% endfor %}
+</div>
+
+</div>
+
+{% endblock %}

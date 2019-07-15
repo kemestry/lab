@@ -4,6 +4,15 @@
 
 {% extends "layout/html.html" %}
 
+{% block body_head %}
+<div style="position:relative;">
+<div style="position:absolute; right: 0.25em; top: 0.25em;">
+	<a class="btn btn-outline-secondary" href="/result/upload/queue"><i class="fas fa-project-diagram"></i></a>
+</div>
+</div>
+{% endblock %}
+
+
 {% block body %}
 
 <style>
@@ -12,7 +21,7 @@
 	height: 400px;
 	margin: 0 auto;
 	position: relative;
-	width: 800px;
+	width: 80%;
 }
 .upload-drop-zone.active {
 	background: #ccc;
@@ -41,7 +50,7 @@
 
 	<div class="upload-drop-hint">
 		<h2>Drop Files Here</h2>
-		<p>One or more files can be dropped here to begin upload</p>
+		<p>One or more files or folders can be dropped here to begin upload</p>
 	</div>
 
 	<div class="progress">
@@ -69,19 +78,16 @@ $(function() {
 		dropZone: $('.upload-drop-zone'),
 		done: function(e, data) {
 			$('.upload-drop-zone').removeClass('active');
-			setTimeout(function() {
-				$('.upload-drop-zone .progress-bar').css('width', '0%').text('0%');
-			}, 321);
 		},
 		progressall: function (e, data) {
-			console.log(e);
 			var pct = parseInt(data.loaded / data.total * 100, 10);
 			$('.upload-drop-zone .progress-bar').css('width', pct + '%').text(pct + '%');
 		},
 	});
 
 	$('.upload-drop-zone').on('dragover', function(e) {
-		$(this).addClass('active'); // If drag over the window, we change the class of the #dock div by "dock_hover"
+		$('.upload-drop-zone .progress-bar').css('width', '0%').text('0%');
+		$(this).addClass('active');
 		return false;
 	});
 
@@ -89,7 +95,7 @@ $(function() {
 		$(this).removeClass('active');
 	});
 
-	// Prevent accidental drops from loading dropped files or whatever browser decides to do
+	// Prevent accidental drops
 	$(document).bind('drop dragover', function (e) {
 		e.preventDefault();
 	});

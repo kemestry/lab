@@ -35,20 +35,7 @@ class View extends \OpenTHC\Controller\Base
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-		// $res = $cre->get('/lot/' . $id);
-		//$QAS = $res['result'];
-
-		// // This might be BS
-		// if (empty($QAS['global_inventory_id']) || empty($QAS['global_for_inventory_id'])) {
-		// 	$QAS['_lost'] = true;
-		// 	//if (empty($S['global_inventory_id'])) {
-		// 	//	$S['global_inventory_id'] = '-lost-';
-		// 	//}
-		// 	//if (empty($S['global_for_inventory_id'])) {
-		// 	//	$S['global_for_inventory_id'] = '-lost-';
-		// 	//}
-		// }
-		// //var_dump($S);
+		$res = $cre->get('/lot/' . $id);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
@@ -59,18 +46,21 @@ class View extends \OpenTHC\Controller\Base
 		//var_dump($St);
 		// $St = array('name' => $QAS['global_strain_id']);
 
-		// Find Owner Company
+		// Find Laboratory License
 		//$res = $cre->get('/config/license/' . $QAS['global_created_by_mme_id']);
-		//$L = $res['result'];
+		//$L_Lab = $res['result'];
+
+		// Find Owner License
 		$res = $cre->get('/config/license/' . $LSm['Lot']['global_mme_id']);
-		$L = $res['result'];
+		$L_Own = $res['result'];
 
 		$data = array(
 			'Page' => array('title' => 'Sample :: View'),
 			'Sample' => $LSm['Lot'],
 			'Product' => $LSm['Product'],
 			'Strain' => $LSm['Strain'],
-			'License_Owner' => $L,
+			'Result' => $LSm['Result'],
+			'License_Owner' => $L_Own,
 			'License_Lab' => $L_Lab,
 		);
 

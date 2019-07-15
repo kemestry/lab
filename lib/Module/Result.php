@@ -17,6 +17,8 @@ class Result extends \OpenTHC\Module\Base
 
 		$a->get('/download', 'App\Controller\Result\Download');
 		$a->map(['GET','POST'], '/upload', 'App\Controller\Result\Upload');
+		$a->get('/upload/preview', 'App\Controller\Result\Upload:preview');
+		$a->map(['GET','POST'], '/upload/queue', 'App\Controller\Result\Queue');
 
 		$a->map([ 'GET', 'POST'], '/{id}', 'App\Controller\Result\View');
 		$a->get('/{id}/sync', 'App\Controller\Result\Sync'); // @deprecated, post to /sync w/ID
