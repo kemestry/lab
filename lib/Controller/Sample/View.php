@@ -11,9 +11,13 @@ class View extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		$id = $ARG['id'];
-		if (empty($id)) {
+		if (empty($ARG['id'])) {
 			_exit_text('Invalid Request', 400);
+		}
+
+		$Lab_Sample = new \App\Lab_Sample($ARG['id']);
+		if (empty($Lab_Sample)) {
+			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
 
 
@@ -27,15 +31,10 @@ class View extends \OpenTHC\Controller\Base
 			break;
 		}
 
-		$Lab_Sample = new \App\Lab_Sample($id);
-		if (empty($Lab_Sample)) {
-			_exit_text('Invalid Lab Sample [CSV#032]', 400);
-		}
-
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
 		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-		$res = $cre->get('/lot/' . $id);
+		$res = $cre->get('/lot/' . $Lab_Sample['id']);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
@@ -82,6 +81,8 @@ class View extends \OpenTHC\Controller\Base
 		$sql = 'UPDATE lab_sample SET flag = flag | ? WHERE company_id = ? AND id = ?';
 		$arg = array(\App\Lab_Sample::FLAG_DEAD, $_SESSION['gid'], $ARG['id']);
 		SQL::query($sql, $arg);
+
+		exit;
 
 		return $RES->withRedirect('/sample');
 	}

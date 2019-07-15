@@ -71,13 +71,13 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 </div>
 <div class="col">
 	<div class="form-group">
-		<label>net_weight</label>
+		<label>Net Weight</label>
 		<input class="form-control r" readonly value="{{ Sample.net_weight }}">
 	</div>
 </div>
 <div class="col">
 	<div class="form-group">
-		<label>total_marijuana_in_grams</label>
+		<label>Total Marijuana in Grams</label>
 		<input class="form-control r" readonly value="{{ Sample.total_marijuana_in_grams }}">
 	</div>
 </div>
@@ -87,7 +87,7 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 <div class="form-actions">
 	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.global_id }}"><i class="fas fa-plus"></i> Add Results</a>
 	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
-	<button class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
+	<button disabled class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
 	<button class="btn btn-outline-danger" name="a" type="submit" value="drop"><i class="fas fa-trash"></i> Delete</button>
 </div>
 </form>

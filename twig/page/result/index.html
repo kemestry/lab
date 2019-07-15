@@ -1,3 +1,6 @@
+{#
+	Show List of Result Objects
+#}
 
 {% extends "layout/html.html" %}
 
@@ -11,7 +14,6 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
 
 <h1>Results</h1>
 <p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p>
@@ -41,7 +43,10 @@
 	<tr>
 		<td>
 			<a href="/result/{{ s.id }}">{{ s.id }}</a><br>
-			<a href="/sample/{{ s.global_for_inventory_id }}">{{ s.global_for_inventory_id }}</a><br>
+			<a href="/sample/{{ s.meta.Sample.id }}">{{ s.meta.Sample.id }}</a><br>
+			{{ s.meta.Result.global_inventory_id }}<br>
+			{{ s.meta.Result.global_for_inventory_id }}<br>
+			{{ s.meta.Sample.global_original_id }}<br>
 		</td>
 		<td>{{ s.created_at }}</td>
 		<td>{{ s.type_nice }}</td>
@@ -58,7 +63,6 @@
 </tbody>
 </table>
 
-</div>
 {% endblock %}
 
 {% block foot_script %}

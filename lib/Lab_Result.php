@@ -26,8 +26,8 @@ class Lab_Result extends \OpenTHC\SQL\Record
 		parent::__construct($oid);
 
 		if (!empty($this->_data['meta'])) {
-			$this->_Result = json_decode($this->_data['meta'], true);
-			$this->_Result['id'] = $this->_data['id'];
+			$this->_meta = json_decode($this->_data['meta'], true);
+			$this->_Result = $this->_meta['Result'];
 		}
 
 	}
@@ -119,17 +119,24 @@ class Lab_Result extends \OpenTHC\SQL\Record
 
 	}
 
-	private function _inflate_inventory()
+	function tryCOAImport()
 	{
+		$tmp_file = _tmp_file();
 
-		$this->_Inventory['meta'] = json_decode($this->_Inventory['meta'], true);
+		if (!empty($this->_Result['pdf_path'])) {
+			$res = HTTP::get($this->_Result['pdf_path']);
+			switch ($res['info']['http_code']) {
+			case 200:
+				file_put_contents($tmp_file, $res['body']);
+				$this->setCOAFile($tmp_file);
+				return true;
+				break;
+			default:
+				_exit_text($res);
+			}
+		}
 
-		// The meta Field is filled in with the State CRE data via API
-		$this->_Inventory['meta'] = json_decode($this->_Inventory['meta'], true);
-
-		// The meta_result_lab Field is filled in with the Lab Submitted data via WebUI/API
-		// $this->_Inventory['lab_license'] = $this->_Inventory['meta']['lab_license'];
-
+		return false;
 	}
 
 }
