@@ -197,14 +197,52 @@ section {
 
 <div class="collapse" id="metric-wrap-s">
 <!-- Status, etc. -->
-<div class="row">
+	<div class="row">
 		<div class="col-md-3">
 			{{ Helpers._qa_section_status("solvent") }}
 		</div>
-</div>
+	</div>
 
 	{% set index = 0 %}
 	{% for metricId, result in MetricList.Solvent %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Solvent|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+
+</div> <!-- /#metric-wrap-s -->
+</section>
+
+
+<!--
+	Mycotoxin
+-->
+<section>
+
+{{ Helpers._qa_section_head("Mycotoxin", "metric-wrap-mycotoxin") }}
+
+<div class="collapse" id="metric-wrap-mycotoxin">
+
+	<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("mycotoxin") }}
+		</div>
+	</div>
+
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Mycotoxin %}
 		{% if (index is divisible by(4)) %}
 		<div class="row">
 		{% endif %}

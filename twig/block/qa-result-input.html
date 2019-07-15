@@ -135,13 +135,13 @@
 <div style="text-align:center;">
 	<div class="form-actions">
 		<input type="hidden" name="inventory_id" value="{{ inventory_id }}">
-		<input type="hidden" name="inventory_sample_qa_id" value="{{ qa_result_id }}">
-		{% if qa_result_id %}
-			<a class="btn btn-success inventory-qa-publish-exec" href="/inventory/qa/share?id={{ qa_result_id }}" title="Share the QA Results"><i class="fas fa-share-alt"></i> Share</a>
+		<input type="hidden" name="inventory_sample_qa_id" value="{{ lab_result_id }}">
+		{% if lab_result_id %}
+			<a class="btn btn-success inventory-qa-publish-exec" href="/inventory/qa/share?id={{ lab_result_id }}" title="Share the QA Results"><i class="fas fa-share-alt"></i> Share</a>
 			<button class="btn btn-success" name="a" title="Select the QA Results" type="submit" value="qa-select"><i class="fas fa-check-square-o"></i> Select</a>
 			<button class="btn btn-success" name="a" type="submit" value="qa-attest-pass"><i class="fas fa-handshake-o"></i> Assert Passed</button>
-			<a class="btn btn-primary" href="/inventory/qa/view?id={{ qa_result_id }}"><i class="fas fa-clipboard"></i> Details</a>
-			<a class="btn btn-primary" href="/inventory/qa/manual?id={{ inventory_id }}&amp;sample_id={{ qa_result_id }}"><i class="fas fa-handshake-o"></i> Manual Entry</a>
+			<a class="btn btn-primary" href="/inventory/qa/view?id={{ lab_result_id }}"><i class="fas fa-clipboard"></i> Details</a>
+			<a class="btn btn-primary" href="/inventory/qa/manual?id={{ inventory_id }}&amp;sample_id={{ lab_result_id }}"><i class="fas fa-handshake-o"></i> Manual Entry</a>
 		{% endif %}
 		<button class="btn btn-primary inventory-qa-refresh-exec" data-inventory-id="{{ inventory_id }}" id="inventory-qa-refresh-exec" title="Refresh the QA Results" type="button"><i class="fas fa-sync"></i> Refresh</button>
 		<!--

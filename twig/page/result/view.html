@@ -9,12 +9,11 @@
 <div class="row mt-4">
 <div class="col-md-6">
 	<h1>Result: {{ Result.id }}</h1>
-	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
+	<h3>Status: {{ Result.testing_status }} / {{ Result.status }}</h3>
 </div>
 <div class="col-md-4">
-	<h3>Sample: {{ Sample.global_id }}</h4>
-	<p style="margin:0;">Origin: {{ Result.global_for_inventory_id }}</p>
-	<p style="margin:0;">Lab Inventory ID: {{ Result.global_inventory_id }}</p>
+	<h2>Sample: <a href="/sample/{{ Sample.global_id }}">{{ Sample.global_id }}</a></h2>
+	<h3>Origin: {{ Result.global_for_inventory_id }}</h3>
 </div>
 <div class="col-md-2 r">
 	<form method="post" target="_blank">

@@ -34,6 +34,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$Result = $res['result'];
 		$Result['id'] = $Result['global_id'];
 		$Result['type_nice'] = $this->_result_type($Result);
+		//_exit_text($Result);
 
 		$License_Lab = array();
 		if (preg_match('/^WAATTESTED\./', $Result['id'])) {
@@ -54,8 +55,8 @@ class Sync extends \OpenTHC\Controller\Base
 			// Real!
 			$License_Lab = \OpenTHC\License::findByGUID($Result['global_mme_id']);
 			if (empty($License_Lab['id'])) {
-				var_dump($Result);
-				exit;
+				// var_dump($Result);
+				// exit;
 				_exit_text("Cannot find Laboratory: '{$Result['global_mme_id']}'", 404);
 			}
 		}
@@ -68,18 +69,27 @@ class Sync extends \OpenTHC\Controller\Base
 			':c' => $_SESSION['License']['id'],
 			':g' => $Result['global_inventory_id'],
 		);
-		//$res = $cre->get('/lot/' . $Result['global_inventory_id']);
+		$res = $cre->get('/lot/' . $Result['global_inventory_id']);
+		//_exit_text($Result);
 
 		// Sample Details
 		$Sample = array(
 			'id' => $Result['global_for_inventory_id'],
 			'name' => '- Not Found -',
-			// 'type' => '',
 			'type_nice' => '-None-',
 		);
-		$res = $cre->get('/lot/' . $Sample['id']);
-		if ('success' == $res['status']) {
-			$Sample = array_merge($res['result'], $Sample);
+		// Lab Data Model, has this Inflated Object
+		if (!empty($Result['for_inventory'])) {
+			$res = $cre->get('/lot/' . $Result['for_inventory']['global_id']);
+			if ('success' == $res['status']) {
+				$Sample = array_merge($res['result'], $Sample);
+			}
+		} else {
+			// Non-Lab Method
+			$res = $cre->get('/lot/' . $Sample['id']);
+			var_dump($res);
+			var_dump($Sample);
+			die("FHDSFSD");
 		}
 
 		//This is the Lot at the Origin
@@ -137,6 +147,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/marijuana_mix':
 		// Result Based Type, these are all kinds of fucked up data from LD
+		case 'harvest/harvest_materials/flower':
 		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana/':
 		case 'extraction/marijuana/':
@@ -192,16 +203,26 @@ class Sync extends \OpenTHC\Controller\Base
 			'Product' => $Product,
 			'Strain' => $Strain,
 		);
-		var_dump($ret);
+		//var_dump($ret);
 
 		$QAR = new \App\Lab_Result($Result['id']);
-		$QAR['license_id'] = $License_Lab['id'];
-		$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
-		$QAR['meta'] = json_encode($ret);
-		$QAR['created_at'] = $Result['created_at'];
-		$QAR->save();
-
-		$this->tryCOAImport($QAR);
+		if (empty($QAR['id'])) {
+			$QAR = array();
+			$QAR['id'] = $Result['id'];
+			$QAR['license_id'] = $License_Lab['id'];
+			$QAR['created_at'] = $Result['created_at'];
+			$QAR['name'] = $Result['id'];
+			$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
+			$QAR['type'] = $Product['type_nice'];
+			$QAR['meta'] = json_encode($ret);
+			$this->_container->DB->insert('lab_result', $QAR);
+		} else {
+			//$QAR['license_id'] = $License_Lab['id'];
+			$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
+			$QAR['meta'] = json_encode($ret);
+			$QAR['created_at'] = $Result['created_at'];
+			$QAR->save();
+		}
 
 		//_ksort_r($ret);
 		//_exit_text($ret);
@@ -210,36 +231,7 @@ class Sync extends \OpenTHC\Controller\Base
 			return $RES->withStatus(204);
 		}
 
-		var_dump($QAR);
-		exit;
-
 		return $RES->withRedirect('/result/' . $QAR['id']);
-
-	}
-
-	/**
-	 * Try to Import the COA from LeafData
-	 * @param [type] $QAR [description]
-	 * @return [type] [description]
-	 */
-	protected function tryCOAImport($QAR)
-	{
-		$tmp_file = _tmp_file();
-
-		if (!empty($Result['pdf_path'])) {
-			$res = HTTP::get($Result['pdf_path']);
-			switch ($res['info']['http_code']) {
-			case 200:
-				file_put_contents($tmp_file, $res['body']);
-				$QAR->setCOAFile($tmp_file);
-				return true;
-				break;
-			default:
-				_exit_text($res);
-			}
-		}
-
-		return false;
 
 	}
 
@@ -250,41 +242,13 @@ class Sync extends \OpenTHC\Controller\Base
 		}
 
 		$pt = sprintf('%s/%s', $P['type'], $P['intermediate_type']);
-		$pt = trim($pt);
-		switch ($pt) {
-		case 'end_product/usable_marijuana':
-		case 'extraction/marijuana':
-		case 'harvest_materials/flower':
-		case 'harvest_materials/flower_lots':
-		case 'plant/marijuana':
-			return 'Flower';
-		case 'harvest_materials/other_material':
-		case 'harvest_materials/other_material_lots':
-			return 'Trim';
-		case 'end_product/capsules':
-			return 'Capsules';
-		case 'intermediate_product/marijuana_mix':
-		case 'end_product/packaged_marijuana_mix':
-			return 'Flower/Mix';
-		case 'end_product/infused_mix':
-			return 'Mix/Infused';
-		case 'intermediate_product/co2_concentrate':
-		case 'intermediate_product/hydrocarbon_concentrate':
-		case 'intermediate_product/ethanol_concentrate':
-		case 'intermediate_product/food_grade_solvent_concentrate':
-		case 'intermediate_product/infused_cooking_medium':
-		case 'intermediate_product/non-solvent_based_concentrate':
-		case 'end_product/concentrate_for_inhalation':
-			return 'Concentrate';
-		case 'end_product/solid_edible':
-			return 'Edible';
-		case 'end_product/tinctures':
-			return 'Tincture';
-		case 'end_product/topical':
-			return 'Topical';
-		default:
-			_exit_text("Product Type Unknown: '$pt' [CRS#260]", 500);
+
+		$PT = new \App\Product_Type($pt);
+		if (!empty($PT['name'])) {
+			return $PT['name'];
 		}
+
+		throw new Exception('Invalid Product Type');
 	}
 
 	protected function _result_type($R)
@@ -300,6 +264,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/harvest_materials/flower_lots':
 		case 'extraction/intermediate_product/flower':
 		case 'extraction/marijuana/':
+		case 'harvest/harvest_materials/flower':
 		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana/':
 		case 'intermediate/ end product/end_product/usable_marijuana':

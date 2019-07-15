@@ -9,13 +9,13 @@
 	<div class="col-md-4">
 		<div class="form-group">
 			<label>Strain</label>
-			<input class="form-control" readonly value="{{ Strain.name ?: Sample_meta.strain_name }}">
+			<input class="form-control" readonly value="{{ Strain.name ?: Sample.strain_name }}">
 		</div>
 	</div>
 	<div class="col">
 		<div class="form-group">
 			<label>Sample Type</label>
-			<input class="form-control" readonly value="{{ Product.type_nice ?: Sample_meta.sample_type }}">
+			<input class="form-control" readonly value="{{ Product.type_nice ?: Sample.sample_type }}">
 		</div>
 	</div>
 	<div class="col">

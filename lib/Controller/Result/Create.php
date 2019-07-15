@@ -5,6 +5,7 @@
 
 namespace App\Controller\Result;
 
+use Edoceo\Radix\Session;
 use Edoceo\Radix\DB\SQL;
 
 class Create extends \OpenTHC\Controller\Base
@@ -46,13 +47,8 @@ class Create extends \OpenTHC\Controller\Base
 			$key = $metric['id'];
 			$meta = json_decode($metric['meta'], true);
 
-
-			// Resolve the user's CRE fields
-			// $user_cre = $_SESSION['cre']['name']; // @todo
-			$user_cre = 'leafdata';
-
 			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			$metricPath = $meta['cre']["$user_cre" . "_path"];
+			$metricPath = $meta['cre']['leafdata_path'];
 			if (empty($metricPath) || substr($metricPath, -1) === '~') {
 				continue;
 			}
@@ -100,11 +96,7 @@ class Create extends \OpenTHC\Controller\Base
 	{
 		header('content-type: text/plain');
 
-		var_dump($_POST);
-
-		// Resolve the user's CRE fields
-		// $user_cre = $_SESSION['cre']['name']; // @todo
-		$user_cre = 'leafdata';
+		// _exit_text($_SESSION);
 
 		// Get the authorative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
@@ -118,13 +110,14 @@ class Create extends \OpenTHC\Controller\Base
 			$metric['meta'] = $meta;
 
 			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			$metricPath = $metric['meta']['cre']["$user_cre" . "_path"];
+			$metricPath = $metric['meta']['cre']["leafdata_path"];
 			if (empty($metricPath) || substr($metricPath, -1) === '~') {
 				continue;
 			}
 
 			$MetricList[$key] = $metric;
 		}
+		//_exit_text($MetricList);
 
 		/**
 		 * Metric Results filter:
@@ -143,10 +136,9 @@ class Create extends \OpenTHC\Controller\Base
 		 * ...,
 		 * 'status': enum['not_started', 'in_progress', 'completed'] (on Test Progress filter pass)
 		 */
-		$post = $REQ->getParsedBody();
-		// echo '<pre>'; var_dump($post);die;
+
 		$ResultTable = array();
-		foreach ($post as $key => $postValue) {
+		foreach ($_POST as $key => $postValue) {
 			// Original plan was only iterate over Metric form values,
 			// don't consider empty() values
 			// https://www.php.net/manual/en/types.comparisons.php
@@ -174,6 +166,7 @@ class Create extends \OpenTHC\Controller\Base
 				$ResultTable[$metricType][$metricId]['result'] = $postValue;
 			}
 		}
+		//_exit_text($ResultTable);
 
 		/**
 		 * Testing Status filter
@@ -207,16 +200,18 @@ class Create extends \OpenTHC\Controller\Base
 
 			$statusKey = sprintf("%s_%s", strtolower($resultType), "status");
 			// If post value for <type>_status is empty
-			if (empty($post[$statusKey]) && count($typeList) === 0) {
+			if (empty($_POST[$statusKey]) && count($typeList) === 0) {
 				_exit_text("LRC#115: $resultType must have a status associated with the results.");
 			}
 
 			$Status_Answers = ['not_started', 'in_progress', 'completed'];
-			if (!in_array($post[$statusKey], $Status_Answers)) {
+			if (!in_array($_POST[$statusKey], $Status_Answers)) {
 				_exit_text("LRC#120: Status response not valid.");
 			}
-			$ResultTable[$resultType]['status'] = $post[$statusKey];
+			$ResultTable[$resultType]['status'] = $_POST[$statusKey];
 		}
+
+		// _exit_text($ResultTable);
 
 		/**
 		 * Test Progress filter
@@ -235,9 +230,11 @@ class Create extends \OpenTHC\Controller\Base
 			$ResultTable['status'] = $testingStatus;
 		}
 
+		//_exit_text($ResultTable);
+
 		// Persist the result to the Sample's meta field with md5 hash
-		$resultsCache = json_encode($ResultTable);
-		$hash = md5($resultsCache);
+		// $resultsCache = json_encode($ResultTable);
+		// $hash = md5($resultsCache);
 
 		// Get and validate the QA Sample
 		$sampleId = $_POST['sample_id'];
@@ -256,8 +253,6 @@ class Create extends \OpenTHC\Controller\Base
 		$Sample = $meta['Lot'];
 		$Product = $meta['Product'];
 		$Strain = $meta['Strain'];
-
-		// $Sample['meta'] = $meta;
 
 		// $cre->lab()->result()->create();
 		$c = new \GuzzleHttp\Client(array(
@@ -285,37 +280,25 @@ class Create extends \OpenTHC\Controller\Base
 			 * Global id, Relative to Lab, of inv lot being tested.
 			 */
 			'global_inventory_id' => $Sample['global_id'],
-			"global_for_mme_id" => $Sample['global_mme_id'], // Required
-			"global_for_inventory_id" => $Sample['global_original_id'],
+			'global_for_mme_id' => $Sample['global_mme_id'], // Required
+			'global_for_inventory_id' => $Sample['global_original_id'],
 
 			// Medical testing requirements
 			// Non-medical testing requirements
-
-			// 'cannabinoid_status' => 'completed', // [not_started,in_progress,completed]
-			// 'metal_status' 		=> 'completed', // $this->metricToLeafMetric($post['metal_status']),
-			// 'microbial_status' 	=> 'completed', // $this->metricToLeafMetric($post['microbial_status']),
-			// 'mycotoxin_status' 	=> 'completed', // $this->metricToLeafMetric($post['mycotoxin_status']),
-			// 'pesticide_status' 	=> 'completed', // $this->metricToLeafMetric($post['pesticide_status']),
-			// 'solvent_status' 	=> 'completed', // $this->metricToLeafMetric($post['solvent_status']),
-			// 'testing_status' 	=> 'completed', // $this->metricToLeafMetric($post['testing_status']),
 
 			//"notes" => "test notes",
 			'testing_status' => $_POST['testing_status'],
 			'tested_at' => date('m/d/Y g:i:s a'),
 
+			'cannabinoid_status' => $_POST['cannabinoid_status'],
+			'metal_status'       => $_POST['metal_status'],
+			'microbial_status'   => $_POST['microbe_status'],
+			'mycotoxin_status'   => $_POST['_stmycotoxin_statusatus'],
+			'pesticide_status'   => $_POST['pesticide_status'],
+			'solvent_status'     => $_POST['solvent_status'],
+			'terpene_status'     => $_POST['terpene_status'],
+
 			// Take these from the Sample's Inventory data
-			// "type" => "harvest_materials",
-			// "intermediate_type" => 'flower_lots',
-
-			/**
-			 * Format: boolean
-			 * The results of the foreign matter
-			 * screening for stems ("0"=passing, "1"=failing)
-			 */
-			// "foreign_matter_stems" => "0", // $this->metricToLeafMetric(),
-			// "foreign_matter_seeds" => "0", // $this->metricToLeafMetric(''),
-			// "test_for_terpenes" => null,
-
 			/**
 			 * Format: WAX123456.BA1Z2Y3
 			 * global ID of the batch associated
@@ -328,34 +311,28 @@ class Create extends \OpenTHC\Controller\Base
 		];
 
 		// Add the entered Result values to our LD Lab Result list
-		foreach ($ResultTable as $type => $resultList) {
+		foreach ($MetricList as $k => $Metric) {
+			// var_dump($k);
+			// var_dump($Metric);
+			// exit;
+			// _exit_text($Metric);
+			$path = $Metric['meta']['cre']['leafdata_path'];
+			$unprocessableEntity[ $path ] = $_POST[ $k ];
 
-			if ('status' === $type) {
-				$testingStatus = $resultList;
-				$unprocessableEntity['testing_status'] = $testingStatus;
-				continue;
+			// Map _percent$ to _mg_g$
+			if (preg_match('/_percent$/', $path)) {
+				$path = preg_replace('/_percent$/', '_mg_g', $path);
+				$unprocessableEntity[$path] = $_POST[ $k ];
 			}
-			// Append the metric key and the result to the RCE data object
-			foreach ($resultList as $metricId => $Result) {
 
-				if ('status' === $metricId) {
-
-					// Special cases for Microbial results
-					if ('microbe' === strtolower($type)) {
-						$typeStatus = 'microbial_status';
-					} else {
-						$typeStatus = sprintf("%s_status", strtolower($type));
-					}
-
-					$unprocessableEntity[$typeStatus] = $Result;
-					continue;
-				}
-				$creKey = sprintf("%s_path", $user_cre);
-				$unprocessableEntity[$Result['meta']['cre'][$creKey]] = $Result['result'];
-			}
 		}
 
-		echo json_encode($unprocessableEntity, JSON_PRETTY_PRINT);
+		//_exit_text($unprocessableEntity);
+
+		// _exit_json(array(
+		// 	'_POST' => $_POST,
+		// 	'_REQ' => $unprocessableEntity,
+		// ));
 
 		$res = $c->post('/api/v1/lab_results', [
 			'json' => [
@@ -366,20 +343,24 @@ class Create extends \OpenTHC\Controller\Base
 		$buf = $res->getBody()->getContents();
 
 		if ($res->getStatusCode() === 200) {
-			echo "<h2>Results Accepted!</h2>";
+			//echo "<h2>Results Accepted!</h2>";
+			$res = json_decode($buf, true);
+			Session::flash('info', 'Results Accepted!');
+			// Sync One
+			return $RES->withRedirect('/result/' . $res[0]['global_id'] . '/sync');
 		} else {
 			echo "<h2>Results Rejected!</h2>";
+			Session::flash('fail', $buf);
+			return $RES->withRedirect($_SERVER['HTTP_REFERER']);
 		}
 
-		$res = json_decode($buf, true);
-		_ksort_r($res);
-
-		echo json_encode($res, JSON_PRETTY_PRINT);
+		// _ksort_r($res);
+		// echo json_encode($res, JSON_PRETTY_PRINT);
 
 		// How to Link Together?
 		// Mark Sample Lot as Tested/OK/Done
 
-		exit(0);
+		//exit(0);
 	}
 
 	function commit($REQ, $RES, $ARG)

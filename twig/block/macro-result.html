@@ -1,0 +1,61 @@
+{#
+	Macros for Lab Results
+#}
+
+{% macro _qa_section_status(t) %}
+<div class="form-group">
+	<label>Status:</label>
+	<div class="input-group">
+		<select id="{{ t }}-status" class="form-control r section_status" name="{{ t }}_status" type="text">
+			<option value=""> - - </option>
+			<option value="not_started">Not Started</option>
+			<option value="in_progress">In Progress</option>
+			<option value="completed">Completed</option>
+		</select>
+	</div>
+</div>
+{% endmacro %}
+
+{% macro _qa_section_head(t, id) %}
+	<h3>
+		<button
+			class="btn btn-sm btn-outline-secondary btn-showhide"
+			data-toggle="collapse"
+			data-target="#{{ id }}"
+			type="button"
+		>
+			<i class="fas fa-compress"></i>
+		</button> {{ t|raw }}</h3>
+{% endmacro %}
+
+{% macro _qa_pot_input(l, n, obj) %}
+{% import 'block/macro-scope.html' as ScopeHelper %}
+<div class="form-group">
+	<label>{{ l|raw }}</label>
+	<div class="input-group">
+		<input class="form-control r" disabled name="{{ n }}" type="text" placeholder="{{ obj.meta.hint }}" value="">
+		<div class="input-group-append"><span class="input-group-text" style="min-width:5em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span></div>
+	</div>
+</div>
+{% endmacro %}
+
+{% macro _qa_input_cfug(l, n, obj) %}
+<div class="form-group">
+	<label>{{ l|raw }}</label>
+	<div class="input-group">
+		<input class="form-control r" disabled name="{{ n }}" placeholder="{{ obj.meta.hint }}" type="text" value="{{ obj[ n ] }}">
+		<div class="input-group-append"><span class="input-group-text">cfu/g</span></div>
+	</div>
+</div>
+{% endmacro %}
+
+{% macro _qa_testing_status(obj, section_class) %}
+<div class="form-group">
+	<label>{{ obj.name }}</label>
+	<select class="form-control {{ section_class }}" name="{{ obj.id }}">
+		<option value="-"> -- </option>
+		<option value="1">Fail</option>
+		<option value="0">Pass</option>
+	</select>
+</div>
+{% endmacro %}
