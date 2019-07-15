@@ -14,6 +14,26 @@ class Create extends \OpenTHC\Controller\Base
 		$data = array();
 		$data['Page'] = array('title' => 'Result :: Create');
 
+		// @todo should be License ID
+		$sql = 'SELECT * FROM lab_sample WHERE company_id = :c0 AND id = :g0';
+		$arg = array(':c0' => $_SESSION['gid'], ':g0' => $_GET['sample_id']);
+		$chk = SQL::fetch_row($sql, $arg);
+		if (empty($chk['id'])) {
+			_exit_text('Invalid Sample [CRC#022]', 400);
+		}
+
+		// $Sample = new \App\Lab_Sample($chk);
+		$meta = \json_decode($chk['meta'], true);
+
+		$data['Sample']  = $meta['Lot'];
+		$data['Product']  = $meta['Product'];
+		$data['Product']['type_nice'] = sprintf('%s/%s', $data['Product']['type'], $data['Product']['intermediate_type']);
+		$data['Strain']  = $meta['Strain'];
+
+		//$data['Result']  = $res['Result'];
+		//$data['Product'] = $QAR['Product'];
+
+
 		// Get authoriative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
 		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
@@ -47,20 +67,7 @@ class Create extends \OpenTHC\Controller\Base
 			$MetricList[$type][$key] = $metric;
 		}
 
-		// @todo should be License ID
-		$sql = 'SELECT * FROM lab_sample WHERE company_id = :c0 AND id = :g0';
-		$arg = array(':c0' => $_SESSION['gid'], ':g0' => $_GET['sample_id']);
-		$chk = SQL::fetch_row($sql, $arg);
-
-		$Sample = new \App\Lab_Sample($chk);
-		$meta = \json_decode($Sample['meta'], true);
-
-		$data['Sample']  = $Sample;
-		$data['Sample_meta'] = $meta;
 		$data['MetricList'] = $MetricList;
-
-		//$data['Result']  = $res['Result'];
-		//$data['Product'] = $QAR['Product'];
 
 		$file = 'page/result/create.html';
 
@@ -70,24 +77,31 @@ class Create extends \OpenTHC\Controller\Base
 
 	}
 
+	/**
+	 * [save description]
+	 * @param [type] $REQ [description]
+	 * @param [type] $RES [description]
+	 * @param [type] $ARG [description]
+	 * @return [type] [description]
+	 */
 	function save($REQ, $RES, $ARG)
 	{
-		$post = $REQ->getParsedBody();
-		switch ($post['a'])
-		{
-			case 'commit':
-				return $this->commit($REQ, $RES, $ARG);
-
-			case 'save':
-				return $this->_save($REQ, $RES, $ARG);
-
-			default:
-				return $RES->withStatus(400);
+		switch ($_POST['a']) {
+		case 'commit':
+			return $this->_save($REQ, $RES, $ARG);
+		case 'save':
+			return $this->_save($REQ, $RES, $ARG);
+		default:
+			return $RES->withStatus(400);
 		}
 	}
 
 	private function _save($REQ, $RES, $ARG)
 	{
+		header('content-type: text/plain');
+
+		var_dump($_POST);
+
 		// Resolve the user's CRE fields
 		// $user_cre = $_SESSION['cre']['name']; // @todo
 		$user_cre = 'leafdata';
@@ -216,7 +230,7 @@ class Create extends \OpenTHC\Controller\Base
 		 */
 		$Status_Answers = ['not_started', 'in_progress', 'completed'];
 		$ld_testingStatusKey = 'testing_status';
-		$testingStatus = $post[$ld_testingStatusKey];
+		$testingStatus = $_POST[$ld_testingStatusKey];
 		if (!empty($testingStatus) && in_array($testingStatus, $Status_Answers)) {
 			$ResultTable['status'] = $testingStatus;
 		}
@@ -226,26 +240,31 @@ class Create extends \OpenTHC\Controller\Base
 		$hash = md5($resultsCache);
 
 		// Get and validate the QA Sample
-		$sampleId = $_GET['sample_id'];
+		$sampleId = $_POST['sample_id'];
 		$sql = 'SELECT * from lab_sample WHERE id = :id AND license_id = :lic';
 		$args = [
 			':id' => $sampleId,
 			':lic' => $_SESSION['License']['id'],
 		];
 		$Sample = SQL::fetch_row($sql, $args);
-		$meta = json_decode($Sample['meta'], true);
-
 		if (empty($Sample['id'])) {
-			print_r($Sample);
-			_exit_text(sprintf("LPC#128: Could not find: %s", $Sample['id']), 409);
+			_exit_text(sprintf('Could not find: %s [LPC#128]', $sampleId), 409);
 		}
-		$Sample['meta'] = $meta;
 
+		$meta = json_decode($Sample['meta'], true);
+		//_exit_text($meta);
+		$Sample = $meta['Lot'];
+		$Product = $meta['Product'];
+		$Strain = $meta['Strain'];
+
+		// $Sample['meta'] = $meta;
+
+		// $cre->lab()->result()->create();
 		$c = new \GuzzleHttp\Client(array(
 			'base_uri' => 'https://watest.leafdatazone.com',
 			'headers' => [
-				'x-mjf-mme-code' => 'LWTL', // $_ENV['leafdata-license'], // 'username',
-				'x-mjf-key' => 'yLvwqLv2nMyx1orsHxJD',// $_ENV['leafdata-license-secret'], // 'password'
+				'x-mjf-mme-code' => $_SESSION['cre-auth']['license'],
+				'x-mjf-key' => $_SESSION['cre-auth']['license-key'],
 			],
 			'allow_redirects' => false,
 			'debug' => $_ENV['debug-http'],
@@ -261,8 +280,13 @@ class Create extends \OpenTHC\Controller\Base
 			/**
 				 ""required params""
 			 */
-			// 'external_id' => '-', // required?
-			// 'global_inventory_id' => '', // "WAX123456.IN1Z2Y3"
+			/**
+			 * Format: WAX123456.IN1Z2Y3
+			 * Global id, Relative to Lab, of inv lot being tested.
+			 */
+			'global_inventory_id' => $Sample['global_id'],
+			"global_for_mme_id" => $Sample['global_mme_id'], // Required
+			"global_for_inventory_id" => $Sample['global_original_id'],
 
 			// Medical testing requirements
 			// Non-medical testing requirements
@@ -275,16 +299,13 @@ class Create extends \OpenTHC\Controller\Base
 			// 'solvent_status' 	=> 'completed', // $this->metricToLeafMetric($post['solvent_status']),
 			// 'testing_status' 	=> 'completed', // $this->metricToLeafMetric($post['testing_status']),
 
-			"external_id" => 'test',
-			// "testing_status" => $post['testing_status'],
-			"notes" => "test notes",
-
-			"tested_at" => '06/10/2019 12:34pm',
-			"received_at" => '06/10/2019 12:34pm',
+			//"notes" => "test notes",
+			'testing_status' => $_POST['testing_status'],
+			'tested_at' => date('m/d/Y g:i:s a'),
 
 			// Take these from the Sample's Inventory data
-			"type" => "harvest_materials",
-			"intermediate_type" => 'flower_lots',
+			// "type" => "harvest_materials",
+			// "intermediate_type" => 'flower_lots',
 
 			/**
 			 * Format: boolean
@@ -294,14 +315,6 @@ class Create extends \OpenTHC\Controller\Base
 			// "foreign_matter_stems" => "0", // $this->metricToLeafMetric(),
 			// "foreign_matter_seeds" => "0", // $this->metricToLeafMetric(''),
 			// "test_for_terpenes" => null,
-			"global_for_mme_id" => $meta['global_mme_id'],
-
-			/**
-			 * Format: WAX123456.IN1Z2Y3
-			 * Global id, Relative to Lab, of inv lot being tested.
-			 */
-			// "global_inventory_id" => $sample_id,
-			"global_inventory_id" => $Sample['meta']['global_received_inventory_id'],
 
 			/**
 			 * Format: WAX123456.BA1Z2Y3
@@ -310,13 +323,8 @@ class Create extends \OpenTHC\Controller\Base
 			 * Documentation says auto generated
 			 */
 			// "global_batch_id" => $Sample['global_batch_id'],
-			"global_batch_id" => $Sample['meta']['global_received_batch_id'],
+			// "global_batch_id" => $Sample['meta']['global_received_batch_id'],
 
-			/**
-			 *
-			 */
-			// "global_for_inventory_id" => $meta['global_inventory_id'],
-			"global_for_inventory_id" => $meta['global_received_inventory_id'],
 		];
 
 		// Add the entered Result values to our LD Lab Result list
@@ -345,8 +353,9 @@ class Create extends \OpenTHC\Controller\Base
 				$creKey = sprintf("%s_path", $user_cre);
 				$unprocessableEntity[$Result['meta']['cre'][$creKey]] = $Result['result'];
 			}
-
 		}
+
+		echo json_encode($unprocessableEntity, JSON_PRETTY_PRINT);
 
 		$res = $c->post('/api/v1/lab_results', [
 			'json' => [
@@ -354,12 +363,23 @@ class Create extends \OpenTHC\Controller\Base
 			]
 		]);
 
+		$buf = $res->getBody()->getContents();
+
 		if ($res->getStatusCode() === 200) {
 			echo "<h2>Results Accepted!</h2>";
 		} else {
 			echo "<h2>Results Rejected!</h2>";
 		}
-		var_dump(json_decode($res->getBody(), true));
+
+		$res = json_decode($buf, true);
+		_ksort_r($res);
+
+		echo json_encode($res, JSON_PRETTY_PRINT);
+
+		// How to Link Together?
+		// Mark Sample Lot as Tested/OK/Done
+
+		exit(0);
 	}
 
 	function commit($REQ, $RES, $ARG)

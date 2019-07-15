@@ -2,7 +2,7 @@
 	Show the QA Results
 #}
 
-{% import 'block/result-macros.html' as Helpers %}
+{% import 'block/macro-result.html' as Helpers %}
 
 <style>
 section {
@@ -80,11 +80,12 @@ section {
 		{% set index = index + 1 %}
 	{% endfor %}
 
-</div> <!-- /.row -->
+</div> <!-- /#metric-wrap-general -->
 </section>
 
 
 <section>
+
 {{ Helpers._qa_section_head("Terpenes", "metric-wrap-t") }}
 
 <div class="collapse" id="metric-wrap-t">
@@ -118,20 +119,11 @@ section {
 </div> <!-- /#metric-wrap -->
 </section>
 
-<!--
-<section>
-{{ Helpers._qa_section_head("Metals") }}
-[metal_arsenic_ppm] =>
-[metal_cadmium_ppm] =>
-[metal_editor] =>
-[metal_lead_ppm] =>
-[metal_mercury_ppm] =>
-[metal_status] => not_started
-</section>
--->
 
 <section>
+
 {{ Helpers._qa_section_head("Microbes", "metric-wrap-m") }}
+
 <div class="collapse" id="metric-wrap-m">
 	<!-- Status, etc. -->
 	<div class="row">
@@ -162,6 +154,7 @@ section {
 </section>
 
 <section>
+
 {{ Helpers._qa_section_head("Pesticides", "metric-wrap-p") }}
 
 <div class="collapse" id="metric-wrap-p">
@@ -191,11 +184,15 @@ section {
 	{% endfor %}
 
 
-</div> <!-- /#metric-wrap -->
+</div> <!-- /#metric-wrap-p -->
 </section>
 
 
+<!--
+	Solvents
+-->
 <section>
+
 {{ Helpers._qa_section_head("Solvents", "metric-wrap-s") }}
 
 <div class="collapse" id="metric-wrap-s">
@@ -225,6 +222,5 @@ section {
 	{% endfor %}
 
 
-</div> <!-- /#metric-wrap -->
+</div> <!-- /#metric-wrap-s -->
 </section>
-

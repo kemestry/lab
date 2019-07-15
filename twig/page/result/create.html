@@ -3,20 +3,19 @@
 #}
 
 {% extends "layout/html.html" %}
-{% import 'block/result-macros.html' as Helpers %}
+{% import 'block/macro-result.html' as Helpers %}
 
 {% block body %}
+<form action="/result/create/save" method="post">
 <div class="container mt-4">
 
 <div class="row">
 <div class="col-md-6">
-	<h1>Result: {{ Result.id ?: "--" }}</h1>
-	<h2>{{ Helpers._qa_section_status("testing") }}</h2>
+	<h1>Sample: {{ Sample.global_id }}</h1>
+	<h2>Origin: {{ Sample.global_original_id }}</h2>
 </div>
 <div class="col-md-4">
-	<h3>Sample: {{ Sample.global_id ?: Sample.id }}</h4>
-	<p style="margin:0;">Origin: {{ Result.global_for_inventory_id ?: Sample_meta.global_inventory_id }}</p>
-	<p style="margin:0;">Lab Inventory ID: {{ Result.global_inventory_id ?: Sample_meta.global_received_inventory_id }}</p>
+	<h2>{{ Helpers._qa_section_status("testing") }}</h2>
 </div>
 <div class="col-md-2 r">
 	<form method="post" target="_blank">
@@ -38,22 +37,26 @@
 </div>
 
 {% include "block/qa-product-summary.html" %}
-{% include "block/qa-potency-summary.html" %}
 
 <hr>
 
 <div>
-<h2>QA Metrics</h2>
-<form method="post">
+<h2>Test Metrics</h2>
+
 	{% include "block/qa-result-v2.html" %}
+
 	<div class="form-actions">
+		<input name="sample_id" type="hidden" value="{{ Sample.global_id }}">
 		<button class="btn btn-outline-secondary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Save</button>
-		<button class="btn btn-outline-primary" name="a" type="submit" value="commit"><i class="fas fa-upload"></i> Commit</button>
+		<!-- <button class="btn btn-outline-primary" name="a" type="submit" value="commit"><i class="fas fa-upload"></i> Commit</button> -->
 	</div>
-</form>
 
 </div>
 
+</div>
+</form>
+
+<!-- Modal & Form -->
 <form enctype="multipart/form-data" method="post">
 <div class="modal" id="modal-coa-upload" role="dialog" tabindex="-1">
 	<div class="modal-dialog modal-lg" role="document">
@@ -89,7 +92,6 @@
 </div>
 </form>
 
-</div>
 {% endblock %}
 
 {% block foot_script %}
