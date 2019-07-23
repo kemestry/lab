@@ -33,8 +33,18 @@
 <div class="form-group">
 	<label>{{ l|raw }}</label>
 	<div class="input-group">
+		<div class="input-group-prepend">
+			<select class="form-control">
+				<option>OK</option>
+				<option value="-1">N/A</option>
+				<option value="-2">N/D</option>
+				<option vlaue="-3">N/T</option>
+			</select>
+		</div>
 		<input class="form-control r" disabled name="{{ n }}" type="text" placeholder="{{ obj.meta.hint }}" value="">
-		<div class="input-group-append"><span class="input-group-text" style="min-width:5em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span></div>
+		<div class="input-group-append">
+			<span class="input-group-text" style="min-width:5em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span>
+		</div>
 	</div>
 </div>
 {% endmacro %}
