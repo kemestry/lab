@@ -5,6 +5,7 @@
 
 namespace App\Controller\Result;
 
+use Edoceo\Radix\Session;
 use Edoceo\Radix\DB\SQL;
 use Edoceo\Radix\Net\HTTP;
 
@@ -18,15 +19,17 @@ class View extends \OpenTHC\Controller\Base
 		}
 
 		// Get Result
-		$QAR = new \App\Lab_Result($id);
-		if (empty($QAR['id'])) {
-			_exit_text('QA Result Not Found', 404);
+		$LR = new \App\Lab_Result($id);
+		if (empty($LR['id'])) {
+			_exit_html(sprintf('QA Result Not Found, please <a href="/result/%s/sync">sync this result</a>', $id), 404);
 		}
 
-		$meta = json_decode($QAR['meta'], true);
+		$meta = json_decode($LR['meta'], true);
+		// _ksort_r($meta);
+		// _exit_text($meta);
 
 		if (!empty($_POST['a'])) {
-			return $this->_postHandler($RES, $QAR, $meta);
+			return $this->_postHandler($RES, $LR, $meta);
 		}
 
 
@@ -34,10 +37,14 @@ class View extends \OpenTHC\Controller\Base
 		if (!empty($_GET['f'])) {
 			switch ($_GET['f']) {
 			case 'coa':
+
+				return $this->_viewCOA($REQ, $RES, $LR);
+
+				break;
 			case 'coa-pdf':
 				// Genereate HTML then PDF
 				// $coa = new \App\Output\COA()
-				// $coa->setResult($QAR);
+				// $coa->setResult($LR);
 				// file_contents();
 				// render_with_puppetterrs()
 				return(null);
@@ -45,14 +52,14 @@ class View extends \OpenTHC\Controller\Base
 			case 'coa-html':
 				// Generate HTML PDF
 				// $coa = new \App\Output\COA()
-				// $coa->setResult($QAR);
+				// $coa->setResult($LR);
 				// echo $coa;
 				exit(0);
 			}
 		}
 
 
-		// if (empty($QAR['id'])) {
+		// if (empty($LR['id'])) {
 		// 	$data = array();
 		// 	$data['Page'] = array('title' => 'Result :: Not Found');
 		// 	$data['result_id'] = $ARG['id'];
@@ -76,7 +83,7 @@ class View extends \OpenTHC\Controller\Base
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Sample']  = $meta['Sample'];
 		$data['Result']  = $meta['Result'];
-		$data['Result']['coa_file'] = $QAR->getCOAFile();
+		$data['Result']['coa_file'] = $LR->getCOAFile();
 		if (!is_file($data['Result']['coa_file'])) {
 			$data['Result']['coa_file'] = null;
 		}
@@ -84,8 +91,8 @@ class View extends \OpenTHC\Controller\Base
 		$data['Product'] = $meta['Product'];
 		$data['Strain']  = $meta['Strain'];
 
-		if (!empty($QAR['license_id_lab'])) {
-			$x = \OpenTHC\License::findByGUID($QAR['license_id_lab']);
+		if (!empty($LR['license_id_lab'])) {
+			$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
 			if ($x) {
 				$data['Laboratory'] = $x->toArray();
 			}
@@ -93,7 +100,7 @@ class View extends \OpenTHC\Controller\Base
 
 		$data['coa_upload_hash'] = _encrypt(json_encode(array(
 			'a' => 'coa-upload',
-			'r' => $QAR['guid'],
+			'r' => $LR['id'],
 			'x' => $_SERVER['REQUEST_TIME'] + (86400 * 4)
 		)));
 
@@ -106,21 +113,22 @@ class View extends \OpenTHC\Controller\Base
 		if ('data' == $_GET['_dump']) {
 			_exit_text($data);
 		}
+		// echo '<pre>'; var_dump($data);die;
 
 		return $this->_container->view->render($RES, $file = 'page/result/view.html', $data);
 
 	}
 
-	function _postHandler($RES, $QAR, $meta)
+	function _postHandler($RES, $LR, $meta)
 	{
-		$lab_result_id = $QAR['id'];
-		$coa_file = $QAR->getCOAFile();
+		$lab_result_id = $LR['id'];
+		$coa_file = $LR->getCOAFile();
 		if (empty($coa_file)) {
-			//error_log("Invalid coa_file for {$QAR['id']}");
+			//error_log("Invalid coa_file for {$LR['id']}");
 			_exit_text('This QA Result Needs to be Re-Sync for Upload [CRV#083]');
 		}
 
-		$coa_name = sprintf('COA-%s.pdf', $QAR['id']);
+		$coa_name = sprintf('COA-%s.pdf', $LR['id']);
 
 		switch ($_POST['a']) {
 		case 'coa-download':
@@ -146,23 +154,24 @@ class View extends \OpenTHC\Controller\Base
 		case 'file-upload':
 
 			$src_name = strtolower($_FILES['file']['name']);
-			$qar_want = strtolower(preg_match('/\.(\w+)/', $lab_result_id, $m) ? $m[1] : $lab_result_id);
+			$pat_want = strtolower(preg_match('/\.(\w+)/', $lab_result_id, $m) ? $m[1] : $lab_result_id);
 
-			$chk_name = strpos($src_name, $qar_want);
+			$chk_name = strpos($src_name, $pat_want);
 
 			if (false === $chk_name) {
-				_exit_text('Please put the Lab Result ID in the Filename for verification');
+				Session::flash('warn', 'Naming the file the same as the Lab Result is a good idea');
+				// _exit_text('Please put the Lab Result ID in the Filename for verification');
 			}
 
-			$QAR->setCOAFile($_FILES['file']['tmp_name']);
+			$LR->setCOAFile($_FILES['file']['tmp_name']);
 
 			return $RES->withRedirect('/result/' . $lab_result_id);
 
 			break;
 
 		case 'mute':
-			$QAR->setFlag(\App\Lab_Result::FLAG_MUTE);
-			$QAR->save();
+			$LR->setFlag(\App\Lab_Result::FLAG_MUTE);
+			$LR->save();
 			break;
 		case 'share':
 			return $RES->withRedirect(sprintf('/share/%s.html', $lab_result_id));
@@ -183,5 +192,36 @@ class View extends \OpenTHC\Controller\Base
 			die("not Handled");
 		}
 
+	}
+
+	public function _viewCOA($REQ, $RES, $LR)
+	{
+
+		$meta = json_decode($LR['meta'], true);
+		$data = [
+			'Sample' => $meta['Sample'],
+			'Result' => $meta['Result'],
+			'Product' => $meta['Product'],
+			'Strain' => $meta['Strain'],
+		];
+
+		if (!empty($LR['license_id_lab'])) {
+			$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
+			if ($x) {
+				$data['Laboratory'] = $x->toArray();
+			}
+		}
+
+		// @todo whats the difference?
+		if (!empty($LR['license_id']))
+		{
+			$x = new \OpenTHC\License($LR['license_id']);
+			if (!empty($x)) {
+				$data['License'] = $x->toArray();
+			}
+		}
+		// echo '<pre>';
+		// var_dump($data);die;
+		return $this->_container->view->render($RES, $page = 'coa/openthc.html', $data);
 	}
 }
