@@ -44,7 +44,9 @@
 
 <div class="container mt-4" style="min-height: 70vh;">
 <h1>{{ Page.title }}</h1>
-
+{% if "lab-bulk" == mode %}
+	<div class="alert alert-warning">You are uploading files to the processing queue for <strong>{{ Company.name }}</strong></div>
+{% endif %}
 
 <div class="upload-drop-zone">
 
@@ -63,6 +65,20 @@
 
 </div>
 
+{% if "lab-bulk" != mode %}
+<div>
+	<p>Request from Lab</p>
+	<div class="form-group">
+		<div class="input-group">
+			<input class="form-control" readonly value="https://lab.openthc.org/intent?_={{ coa_upload_hash }}">
+			<div class="input-group-append">
+				<a class="btn btn-outline-secondary" href="mailto:?subject=Upload%20Lab%20Results&amp;body=Please%20upload%20my%20lab%20results%20to%20this%20page%3A%0A%0A%20%20https%3A%2F%2Flab.openthc.org%2Fintent%3F_%3D{{ coa_upload_hash }}"><i class="fas fa-envelope-open-text"></i></a>
+				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://lab.openthc.org/intent?_={{ coa_upload_hash }}" type="button"><i class="fas fa-clipboard"></i></button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
 
 </div>
 {% endblock %}
@@ -99,6 +115,27 @@ $(function() {
 	$(document).bind('drop dragover', function (e) {
 		e.preventDefault();
 	});
+
+	var clipcopy = new ClipboardJS('.btn-clipcopy');
+	clipcopy.on('error', function(e) {
+		alert(e);
+	});
+	clipcopy.on('success', function(e) {
+
+		e.clearSelection();
+
+		var $btn = $(e.trigger);
+		$btn.tooltip({
+			title: 'Copied!',
+			trigger: 'manual',
+		});
+		$btn.tooltip('show');
+		setTimeout(function() {
+			$btn.tooltip('dispose');
+		}, 2000);
+
+	});
+
 
 });
 </script>

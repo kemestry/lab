@@ -1,0 +1,93 @@
+{% extends "layout/html-pub.html" %}
+
+{% block html_head_link %}
+{{ parent() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.0.6/css/fileinput.min.css" integrity="sha256-0jMzmu+xN8Lxr0wvRizwxIPe/KGY3E6kYYC4UoiYMGc=" crossorigin="anonymous" />
+{% endblock %}
+
+{% block head_script %}
+{{ parent() }}
+<script>
+window.Page_State = {
+
+	_event: 'page_state_updated',
+
+	on: function(f) {
+		window.addEventListener(this._event, f);
+	},
+
+	off: function(f) {
+		window.removeEventListener(this._event, f);
+	},
+
+	update: function(data)
+	{
+		this.state = _.merge(this._data, data);
+
+		var e = new CustomEvent(this._event);
+		window.dispatchEvent(e);
+	}
+
+};
+</script>
+{% endblock %}
+
+
+{% block foot_script %}
+{{ parent() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.0.6/js/fileinput.min.js" integrity="sha256-/spDNjmg+wrZfDzvvLMxHDvD9jGHNiPKu3xGdJ2rG20=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.0.6/themes/fa/theme.min.js" integrity="sha256-/Pib+afT7QTnQUpldnOrNMc1Hpn7n0RSvVH6F4Jaqbk=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script>
+$('#qa-metric-wrap .collapse').removeClass('show');
+$('.custom-file-input').on('change',function(e) {
+	//var f = $(this).val();
+	var f = e.target.files[0].name;
+	$(this).next('.custom-file-label').addClass("selected").html(f);
+});
+
+$(function() {
+
+	$('.btn-transfer-sync').on('click', function() {
+		var $b = $(this);
+		$b.find('i').addClass('fa-spin');
+		var arg = {
+			a: 'sync',
+			id: $b.data('id')
+		};
+		$.post('/transfer/sync', arg, function() {
+			$b.find('i').removeClass('fa-spin');
+		});
+	});
+
+	$('.btn-lab-sample-sync').on('click', function() {
+
+		var $b = $(this);
+		$b.find('i').addClass('fa-spin');
+		var arg = {
+			a: 'sync',
+			id: $b.data('id')
+		};
+		$.post('/sample/sync', arg, function() {
+			$b.find('i').removeClass('fa-spin');
+		});
+
+	});
+
+	$('.btn-lab-result-sync').on('click', function() {
+
+		var $b = $(this);
+		$b.find('i').addClass('fa-spin');
+		var arg = {
+			a: 'sync',
+			id: $b.data('id')
+		};
+		$.post('/result/sync', arg, function() {
+			$b.find('i').removeClass('fa-spin');
+		});
+	});
+
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+<form enctype="multipart/form-data" method="post">
+<div class="modal" id="modal-coa-upload" role="dialog" tabindex="-1">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">COA Upload</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			</div>
+
+			<div class="modal-body">
+				<p>This Result doesn't have a COA uploaded in LeafData, you may want to ask the Lab to take care of that.</p>
+				<p>You can upload one here, to make it visible to retailers and consumer but it won't become part of the LeafData system.</p>
+				<div class="form-group">
+					<input class="form-control" name="file" type="file" >
+				</div>
+
+				<hr>
+
+				<p>Request from Lab</p>
+				<div class="form-group">
+					<input class="form-control" readonly value="https://lab.openthc.org/intent?_={{ coa_upload_hash }}">
+				</div>
+
+			</div>
+
+		<div class="modal-footer">
+			<button class="btn btn-outline-primary" name="a" type="submit" value="file-upload"><i class="fas fa-upload"></i> Upload</button>
+		</div>
+
+		</div>
+	</div>
+</div>
+</form>

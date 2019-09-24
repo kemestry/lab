@@ -42,11 +42,13 @@
 {% for s in result_list %}
 	<tr>
 		<td>
-			<a href="/result/{{ s.id }}">{{ s.id }}</a><br>
-			<a href="/sample/{{ s.meta.Sample.id }}">{{ s.meta.Sample.id }}</a><br>
-			{{ s.meta.Result.global_inventory_id }}<br>
-			{{ s.meta.Result.global_for_inventory_id }}<br>
-			{{ s.meta.Sample.global_original_id }}<br>
+			<a href="/result/{{ s.id }}">{{ s.id }}</a>
+			<br><a href="/sample/{{ s.meta.Sample.id }}">{{ s.meta.Sample.id }}</a>
+			<!--
+			<br>G:{{ s.meta.Result.global_inventory_id }}
+			<br>F:{{ s.meta.Result.global_for_inventory_id }}
+			<br>L:{{ s.meta.Sample.global_original_id }}
+			-->
 		</td>
 		<td>{{ s.created_at }}</td>
 		<td>{{ s.type_nice }}</td>
@@ -84,6 +86,7 @@ function syncExec($b, cbf)
 	$.post(sync_base + $b.data('id'), arg, function() {
 		$b.find('i').removeClass('fa-spin');
 		$b.removeClass('btn-outline-warning btn-outline-danger');
+		$b.addClass('btn-outline-secondary');
 		if ((cbf) && (typeof cbf === 'function')) {
 			cbf();
 		}

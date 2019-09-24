@@ -14,6 +14,11 @@ class Upload extends \OpenTHC\Controller\Base
 
 		switch ($_SERVER['REQUEST_METHOD']) {
 		case 'GET':
+			$data['coa_upload_hash'] = _encrypt(json_encode(array(
+				'a' => 'coa-upload-bulk',
+				'company_id' => $_SESSION['gid'],
+				'x' => $_SERVER['REQUEST_TIME'] + (86400 * 4)
+			)));
 			return $this->_container->view->render($RES, 'page/result/upload.html', $data);
 		case 'POST':
 
@@ -86,17 +91,20 @@ class Upload extends \OpenTHC\Controller\Base
 
 	protected function resolveFile($f)
 	{
-		$import_queue_path = sprintf('%s/var/import/%s', APP_ROOT, $_SESSION['License']['id']);
-
 		$f = basename($f);
 
-		if (!is_file($import_queue_path . '/' . $f)) {
-			_exit_text(sprintf('Bad File "%s"', $f), 400);
+		$import_queue_path = sprintf('%s/var/import/%s', APP_ROOT, $_SESSION['Company']['id']);
+		$import_queue_file = $import_queue_path . '/' . $f;
+		if (is_file($import_queue_file)) {
+			return $import_queue_file;
 		}
 
+		$import_queue_path = sprintf('%s/var/import/%s', APP_ROOT, $_SESSION['License']['id']);
 		$import_queue_file = $import_queue_path . '/' . $f;
-		$import_queue_file = realpath($import_queue_file);
+		if (is_file($import_queue_file)) {
+			return $import_queue_file;
+		}
 
-		return $import_queue_file;
+		_exit_text(sprintf('Bad File "%s"', $f), 400);
 	}
 }
