@@ -1,0 +1,44 @@
+{#
+	Render a Lab Result
+#}
+
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<div class="row mt-4">
+<div class="col-md-6">
+	<h1>Client: {{ Client.name }}</h1>
+</div>
+<div class="col-md-4">
+	??
+</div>
+<div class="col-md-2 r">
+	<form method="post" target="_blank">
+		<a class="btn btn-outline-secondary" href="/share/{{ Client.id }}.html"><i class="fas fa-share-alt"></i></a>
+	</form>
+</div>
+</div>
+
+<table class="table">
+<thead class="thead-dark">
+	<tr>
+		<th>Sample</th>
+		<th>Result</th>
+		<th>Product</th>
+		<th>THC</th>
+		<th>CBD</th>
+	</tr>
+</thead>
+<tbody>
+{% for lr in lab_result_list %}
+<tr>
+	<td>{{ lr.id }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+
+
+{% endblock %}
