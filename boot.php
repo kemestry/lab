@@ -17,9 +17,10 @@
  * along with OpenTHC Laboratory Portal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-define('APP_NAME', 'OpenTHC | QA');
-define('APP_SITE', 'https://lab.openthc.org');
+define('APP_HOST', 'lab.openthc.org');
+define('APP_NAME', 'OpenTHC | Lab');
 define('APP_ROOT', __DIR__);
+define('APP_SITE', 'https://' . APP_HOST);
 define('APP_SALT', sha1(APP_NAME . APP_SITE . APP_ROOT));
 define('APP_BUILD', '420.19.123');
 

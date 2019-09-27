@@ -24,7 +24,7 @@ class Accept extends \OpenTHC\Controller\Base
 
 
 		// Fresh data from CRE
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
 		if ('success' != $res['status']) {
 			Session::flash('fail', 'Cannot Load Transfer [CTA#027]');
@@ -88,7 +88,7 @@ class Accept extends \OpenTHC\Controller\Base
 
 		$url = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
 
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->post($url, array('json' => $args));
 
 		if ('success' != $res['status']) {

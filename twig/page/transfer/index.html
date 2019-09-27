@@ -76,7 +76,7 @@
 	<td><a href="/transfer/{{ t.id }}">{{ t.id }}</a>{{ t.meta.void ? " - VOID" }}</td>
 	<td>{{ t.date }}</td>
 	<td>
-		{{ t.origin_license.name }}
+		<a href="/client/{{ t.origin_license.id }}">{{ t.origin_license.name }}</a>
 	</td>
 	<td>
 		{{ t.target_license.name }}

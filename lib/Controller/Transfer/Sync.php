@@ -19,7 +19,7 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		\session_write_close();
 
-		$this->_cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$this->_cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		if (empty($this->_cre)) {
 			// Check State, give 500 error
 		}
@@ -53,14 +53,19 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$transfer_list = array();
 
-		foreach ($res['result'] as $rec) {
+		echo '<pre>';
+		var_dump($_SESSION);
+		// var_dump($res);
+		foreach ($res['result'] as $midx => $rec) {
 
-			var_dump($_SESSION);
 			$rec = array_merge($rec, $rec['_source']);
 			unset($rec['_source']);
 
 			var_dump($rec);
-			$arg = array(':l' => $_SESSION['License']['id'], ':g' => $rec['guid']);
+			$arg = array(
+				':l' => $_SESSION['License']['id'],
+				':g' => $rec['guid']
+			);
 			// Select a incoming transfer by the Lab User's lic ID, and it's unique guid.
 			$chk = $this->_container->DB->fetchOne('SELECT id,hash FROM transfer_incoming WHERE license_id = :l AND id = :g', $arg);
 			if (empty($chk)) {
@@ -76,7 +81,9 @@ class Sync extends \OpenTHC\Controller\Base
 					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 404);
 				}
 				if ($LTarget['id'] != $_SESSION['License']['id']) {
-					_exit_text('License Mis-Match', 409);
+					// _exit_text('License Mis-Match', 409);
+					var_dump($midx );
+					var_dump($LTarget);die;
 				}
 				var_dump($LTarget);
 

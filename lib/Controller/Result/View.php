@@ -181,7 +181,7 @@ class View extends \OpenTHC\Controller\Base
 			return $S->__invoke(null, $RES, array('id' => $lab_result_id));
 			break;
 		case 'void':
-			$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+			$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 			$res = $cre->qa()->delete($lab_result_id); // QAR['guid']);
 			var_dump($res);
 			exit;

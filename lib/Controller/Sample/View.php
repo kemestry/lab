@@ -1,7 +1,7 @@
 <?php
 /**
-	Only works if you OWN the Sample
-*/
+ * Only works if you OWN the Sample
+ */
 
 namespace App\Controller\Sample;
 
@@ -24,16 +24,17 @@ class View extends \OpenTHC\Controller\Base
 		switch ($_POST['a']) {
 		case 'drop':
 			// need to return the $RES object from these methods to do anything
-			$this->_dropSample($RES, $ARG, $cre);
-			break;
+			return $this->_dropSample($RES, $ARG, $cre);
 		case 'void':
 			$this->_voidSample($RES, $ARG, $cre);
 			break;
+		case 'done':
+			return $this->_finishSample($RES, $ARG, $cre);
 		}
 
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->get('/lot/' . $Lab_Sample['id']);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
@@ -50,7 +51,7 @@ class View extends \OpenTHC\Controller\Base
 		//$L_Lab = $res['result'];
 
 		// Find Owner License
-		$res = $cre->get('/config/license/' . $LSm['Lot']['global_mme_id']);
+		$res = $cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
 		$L_Own = $res['result'];
 
 		$data = array(
@@ -60,7 +61,7 @@ class View extends \OpenTHC\Controller\Base
 			'Strain' => $LSm['Strain'],
 			'Result' => $LSm['Result'],
 			'License_Owner' => $L_Own,
-			'License_Lab' => $L_Lab,
+		//	'License_Lab' => //$L_Lab,
 		);
 
 		//_exit_text($data);
@@ -69,20 +70,45 @@ class View extends \OpenTHC\Controller\Base
 
 	}
 
+	function _finishSample($RES, $ARG, $cre)
+	{
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+
+		$sql = 'SELECT * from lab_sample where id = :pk';
+		$res = SQL::fetch_all($sql, [
+			':pk' => $ARG['id'],
+		]);
+
+		$sql = 'UPDATE lab_sample SET flag = flag | :FLAG_DEAD WHERE company_id = :company AND id = :pk';
+		$arg = array(
+			// ':FLAG_DEAD' => \App\Lab_Sample::FLAG_COMPLETE,
+			// ':company' => $_SESSION['gid'],
+			// ':pk' => $ARG['id']
+		);
+		// $res = SQL::query($sql, $arg);
+
+		return $RES->withRedirect('/sample');
+	}
+
 	function _dropSample($RES, $ARG, $cre)
 	{
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
-		$res = $cre->get('/lot?source=true');
-		var_dump($res);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		// $res = $cre->get('/lot?source=true');
 
 		$res = $cre->delete('/lot/' . $ARG['id']);
-		var_dump($res);
 
-		$sql = 'UPDATE lab_sample SET flag = flag | ? WHERE company_id = ? AND id = ?';
-		$arg = array(\App\Lab_Sample::FLAG_DEAD, $_SESSION['gid'], $ARG['id']);
-		SQL::query($sql, $arg);
+		$sql = 'SELECT * from lab_sample where id = :pk';
+		$res = SQL::fetch_all($sql, [
+			':pk' => $ARG['id'],
+		]);
 
-		exit;
+		$sql = 'UPDATE lab_sample SET flag = flag | :FLAG_DEAD WHERE company_id = :company AND id = :pk';
+		$arg = array(
+			':FLAG_DEAD' => \App\Lab_Sample::FLAG_DEAD,
+			':company' => $_SESSION['gid'],
+			':pk' => $ARG['id']
+		);
+		$res = SQL::query($sql, $arg);
 
 		return $RES->withRedirect('/sample');
 	}

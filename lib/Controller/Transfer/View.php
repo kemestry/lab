@@ -17,7 +17,7 @@ class View extends \OpenTHC\Controller\Base
 		$T = $this->_container->DB->fetchRow($sql, $arg);
 
 		// Fetch from CRE
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->get('/transfer/incoming/' . $ARG['id']);
 		if ('success' != $res['status']) {
 			print_r($res);

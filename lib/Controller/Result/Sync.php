@@ -22,7 +22,7 @@ class Sync extends \OpenTHC\Controller\Base
 			return $RES->withStatus(400);
 		}
 
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->get('/lab/' . $ARG['id']);
 		if (empty($res)) {
 			_exit_text('Cannot Load QA from CRE [CRS#029]', 500);
@@ -34,7 +34,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$Result = $res['result'];
 		$Result['id'] = $Result['global_id'];
 		$Result['type_nice'] = $this->_result_type($Result);
-		//_exit_text($Result);
+		// _exit_text($Result);
 
 		$License_Lab = array();
 		if (preg_match('/^WAATTESTED\./', $Result['id'])) {
@@ -49,7 +49,7 @@ class Sync extends \OpenTHC\Controller\Base
 			if (empty($Result['global_mme_id'])) {
 				//var_dump($res);
 				//die("EMPTYLAB ADA");
-				_exit_text('Empty Lab Data [CRS#051]', 500);
+				//_exit_text('Empty Lab Data [CRS#051]', 500);
 			}
 
 			// Real!
@@ -57,7 +57,7 @@ class Sync extends \OpenTHC\Controller\Base
 			if (empty($License_Lab['id'])) {
 				// var_dump($Result);
 				// exit;
-				_exit_text("Cannot find Laboratory: '{$Result['global_mme_id']}'", 404);
+				//_exit_text("Cannot find Laboratory: '{$Result['global_mme_id']}'", 404);
 			}
 		}
 
@@ -79,6 +79,7 @@ class Sync extends \OpenTHC\Controller\Base
 			'type_nice' => '-None-',
 		);
 		// Lab Data Model, has this Inflated Object
+		// And Supply-Side Too
 		if (!empty($Result['for_inventory'])) {
 			$res = $cre->get('/lot/' . $Result['for_inventory']['global_id']);
 			if ('success' == $res['status']) {
@@ -132,6 +133,7 @@ class Sync extends \OpenTHC\Controller\Base
 		if (!empty($Product['type']) && !empty($Product['intermediate_type'])) {
 			$pt = sprintf('%s/%s', $Product['type'], $Product['intermediate_type']);
 		}
+		$pt = trim($pt, ' /');
 		switch ($pt) {
 		// Product Based Type
 		case 'end_product/concentrate_for_inhalation':
@@ -147,19 +149,25 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/marijuana_mix':
 		// Result Based Type, these are all kinds of fucked up data from LD
+		case 'harvest/harvest_materials':
 		case 'harvest/harvest_materials/flower':
 		case 'harvest/intermediate_product/flower':
-		case 'harvest/marijuana/':
-		case 'extraction/marijuana/':
+		case 'harvest/marijuana':
+		case 'extraction/marijuana':
 		case 'extraction/harvest_materials/flower_lots':
 		case 'extraction/end_product/usable_marijuana':
 		case 'extraction/intermediate_product/flower':
 		case 'extraction/intermediate_product/marijuana_mix':
 		// Wacky New Shit from v1.37.5
+		case 'intermediate/ end product/end_product':
 		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
+		case 'intermediate/ end product/harvest_materials':
 		case 'intermediate/ end product/harvest_materials/flower_lots':
-		case 'intermediate/ end product/marijuana/':
-		case 'plant/marijuana/':
+		case 'intermediate/ end product/intermediate_product':
+		case 'intermediate/ end product/intermediate_product/flower':
+		case 'intermediate/ end product/marijuana':
+		case 'plant/marijuana':
+		case 'propagation material/intermediate_product/flower':
 
 			// PCT
 			$Result['uom'] = 'pct';
@@ -171,6 +179,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 			break;
 
+		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/co2_concentrate':
 		case 'intermediate_product/food_grade_solvent_concentrate':
 		case 'intermediate_product/infused_cooking_medium':
@@ -192,6 +201,11 @@ class Sync extends \OpenTHC\Controller\Base
 			$Result['cbd'] = sprintf('%0.2f mg/g', $Result['cbd']);
 
 			break;
+
+		case 'waste/waste':
+
+			break;
+
 		default:
 			_exit_text("Not Handled: '$pt' {$Result['cannabinoid_d9_thc_percent']} / {$Result['cannabinoid_d9_thc_mg_g']} [CRS#187]", 500);
 		}
@@ -243,12 +257,13 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$pt = sprintf('%s/%s', $P['type'], $P['intermediate_type']);
 
-		$PT = new \App\Product_Type($pt);
-		if (!empty($PT['name'])) {
-			return $PT['name'];
-		}
-
-		throw new Exception('Invalid Product Type');
+		$PT = new \App\Product_Type();
+		return $PT->_map($pt);
+		// if (!empty($PT['name'])) {
+		// 	return $PT['name'];
+		// }
+		//
+		// throw new Exception('Invalid Product Type');
 	}
 
 	protected function _result_type($R)
@@ -258,29 +273,47 @@ class Sync extends \OpenTHC\Controller\Base
 		}
 
 		$rt = sprintf('%s/%s/%s', $R['batch_type'], $R['type'], $R['intermediate_type']);
-		$rt = trim($rt);
+		$rt = trim($rt,'/ ');
 		switch ($rt) {
 		case 'extraction/end_product/usable_marijuana':
 		case 'extraction/harvest_materials/flower_lots':
 		case 'extraction/intermediate_product/flower':
-		case 'extraction/marijuana/':
+		case 'extraction/marijuana':
+		case 'harvest/end_product':
+		case 'harvest/harvest_materials':
 		case 'harvest/harvest_materials/flower':
 		case 'harvest/intermediate_product/flower':
-		case 'harvest/marijuana/':
+		case 'harvest/marijuana':
+		case 'harvest_materials/flower_lots':
+		case 'harvest/harvest_materials/flower_lots':
+		case 'intermediate/ end product/end_product':
 		case 'intermediate/ end product/end_product/usable_marijuana':
 		case 'intermediate/ end product/harvest_materials/flower_lots':
-		case 'intermediate/ end product/marijuana/':
-		case 'plant/marijuana/':
-		case 'propagation material/marijuana/':
-		case 'marijuana/':
+		case 'intermediate/ end product/harvest_materials':
+		case 'intermediate/ end product/intermediate_product':
+		case 'intermediate/ end product/intermediate_product/flower':
+		case 'intermediate/ end product/marijuana':
+		case 'plant/marijuana':
+		case 'propagation material/marijuana':
+		case 'propagation material/intermediate_product/flower':
+		case 'marijuana':
 			return 'Flower';
 			break;
 		case 'extraction/intermediate_product/marijuana_mix':
+		case 'intermediate/ end product/intermediate_product/marijuana_mix':
 			return 'Mix';
 		 // Attested Stuff
 		// case 'intermediate/ end product/end_product/':
 		// case 'intermediate/ end product/harvest_materials/':
 		// 	return '-leafdata-fix-';
+		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
+		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
+		case 'intermediate_product/ethanol_concentrate':
+			return 'Concentrate';
+		case 'intermediate/ end product/end_product/solid_edible':
+			return 'Edible';
+		case 'plant/end_product':
+			return 'Plant?';
 		default:
 			_exit_text("Invalid Result Type: '$rt' [CRS#282]", 500);
 		}

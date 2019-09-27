@@ -103,6 +103,11 @@ $app->group('/result', 'App\Module\Result')
 	->add('App\Middleware\Session');
 
 
+// Client Group
+$app->group('/client', 'App\Module\Client')
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
 // Search
 $app->get('/search', 'App\Controller\Search')
 	->add('App\Middleware\Menu')

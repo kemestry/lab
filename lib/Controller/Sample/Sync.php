@@ -40,7 +40,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$c_upd = 0;
 
 		// Only want to get the QA Sample Lots -- so maybe, only Lots when we are a Laboratory?
-		$cre = new \OpenTHC\RCE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		$res = $cre->get('/lot?source=true');
 
 		if ('success' != $res['status']) {

@@ -76,7 +76,7 @@ class Back extends \App\Controller\Auth\oAuth2
 			if (!empty($_SESSION['cre'])) {
 
 				// Authenticate via PIPE
-				$cre = new \OpenTHC\RCE();
+				$cre = new \OpenTHC\CRE();
 				$cfg = array(
 					'cre' => $_SESSION['cre'],
 					'license' => $_SESSION['cre-auth']['license'],
