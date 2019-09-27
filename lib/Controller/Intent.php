@@ -30,8 +30,11 @@ class Intent extends \OpenTHC\Controller\Base
 			$arg = _decrypt($_GET['_']);
 			$arg = json_decode($arg, true);
 
+			// Expire Time
 			if (!empty($arg['x'])) {
-				// Expire Time
+				if ($arg['x'] < $_SERVER['REQUEST_TIME']) {
+					return $RES->withStatus(410);
+				}
 			}
 
 			// Action
@@ -116,6 +119,7 @@ class Intent extends \OpenTHC\Controller\Base
 		$data = [
 			'Page' => [ 'title' => 'Result :: COA :: Upload' ],
 			'Company' => $Company->toArray(),
+			'x' => $arg['x'],
 			'mode' => 'lab-bulk',
 		];
 		$file = 'page/result/upload.html';

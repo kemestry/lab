@@ -7,7 +7,9 @@
 {% block body_head %}
 <div style="position:relative;">
 <div style="position:absolute; right: 0.25em; top: 0.25em;">
-	<a class="btn btn-outline-secondary" href="/result/upload/queue"><i class="fas fa-project-diagram"></i></a>
+	{% if "lab-bulk" != mode %}
+		<a class="btn btn-outline-secondary" href="/result/upload/queue"><i class="fas fa-project-diagram"></i></a>
+	{% endif %}
 </div>
 </div>
 {% endblock %}
@@ -45,7 +47,10 @@
 <div class="container mt-4" style="min-height: 70vh;">
 <h1>{{ Page.title }}</h1>
 {% if "lab-bulk" == mode %}
-	<div class="alert alert-warning">You are uploading files to the processing queue for <strong>{{ Company.name }}</strong></div>
+	<div class="alert alert-warning">
+		You are uploading files to the processing queue for <strong>{{ Company.name }}</strong><br>
+		<small>link expires: {{ x|date('m/d H:i') }}</small>
+	</div>
 {% endif %}
 
 <div class="upload-drop-zone">
