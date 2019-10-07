@@ -4,9 +4,9 @@
 
 {% macro _qa_section_status(t) %}
 <div class="form-group">
-	<label>Status:</label>
 	<div class="input-group">
-		<select id="{{ t }}-status" class="form-control r section_status" name="{{ t }}_status" type="text">
+		<div class="input-group-prepend"><div class="input-group-text">Status:</div></div>
+		<select id="{{ t }}-status" class="form-control r section_status" name="{{ t }}_status" required type="text">
 			<option value=""> - - </option>
 			<option value="not_started">Not Started</option>
 			<option value="in_progress">In Progress</option>
@@ -34,16 +34,16 @@
 	<label>{{ l|raw }}</label>
 	<div class="input-group">
 		<div class="input-group-prepend">
-			<select class="form-control">
+			<select class="form-control metric-status">
 				<option>OK</option>
 				<option value="-1">N/A</option>
 				<option value="-2">N/D</option>
 				<option vlaue="-3">N/T</option>
 			</select>
 		</div>
-		<input class="form-control r" disabled name="{{ n }}" type="text" placeholder="{{ obj.meta.hint }}" value="">
+		<input class="form-control r metric-value" disabled name="{{ n }}" type="text" placeholder="eg: {{ obj.meta.hint }}" value="">
 		<div class="input-group-append">
-			<span class="input-group-text" style="min-width:5em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span>
+			<span class="input-group-text" style="min-width:4em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span>
 		</div>
 	</div>
 </div>

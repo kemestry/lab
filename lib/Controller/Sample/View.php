@@ -34,8 +34,8 @@ class View extends \OpenTHC\Controller\Base
 
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-		$res = $cre->get('/lot/' . $Lab_Sample['id']);
+		// $cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		// $res = $cre->get('/lot/' . $Lab_Sample['id']);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
@@ -51,8 +51,8 @@ class View extends \OpenTHC\Controller\Base
 		//$L_Lab = $res['result'];
 
 		// Find Owner License
-		$res = $cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
-		$L_Own = $res['result'];
+		// $res = $cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
+		$L_Own = new \OpenTHC\License($LSm['Lot']['global_created_by_mme_id']);
 
 		$data = array(
 			'Page' => array('title' => 'Sample :: View'),
@@ -60,11 +60,12 @@ class View extends \OpenTHC\Controller\Base
 			'Product' => $LSm['Product'],
 			'Strain' => $LSm['Strain'],
 			'Result' => $LSm['Result'],
-			'License_Owner' => $L_Own,
+			'License_Owner' => $L_Own->toArray(),
 		//	'License_Lab' => //$L_Lab,
 		);
+		$data['Sample']['id'] = $ARG['id'];
 
-		//_exit_text($data);
+		// _exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 
@@ -79,10 +80,10 @@ class View extends \OpenTHC\Controller\Base
 			':pk' => $ARG['id'],
 		]);
 
-		$sql = 'UPDATE lab_sample SET flag = flag | :FLAG_DEAD WHERE company_id = :company AND id = :pk';
+		$sql = 'UPDATE lab_sample SET flag = flag | :FLAG_DEAD WHERE license_id = :l0 AND id = :pk';
 		$arg = array(
 			// ':FLAG_DEAD' => \App\Lab_Sample::FLAG_COMPLETE,
-			// ':company' => $_SESSION['gid'],
+			// ':l0' => $_SESSION['License']['id'],
 			// ':pk' => $ARG['id']
 		);
 		// $res = SQL::query($sql, $arg);
@@ -92,6 +93,8 @@ class View extends \OpenTHC\Controller\Base
 
 	function _dropSample($RES, $ARG, $cre)
 	{
+		\session_write_close();
+
 		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		// $res = $cre->get('/lot?source=true');
 
@@ -102,10 +105,10 @@ class View extends \OpenTHC\Controller\Base
 			':pk' => $ARG['id'],
 		]);
 
-		$sql = 'UPDATE lab_sample SET flag = flag | :FLAG_DEAD WHERE company_id = :company AND id = :pk';
+		$sql = 'UPDATE lab_sample SET stat = 401, flag = flag | :FLAG_DEAD WHERE license_id = :l0 AND id = :pk';
 		$arg = array(
 			':FLAG_DEAD' => \App\Lab_Sample::FLAG_DEAD,
-			':company' => $_SESSION['gid'],
+			':l0' => $_SESSION['License']['id'],
 			':pk' => $ARG['id']
 		);
 		$res = SQL::query($sql, $arg);

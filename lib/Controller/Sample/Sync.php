@@ -11,7 +11,6 @@ class Sync extends \OpenTHC\Controller\Base
 {
 	/**
 	 * Do the SYNC
-	 * @return [type] [description]
 	 */
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -70,8 +69,6 @@ class Sync extends \OpenTHC\Controller\Base
 
 				$add = array(
 					'id' => $rec['guid'],
-					'company_id' => $_SESSION['gid'],
-					'company_ulid' => $_SESSION['Company']['ulid'],
 					'license_id' => $_SESSION['License']['id'],
 					'meta' => json_encode(array(
 						'Lot' => $Lot,
@@ -85,10 +82,21 @@ class Sync extends \OpenTHC\Controller\Base
 
 			} else {
 
-
 				// Update the Meta
 				$m = json_decode($chk['meta'], true);
 				$m['Lot'] = $Lot;
+
+				$x = $cre->get('/config/product/' . $Lot['global_inventory_type_id']);
+				if (!empty($x['result'])) {
+					$m['Product'] = $x['result'];
+				}
+
+				if (!empty($Lot['global_strain_id'])) {
+					$x = $cre->get('/config/strain/' . $Lot['global_strain_id']);
+					if (!empty($x['result'])) {
+						$m['Strain'] = $x['result'];
+					}
+				}
 
 				SQL::query('UPDATE lab_sample SET meta = :m0 WHERE id = :pk', array(
 					':pk' => $chk['id'],
@@ -99,12 +107,9 @@ class Sync extends \OpenTHC\Controller\Base
 			}
 		}
 
-		//return $RES->withRedirect('/sample');
-
-		return $RES->withJSON(array(
-			'status' => 'success',
-			'detail' => sprintf('%d Insert, %d Update', $c_ins, $c_upd),
-		));
+		return $RES->withJSON([
+			'meta' => [ 'detail' => sprintf('%d Insert, %d Update', $c_ins, $c_upd) ]
+		]);
 
 	}
 

@@ -86,9 +86,8 @@ class Accept extends \OpenTHC\Controller\Base
 		}
 
 
-		$url = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
-
 		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		$url = sprintf('/transfer/incoming/%s/accept', $ARG['id']);
 		$res = $cre->post($url, array('json' => $args));
 
 		if ('success' != $res['status']) {
@@ -106,7 +105,6 @@ class Accept extends \OpenTHC\Controller\Base
 			$dbc->insert('lab_sample', array(
 				'id' => $lot['global_received_inventory_id'],
 				'license_id' => $_SESSION['License']['id'],
-				'company_id' => $_SESSION['Company']['id'],
 				'name' => $lot['description'],
 				'meta' => \json_encode($lot),
 			));

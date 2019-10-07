@@ -16,7 +16,17 @@
 {% block body %}
 
 <h1>Results</h1>
-<p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p>
+
+<div class="result-stat mb-2">
+        <div class="btn-group">
+                <a class="btn btn-outline-secondary" href="?stat=100">Pending: {{ result_stat.100 }}</a>
+                <a class="btn btn-outline-primary" href="?stat=200">Passed: {{ result_stat.200 }}</a>
+                <a class="btn btn-outline-danger" href="?stat=400">Failed: {{ result_stat.400 }}</a>
+                <a class="btn btn-outline-secondary" href="?stat=*">All</a>
+        </div>
+</div>
+
+<!-- <p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p> -->
 
 {% if sync_want %}
 	<p class="alert alert-warning">Not all items are fully loaded from backend system, update in progress</p>

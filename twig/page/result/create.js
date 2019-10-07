@@ -49,3 +49,18 @@ $(".section_status").on('change', disableFormsOnSectionStatus);
 // 	disableFormsOnSectionStatus.bind($(sectionStatusEl)) ();
 // });
 
+$('.btn-bulk-na').on('click', function() {
+
+});
+
+$('.btn-bulk-nt').on('click', function() {
+
+});
+
+$('.btn-bulk-az').on('click', function() {
+	var $p = $(this).closest('div.metric-wrap');
+	// debugger;
+	$p.find('select.section_status').val('completed').change();
+	$p.find('select.metric-status').val('-1');
+	$p.find('input.metric-value').val('0.00');
+});

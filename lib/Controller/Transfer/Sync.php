@@ -53,9 +53,6 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$transfer_list = array();
 
-		echo '<pre>';
-		var_dump($_SESSION);
-		// var_dump($res);
 		foreach ($res['result'] as $midx => $rec) {
 
 			$rec = array_merge($rec, $rec['_source']);
@@ -74,18 +71,21 @@ class Sync extends \OpenTHC\Controller\Base
 				if (empty($LOrigin['id'])) {
 					_exit_text("Cannot find: '{$rec['global_from_mme_id']}'", 404);
 				}
-				var_dump($LOrigin);
+				// var_dump($LOrigin);
 
 				$LTarget = \OpenTHC\License::findByGUID($rec['global_to_mme_id']);
 				if (empty($LTarget['id'])) {
 					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 404);
 				}
 				if ($LTarget['id'] != $_SESSION['License']['id']) {
+					echo "<br>Skip Target: {$LTarget['name']}<br>";
+					continue;
 					// _exit_text('License Mis-Match', 409);
-					var_dump($midx );
-					var_dump($LTarget);die;
+					// var_dump($midx);
+					// var_dump($LTarget);
+					// die("<br>Bad Target '{$LTarget['id']} != {$_SESSION['License']['id']}");
 				}
-				var_dump($LTarget);
+				// var_dump($LTarget);
 
 				$rec = array(
 					'id' => $rec['guid'],
@@ -132,6 +132,7 @@ class Sync extends \OpenTHC\Controller\Base
 		//	return $this->_container->view->render($RES, 'page/transfer/empty.html', $data);
 		//}
 
+		exit;
 
 		return $RES->withRedirect('/transfer');
 

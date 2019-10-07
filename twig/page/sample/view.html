@@ -85,7 +85,8 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 
 <form method="post">
 <div class="form-actions">
-	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.global_id }}"><i class="fas fa-plus"></i> Add Results</a>
+	<a class="btn btn-outline-primary" href="/sample/{{ Sample.id }}/sync"><i class="fas fa-sync"></i> Sync</a>
+	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.id }}"><i class="fas fa-plus"></i> Add Results</a>
 	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
 	<button disabled class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
 	<button class="btn btn-outline-danger" name="a" type="submit" value="drop"><i class="fas fa-trash"></i> Delete</button>

@@ -14,12 +14,24 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		session_write_close();
 
-		if (empty($_SESSION['pipe-token'])) {
-			return $RES->withStatus(403);
-		}
-
 		if (empty($ARG['id'])) {
 			return $RES->withStatus(400);
+		}
+
+		// Filter Shit
+		if (preg_match('/^WAATTEST.+/', $ARG['id'])) {
+			$arg = [
+				':lr' => $ARG['id'],
+				':f1' => \App\Lab_Result::FLAG_SYNC
+			];
+			$this->_container->DB->query('UPDATE lab_result SET flag = flag | :f1 WHERE id = :lr', $arg);
+			return $RES->withJSON([
+				'meta' => [ 'detail' => 'Placeholder Result' ],
+			]);
+		}
+
+		if (empty($_SESSION['pipe-token'])) {
+			return $RES->withStatus(403);
 		}
 
 		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
@@ -36,6 +48,66 @@ class Sync extends \OpenTHC\Controller\Base
 		$Result['type_nice'] = $this->_result_type($Result);
 		// _exit_text($Result);
 
+		if (!empty($Result['global_inventory_id'])) {
+			// 	die("I'M A LAB MAYBE?");
+			throw new \Exception('What does this one do gain?');
+		}
+
+		// Find Sample
+		$Sample = $Result['for_inventory'];
+		$Sample['id'] = $Sample['global_id'];
+		// 	'name' => '- Not Found -',
+		// 	'type_nice' => '-None-',
+		// _exit_text($Result);
+
+		// Is the Sample one of my own ?
+		if ($Sample['global_mme_id'] == $_SESSION['License']['guid']) {
+
+			$chk = $cre->get('/lot/' . $Sample['id']);
+			// var_dump($chk); exit;
+			if ('success' == $chk['status']) {
+				$Sample = array_merge($chk['result'], $Sample);
+			}
+			// 		echo "Canot Fetch Lab Sample, use \$Result Blob?\n";
+			// 		var_dump($Result['for_inventory']);
+			// 		var_dump($res);
+
+			// Do We Have a Sample Record?
+			$sql = 'SELECT * FROM lab_sample WHERE license_id = :c AND id = :g';
+			$arg = array(
+				':c' => $_SESSION['License']['id'],
+				':g' => $Sample['id'],
+			);
+			$chk = $this->_container->DB->fetchRow($sql, $arg);
+			if (empty($chk['id'])) {
+				// $L1 = SQL::fetch_row('SELECT id, company_id FROM license WHERE guid = ?', [ $Sample['global_mme_id'] ]);
+				$add = array(
+					'id' => $Sample['id'],
+					'license_id' => $_SESSION['License']['id'],
+					// 'company_id' => $L1['company_id'],
+					// 'company_ulid' => $_SESSION['Company']['ulid'],
+					'meta' => json_encode(array(
+						'Lot' => $Sample,
+						// 'Product' => $Product,
+						// 'Strain' => $Strain,
+					)),
+				);
+				SQL::insert('lab_sample', $add);
+			}
+		} else {
+			// This Sample belongs to someone else, we only care about the results then
+		}
+
+		// 	// Find License by Global ID?
+		// 	$chk = SQL::fetch_row('SELECT lab_sample.id, lab_sample.license_id, lab_sample.meta FROM lab_sample JOIN license ON lab_sample.license_id = license.id WHERE license.guid = :l1 AND lab_sample.id = :s0', array(
+		// 		':l1' => $Sample['global_mme_id'],
+		// 		':s0' => $Sample['id']
+		// 	));
+		// 	var_dump($chk);
+		//
+		// }
+
+		// Find License
 		$License_Lab = array();
 		if (preg_match('/^WAATTESTED\./', $Result['id'])) {
 			// Fake it
@@ -62,36 +134,6 @@ class Sync extends \OpenTHC\Controller\Base
 		}
 
 		// @todo Need to Verify that it's a LAB type license.
-
-		// This is the ID as the Lab Inventory Lot
-		$sql = 'SELECT * FROM lab_sample WHERE license_id = :c AND id = :g';
-		$arg = array(
-			':c' => $_SESSION['License']['id'],
-			':g' => $Result['global_inventory_id'],
-		);
-		$res = $cre->get('/lot/' . $Result['global_inventory_id']);
-		//_exit_text($Result);
-
-		// Sample Details
-		$Sample = array(
-			'id' => $Result['global_for_inventory_id'],
-			'name' => '- Not Found -',
-			'type_nice' => '-None-',
-		);
-		// Lab Data Model, has this Inflated Object
-		// And Supply-Side Too
-		if (!empty($Result['for_inventory'])) {
-			$res = $cre->get('/lot/' . $Result['for_inventory']['global_id']);
-			if ('success' == $res['status']) {
-				$Sample = array_merge($res['result'], $Sample);
-			}
-		} else {
-			// Non-Lab Method
-			$res = $cre->get('/lot/' . $Sample['id']);
-			var_dump($res);
-			var_dump($Sample);
-			die("FHDSFSD");
-		}
 
 		//This is the Lot at the Origin
 		// Product Details
@@ -160,10 +202,13 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/intermediate_product/marijuana_mix':
 		// Wacky New Shit from v1.37.5
 		case 'intermediate/ end product/end_product':
+		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
 		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
+		case 'intermediate/ end product/end_product/infused_mix':
 		case 'intermediate/ end product/harvest_materials':
 		case 'intermediate/ end product/harvest_materials/flower_lots':
 		case 'intermediate/ end product/intermediate_product':
+		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
 		case 'intermediate/ end product/intermediate_product/flower':
 		case 'intermediate/ end product/marijuana':
 		case 'plant/marijuana':
@@ -179,6 +224,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 			break;
 
+		case 'intermediate/ end product/end_product/solid_edible':
 		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/co2_concentrate':
 		case 'intermediate_product/food_grade_solvent_concentrate':
@@ -221,15 +267,16 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$QAR = new \App\Lab_Result($Result['id']);
 		if (empty($QAR['id'])) {
-			$QAR = array();
-			$QAR['id'] = $Result['id'];
-			$QAR['license_id'] = $License_Lab['id'];
-			$QAR['created_at'] = $Result['created_at'];
-			$QAR['name'] = $Result['id'];
-			$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
-			$QAR['type'] = $Product['type_nice'];
-			$QAR['meta'] = json_encode($ret);
-			$this->_container->DB->insert('lab_result', $QAR);
+			$rec = [];
+			$rec['id'] = $Result['id'];
+			$rec['license_id'] = $License_Lab['id'];
+			$rec['created_at'] = $Result['created_at'];
+			$rec['name'] = $Result['id'];
+			$rec['flag'] = \App\Lab_Result::FLAG_SYNC;
+			$rec['type'] = $Product['type_nice'];
+			$rec['meta'] = json_encode($ret);
+			$this->_container->DB->insert('lab_result', $rec);
+			$QAR = new \App\Lab_Result($rec['id']);
 		} else {
 			//$QAR['license_id'] = $License_Lab['id'];
 			$QAR['flag'] = intval($QAR['flag'] | \App\Lab_Result::FLAG_SYNC);
@@ -238,8 +285,10 @@ class Sync extends \OpenTHC\Controller\Base
 			$QAR->save();
 		}
 
-		//_ksort_r($ret);
-		//_exit_text($ret);
+		$QAR->tryCOAImport();
+
+		// _ksort_r($ret);
+		// _exit_text($ret);
 
 		if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			return $RES->withStatus(204);
@@ -282,6 +331,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'harvest/end_product':
 		case 'harvest/harvest_materials':
 		case 'harvest/harvest_materials/flower':
+		case 'harvest/intermediate_product':
 		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana':
 		case 'harvest_materials/flower_lots':
@@ -301,6 +351,7 @@ class Sync extends \OpenTHC\Controller\Base
 			break;
 		case 'extraction/intermediate_product/marijuana_mix':
 		case 'intermediate/ end product/intermediate_product/marijuana_mix':
+		case 'intermediate/ end product/end_product/infused_mix':
 			return 'Mix';
 		 // Attested Stuff
 		// case 'intermediate/ end product/end_product/':
@@ -312,6 +363,8 @@ class Sync extends \OpenTHC\Controller\Base
 			return 'Concentrate';
 		case 'intermediate/ end product/end_product/solid_edible':
 			return 'Edible';
+		case 'intermediate/ end product/end_product/topical':
+			return 'Topical';
 		case 'plant/end_product':
 			return 'Plant?';
 		default:

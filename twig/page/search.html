@@ -1,43 +1,9 @@
-<?php
-/**
-	Search QA
-*/
+{% extends "layout/html.html" %}
 
-use Edoceo\Radix;
-use Edoceo\Radix\Session;
-use Edoceo\Radix\DB\SQL;
-use Edoceo\Radix\Net\HTTP;
+{% block body %}
 
-$q = trim($_GET['q']);
-if (!empty($q)) {
-	$sql = 'SELECT * FROM qa_sample WHERE guid = ?';
-	$arg = array($q);
-	$res = SQL::fetch_row($sql, $arg);
-	if (!empty($res['id'])) {
-		Radix::redirect('/result?q=' . $q);
-	}
 
-	// Load from LCB Data-Dump
-	$url = 'https://lab.openthc.org/api/qa/' . rawurlencode($q) . '/result';
-	//Radix::dump($url);
-	$res = HTTP::get($url);
-	switch ($res['info']['http_code']) {
-	case 200:
-		//Radix::dump($res);
-		$res = json_decode($res['body'], true);
-		if (!empty($res)) {
-			Radix::redirect('/result?q=' . $q);
-		}
-		break;
-	case 404:
-		Session::flash('warn', 'Sample ID Not Found');
-		break;
-	}
-}
-
-?>
-
-<div class="container">
+<div class="container mt-2">
 <div class="well">
 
 <form action="/search" method="get">
@@ -51,3 +17,5 @@ if (!empty($q)) {
 
 </div>
 </div>
+
+{% endblock %}

@@ -16,8 +16,8 @@ class Create extends \OpenTHC\Controller\Base
 		$data['Page'] = array('title' => 'Result :: Create');
 
 		// @todo should be License ID
-		$sql = 'SELECT * FROM lab_sample WHERE company_id = :c0 AND id = :g0';
-		$arg = array(':c0' => $_SESSION['gid'], ':g0' => $_GET['sample_id']);
+		$sql = 'SELECT * FROM lab_sample WHERE license_id = :l0 AND id = :g0';
+		$arg = array(':l0' => $_SESSION['License']['id'], ':g0' => $_GET['sample_id']);
 		$chk = SQL::fetch_row($sql, $arg);
 		if (empty($chk['id'])) {
 			_exit_text('Invalid Sample [CRC#022]', 400);
@@ -94,8 +94,6 @@ class Create extends \OpenTHC\Controller\Base
 
 	private function _save($REQ, $RES, $ARG)
 	{
-		header('content-type: text/plain');
-
 		// _exit_text($_SESSION);
 
 		// Get the authorative lab metrics
@@ -110,7 +108,7 @@ class Create extends \OpenTHC\Controller\Base
 			$metric['meta'] = $meta;
 
 			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			$metricPath = $metric['meta']['cre']["leafdata_path"];
+			$metricPath = $metric['meta']['cre']['leafdata_path'];
 			if (empty($metricPath) || substr($metricPath, -1) === '~') {
 				continue;
 			}
@@ -271,7 +269,7 @@ class Create extends \OpenTHC\Controller\Base
 
 		));
 
-		$unprocessableEntity = [
+		$lab_result_arg = [
 			/**
 				 ""required params""
 			 */
@@ -293,7 +291,7 @@ class Create extends \OpenTHC\Controller\Base
 			'cannabinoid_status' => $_POST['cannabinoid_status'],
 			'metal_status'       => $_POST['metal_status'],
 			'microbial_status'   => $_POST['microbe_status'],
-			'mycotoxin_status'   => $_POST['_stmycotoxin_statusatus'],
+			'mycotoxin_status'   => $_POST['mycotoxin_status'],
 			'pesticide_status'   => $_POST['pesticide_status'],
 			'solvent_status'     => $_POST['solvent_status'],
 			'terpene_status'     => $_POST['terpene_status'],
@@ -317,30 +315,26 @@ class Create extends \OpenTHC\Controller\Base
 			// exit;
 			// _exit_text($Metric);
 			$path = $Metric['meta']['cre']['leafdata_path'];
-			$unprocessableEntity[ $path ] = $_POST[ $k ];
+			$lab_result_arg[ $path ] = $_POST[ $k ];
 
 			// Map _percent$ to _mg_g$
 			if (preg_match('/_percent$/', $path)) {
 				$path = preg_replace('/_percent$/', '_mg_g', $path);
-				$unprocessableEntity[$path] = $_POST[ $k ];
+				$lab_result_arg[$path] = $_POST[ $k ];
 			}
 
 		}
 
-		//_exit_text($unprocessableEntity);
-
-		// _exit_json(array(
-		// 	'_POST' => $_POST,
-		// 	'_REQ' => $unprocessableEntity,
-		// ));
+		// _exit_text($lab_result_arg);
 
 		$res = $c->post('/api/v1/lab_results', [
 			'json' => [
-				'lab_result' => $unprocessableEntity
+				'lab_result' => $lab_result_arg
 			]
 		]);
 
 		$buf = $res->getBody()->getContents();
+		var_dump($buf); exit;
 
 		if ($res->getStatusCode() === 200) {
 			//echo "<h2>Results Accepted!</h2>";
@@ -354,18 +348,14 @@ class Create extends \OpenTHC\Controller\Base
 			return $RES->withRedirect($_SERVER['HTTP_REFERER']);
 		}
 
-		// _ksort_r($res);
-		// echo json_encode($res, JSON_PRETTY_PRINT);
-
 		// How to Link Together?
 		// Mark Sample Lot as Tested/OK/Done
 
-		//exit(0);
 	}
 
 	function commit($REQ, $RES, $ARG)
 	{
-
+		// Actuall Send to CRE Here
 	}
 
 	private function isValidResultValue($resultValue, $metric)

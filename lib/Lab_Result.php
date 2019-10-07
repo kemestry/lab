@@ -63,7 +63,7 @@ class Lab_Result extends \OpenTHC\SQL\Record
 			mkdir($coa_path, 0755, true);
 		}
 
-		// $pdf_source_type = _find_mime_type($coa_files);
+		// $pdf_source_type = mime_content_type($coa_file);
 		// case 'application/pdf':
 		// case 'image/png':
 		// case 'image/jpeg':

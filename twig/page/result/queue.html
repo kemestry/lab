@@ -7,14 +7,16 @@
 {% block body %}
 
 <div class="container mt-4" style="min-height: 70vh;">
+
 <h1>{{ Page.title }}</h1>
+<h2>{{ file_list|length }} COAs to import</h2>
 
 <div class="d-flex flex-wrap">
 {% for f in file_list %}
 	<div class="mb-2" style="border-top: 1px solid #333; flex: 1 1 20%;">
 		<div>{{ f }}</div>
-		<div class="img-fluid">
-			<a href="/result/upload/queue?f={{ f|url_encode }}">
+		<div class="img-fluid" style="text-align:center;">
+			<a class="coa-preview-link" href="/result/upload/queue?f={{ f|url_encode }}">
 			<img src="/result/upload/preview?f={{ f|url_encode }}" style="max-width: 240px;">
 			</a>
 		</div>
@@ -24,4 +26,17 @@
 
 </div>
 
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+<script>
+$(function() {
+	$('.coa-preview-link').on('click', function() {
+		var $p = $(this).parent();
+		$p.find('img').css('border', '1px solid #f00');
+		$p.css('opacity', '0.5');
+	});
+});
+</script>
 {% endblock %}

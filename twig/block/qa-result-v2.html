@@ -53,7 +53,7 @@ section {
 
 {{ Helpers._qa_section_head("General", "metric-wrap-general") }}
 
-<div class="collapse" id="metric-wrap-general">
+<div class="collapse metric-wrap" id="metric-wrap-general">
 
 	{% set index = 0 %}
 	{% for metricId, metric in MetricList.General %}
@@ -88,14 +88,20 @@ section {
 
 {{ Helpers._qa_section_head("Terpenes", "metric-wrap-t") }}
 
-<div class="collapse" id="metric-wrap-t">
+<div class="collapse metric-wrap" id="metric-wrap-t">
 	<!-- Status, etc. -->
 	<div class="row">
 		<div class="col-md-3">
 			{{ Helpers._qa_section_status("terpene") }}
 		</div>
+		<div class="col-md-9">
+			<div class="btn-group">
+				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+			</div>
+		</div>
 	</div>
-
 <div>
 	{% set index = 0 %}
 	{% for metricId, result in MetricList.Terpene %}
@@ -124,11 +130,18 @@ section {
 
 {{ Helpers._qa_section_head("Microbes", "metric-wrap-m") }}
 
-<div class="collapse" id="metric-wrap-m">
+<div class="collapse metric-wrap" id="metric-wrap-m">
 	<!-- Status, etc. -->
 	<div class="row">
 			<div class="col-md-3">
 				{{ Helpers._qa_section_status("microbe") }}
+			</div>
+			<div class="col-md-9">
+				<div class="btn-group">
+					<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+					<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+					<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+				</div>
 			</div>
 	</div>
 
@@ -157,11 +170,18 @@ section {
 
 {{ Helpers._qa_section_head("Pesticides", "metric-wrap-p") }}
 
-<div class="collapse" id="metric-wrap-p">
+<div class="collapse metric-wrap" id="metric-wrap-p">
 <!-- Status, etc. -->
 <div class="row">
 		<div class="col-md-3">
 			{{ Helpers._qa_section_status("pesticide") }}
+		</div>
+		<div class="col-md-9">
+			<div class="btn-group">
+				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+			</div>
 		</div>
 </div>
 
@@ -187,6 +207,47 @@ section {
 </div> <!-- /#metric-wrap-p -->
 </section>
 
+<section>
+
+{{ Helpers._qa_section_head("Heavy Metals", "metric-wrap-hm") }}
+
+<div class="collapse metric-wrap" id="metric-wrap-hm">
+<!-- Status, etc. -->
+<div class="row">
+		<div class="col-md-3">
+			{{ Helpers._qa_section_status("metal") }}
+		</div>
+		<div class="col-md-9">
+			<div class="btn-group">
+				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+			</div>
+		</div>
+</div>
+
+	{% set index = 0 %}
+	{% for metricId, result in MetricList.Metal %}
+		{% if (index is divisible by(4)) %}
+		<div class="row">
+		{% endif %}
+
+			<div class="col-md-3">
+				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+			</div>
+
+		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Metal|length)-1)) %}
+		</div>
+		{% endif %}
+
+		{# Don't forget to update the index! #}
+		{% set index = index + 1 %}
+	{% endfor %}
+
+
+</div> <!-- /#metric-wrap-p -->
+</section>
+
 
 <!--
 	Solvents
@@ -195,11 +256,18 @@ section {
 
 {{ Helpers._qa_section_head("Solvents", "metric-wrap-s") }}
 
-<div class="collapse" id="metric-wrap-s">
+<div class="collapse metric-wrap" id="metric-wrap-s">
 <!-- Status, etc. -->
 	<div class="row">
 		<div class="col-md-3">
 			{{ Helpers._qa_section_status("solvent") }}
+		</div>
+		<div class="col-md-9">
+			<div class="btn-group">
+				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+			</div>
 		</div>
 	</div>
 
@@ -233,11 +301,18 @@ section {
 
 {{ Helpers._qa_section_head("Mycotoxin", "metric-wrap-mycotoxin") }}
 
-<div class="collapse" id="metric-wrap-mycotoxin">
+<div class="collapse metric-wrap" id="metric-wrap-mycotoxin">
 
 	<div class="row">
 		<div class="col-md-3">
 			{{ Helpers._qa_section_status("mycotoxin") }}
+		</div>
+		<div class="col-md-9">
+			<div class="btn-group">
+				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+			</div>
 		</div>
 	</div>
 

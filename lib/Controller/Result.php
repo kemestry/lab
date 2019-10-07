@@ -19,12 +19,12 @@ class Result extends \OpenTHC\Controller\Base
 		$sql = <<<SQL
 SELECT lab_result.*
 FROM lab_result
-JOIN lab_result_company ON lab_result.id = lab_result_company.lab_result_id
-WHERE lab_result_company.company_id = :c
+LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
+WHERE lab_result.license_id = :l0 OR lab_result_license.license_id = :l0
 ORDER BY created_at DESC, lab_result.id
 SQL;
 
-		$arg = array(':c' => $_SESSION['Company']['id']);
+		$arg = array(':l0' => $_SESSION['License']['id']);
 		$res = $this->_container->DB->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
