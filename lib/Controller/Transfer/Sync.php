@@ -208,7 +208,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 				// Guess
 				$x = $rec['description'];
-				$x = str_replace($rec['inventory_name'], null, $x);
+				$x = str_replace($rec['inventory_name'], null, $x); // Strip Inventory Name
 				$x = preg_replace('/ WA[\w\. ]+$/', null, $x);
 
 				$Strain['name'] = trim($x);
@@ -247,14 +247,11 @@ class Sync extends \OpenTHC\Controller\Base
 					'Strain' => $Strain,
 				)
 			);
-			// _exit_text($add);
-
-
-			$full_price += floatval($rec['price']);
 
 			$add['meta'] = json_encode($add['meta']);
-
 			$this->_container->DB->insert('transfer_incoming_item', $add);
+
+			$full_price += floatval($rec['price']);
 
 		}
 

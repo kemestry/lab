@@ -38,6 +38,7 @@ class Create extends \OpenTHC\Controller\Base
 		// Get authoriative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
 		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
+		// _exit_text($metricTab);
 		$MetricList = array(); // This list is organized by the metric's type. I need it to make render the view eaiser.
 		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made
 		// it more difficult to refactor this for other RCEs.
@@ -48,8 +49,17 @@ class Create extends \OpenTHC\Controller\Base
 			$meta = json_decode($metric['meta'], true);
 
 			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			$metricPath = $meta['cre']['leafdata_path'];
+			// $creEngine = $_SESSION['rbe']['engine'];
+			$creEngine = 'leafdata';
+			$metricPath = $meta['cre'][$creEngine]['path'];
 			if (empty($metricPath) || substr($metricPath, -1) === '~') {
+				continue;
+			}
+
+			// Filter out read-only or RBE-calculated fields
+			$calculated = $meta['cre'][$creEngine]['calculated'] ?: false;
+			$readOnly = $meta['cre'][$creEngine]['readonly'] ?: false;
+			if ($calculated || $readOnly) {
 				continue;
 			}
 
@@ -67,7 +77,7 @@ class Create extends \OpenTHC\Controller\Base
 
 		$file = 'page/result/create.html';
 
-		//_exit_text($data);
+		// _exit_text($data);
 
 		return $this->_container->view->render($RES, $file, $data);
 
@@ -108,7 +118,8 @@ class Create extends \OpenTHC\Controller\Base
 			$metric['meta'] = $meta;
 
 			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			$metricPath = $metric['meta']['cre']['leafdata_path'];
+			$creEngine = 'leafdata';
+			$metricPath = $metric['meta']['cre'][$creEngine]['path'];
 			if (empty($metricPath) || substr($metricPath, -1) === '~') {
 				continue;
 			}
@@ -314,7 +325,8 @@ class Create extends \OpenTHC\Controller\Base
 			// var_dump($Metric);
 			// exit;
 			// _exit_text($Metric);
-			$path = $Metric['meta']['cre']['leafdata_path'];
+			$creEngine = 'leafdata';
+			$path = $Metric['meta']['cre'][$creEngine]['path'];
 			$lab_result_arg[ $path ] = $_POST[ $k ];
 
 			// Map _percent$ to _mg_g$
@@ -334,14 +346,20 @@ class Create extends \OpenTHC\Controller\Base
 		]);
 
 		$buf = $res->getBody()->getContents();
-		var_dump($buf); exit;
 
 		if ($res->getStatusCode() === 200) {
-			//echo "<h2>Results Accepted!</h2>";
+
 			$res = json_decode($buf, true);
-			Session::flash('info', 'Results Accepted!');
+			$res = $res[0];
+			if ('passed' == $res['status']) {
+				Session::flash('info', 'Results Accepted and Passed!');
+			} else {
+				Session::flash('warn', 'Results Accepted but are not considered Passed');
+			}
+
 			// Sync One
 			return $RES->withRedirect('/result/' . $res[0]['global_id'] . '/sync');
+
 		} else {
 			echo "<h2>Results Rejected!</h2>";
 			Session::flash('fail', $buf);

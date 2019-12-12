@@ -1,12 +1,9 @@
 <?php
 /**
- * oAuth2 Against OpenTHC Authentication System
+ * oAuth2 Base Controller
  */
 
 namespace App\Controller\Auth;
-
-use Edoceo\Radix;
-use Edoceo\Radix\Session;
 
 class oAuth2 extends \OpenTHC\Controller\Base
 {
@@ -22,20 +19,14 @@ class oAuth2 extends \OpenTHC\Controller\Base
 
 		if (empty($a)) {
 			_exit_text('Invalid State [CAO#024]', 400);
-			Session::flash('fail', 'Invalid State');
-			Radix::redirect('/auth/fail');
 		}
 
 		if (empty($b)) {
 			_exit_text('Invalid State [CAO#030]', 400);
-			Session::flash('fail', 'Invalid State');
-			Radix::redirect('/auth/fail');
 		}
 
 		if ($a != $b) {
 			_exit_text('Invalid State [CAO#036]', 400);
-			Session::flash('fail', 'Invalid State');
-			Radix::redirect('/');
 		}
 	}
 
@@ -48,14 +39,13 @@ class oAuth2 extends \OpenTHC\Controller\Base
 
 		$u = sprintf('https://%s/auth/oauth/back?%s', $_SERVER['SERVER_NAME'], http_build_query(array('r' => $r)));
 		$u = trim($u, '?');
-		$p = new \League\OAuth2\Client\Provider\GenericProvider([
+
+		$cfg['redirectUri'] = $u;
+		$cfg['verify'] = true;
+
+		$p = new \League\OAuth2\Client\Provider\GenericProvider($cfg);
 			'clientId' => $cfg['client'],
 			'clientSecret' => $cfg['secret'],
-			'redirectUri' => $u,
-			'urlAuthorize' => $cfg['url_authz'],
-			'urlAccessToken' => $cfg['url_token'],
-			'urlResourceOwnerDetails' => $cfg['url_ident'],
-			'verify' => true
 		]);
 
 		return $p;

@@ -15,8 +15,8 @@
 <thead>
 	<tr>
 		<th>Sender ID</th>
-		<th>Strain</th>
-		<th>Descrpition</th>
+		<th>Product</th>
+		<th>Description</th>
 		<th class="r">Sent</th>
 		<th class="r">Received</th>
 	</tr>
@@ -29,10 +29,12 @@
 			Source Lot: {{ iti.global_inventory_id }}<br>
 			Sample Lot: <strong><a href="/sample/{{ iti.global_received_inventory_id }}">{{ iti.global_received_inventory_id }}</a></strong>
 		</td>
-		<td>{{ iti.strain_name }}</td>
-		<td>{{ iti.description }}</td>
+		<td>{{ iti.inventory_name }}</td>
+		<td>
+			{{ iti.description }}
+			<br><code>{{ iti.sample_type }}</code>
+		</td>
 		<td class="r">{{ iti.qty }}</td>
-		<!-- <td><pre>{{ dump(iti) }}</pre></td> -->
 		<td class="r">{{ iti.received_qty }}</td>
 		</td>
 	</tr>
