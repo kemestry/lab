@@ -41,7 +41,7 @@
 				<option vlaue="-3">N/T</option>
 			</select>
 		</div>
-		<input class="form-control r metric-value" disabled name="{{ n }}" type="text" placeholder="eg: {{ obj.meta.hint }}" value="">
+		<input class="form-control r metric-value" disabled name="{{ n }}" type="text" placeholder="eg: {{ obj.meta.hint }}" value="{{ obj.result }}">
 		<div class="input-group-append">
 			<span class="input-group-text" style="min-width:4em;">{{  ScopeHelper._nice_uom(obj.meta.uom) }}</span>
 		</div>

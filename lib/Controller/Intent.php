@@ -82,6 +82,8 @@ class Intent extends \OpenTHC\Controller\Base
 			unset($_SESSION['intent']);
 			unset($_SESSION['intent-data']);
 			break;
+		default:
+			$RES = $RES->withRedirect('/result');
 		}
 
 		return $RES;

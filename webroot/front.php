@@ -20,8 +20,8 @@
 require_once(dirname(dirname(__FILE__)) . '/boot.php');
 
 // Slim Application
-//$cfg = array();
-$cfg = array('debug' => true);
+$cfg = [];
+// $cfg['debug'] = true;
 $app = new \OpenTHC\App($cfg);
 
 // Database Connection

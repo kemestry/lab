@@ -201,6 +201,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'extraction/intermediate_product/flower':
 		case 'extraction/intermediate_product/marijuana_mix':
 		// Wacky New Shit from v1.37.5
+		case 'harvest/intermediate_product/marijuana_mix':
 		case 'intermediate/ end product/end_product':
 		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
 		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
@@ -350,6 +351,7 @@ class Sync extends \OpenTHC\Controller\Base
 			return 'Flower';
 			break;
 		case 'extraction/intermediate_product/marijuana_mix':
+		case 'harvest/intermediate_product/marijuana_mix':
 		case 'intermediate/ end product/intermediate_product/marijuana_mix':
 		case 'intermediate/ end product/end_product/infused_mix':
 			return 'Mix';
