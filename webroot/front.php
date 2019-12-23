@@ -108,6 +108,8 @@ $app->group('/client', 'App\Module\Client')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Auth')
 	->add('App\Middleware\Session');
+
+
 // Search
 $app->get('/search', 'App\Controller\Search')
 	->add('App\Middleware\Menu')
@@ -133,13 +135,6 @@ $app->get('/sync', 'App\Controller\Sync')
 $app->post('/sync', 'App\Controller\Sync:exec')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Session');
-
-
-// No Session Here
-$app->get('/about', function($REQ, $RES, $ARG) {
-	$data = array('Page' => array('title' => 'About'));
-	return $this->view->render($RES, 'page/about.html', $data);
-})->add('App\Middleware\Menu');
 
 
 // Dump Routes?
