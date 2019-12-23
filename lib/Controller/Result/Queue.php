@@ -92,8 +92,6 @@ class Queue extends \App\Controller\Result\Upload
 			unlink($f);
 		}
 
-		_exit_text($data);
-
 		return $RES->withRedirect('/result/upload/queue');
 
 	}

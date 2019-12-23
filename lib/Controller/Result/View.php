@@ -32,6 +32,38 @@ class View extends \OpenTHC\Controller\Base
 			return $this->_postHandler($RES, $LR, $meta);
 		}
 
+		// Get authoriative lab metrics
+		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
+		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
+		// _exit_text($metricTab);
+		$MetricList = array(); // This list is organized by the metric's type. I need it to make render the view eaiser.
+		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made
+		// it more difficult to refactor this for other RCEs.
+		foreach ($metricTab as $index => $metric) {
+
+			$type = $metric['type'];
+			$key = $metric['id'];
+			$metric_meta = json_decode($metric['meta'], true);
+
+			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
+			// $creEngine = $_SESSION['rbe']['engine'];
+			$creEngine = 'leafdata';
+			$metricPath = $metric_meta['cre'][$creEngine]['path'];
+			if (empty($metricPath) || substr($metricPath, -1) === '~') {
+				continue;
+			}
+
+			// Promote the user's RCE metric path to the stub
+			$metric_meta['stub'] = $metricPath;
+
+			// Add metric to it's type list, in the Metric List
+			if (empty($MetricList[$type])) $MetricList[$type] = array();
+
+			$metric['meta'] = $metric_meta;
+
+			$metric['result'] = $meta['Result'][$metricPath]; // Load the value from LD into our Metric Table
+			$MetricList[$type][$key] = $metric;
+		}
 
 		// COA Formats
 		if (!empty($_GET['f'])) {
@@ -80,6 +112,7 @@ class View extends \OpenTHC\Controller\Base
 		// }
 
 		$data = array();
+		$data['MetricList'] = $MetricList;
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Sample']  = $meta['Sample'];
 		$data['Result']  = $meta['Result'];
@@ -113,7 +146,6 @@ class View extends \OpenTHC\Controller\Base
 		if ('data' == $_GET['_dump']) {
 			_exit_text($data);
 		}
-		// echo '<pre>'; var_dump($data);die;
 
 		return $this->_container->view->render($RES, $file = 'page/result/view.html', $data);
 
