@@ -44,9 +44,6 @@ class oAuth2 extends \OpenTHC\Controller\Base
 		$cfg['verify'] = true;
 
 		$p = new \League\OAuth2\Client\Provider\GenericProvider($cfg);
-			'clientId' => $cfg['client'],
-			'clientSecret' => $cfg['secret'],
-		]);
 
 		return $p;
 	}

@@ -22,6 +22,11 @@ class Sync extends \OpenTHC\Controller\Base
 		$this->_cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 		if (empty($this->_cre)) {
 			// Check State, give 500 error
+			return $RES->withJSON([
+				'code' => 500,
+				'data' => null,
+				'meta' => [ 'detail' => 'No PIPE Connection' ]
+			], 500);
 		}
 
 		if (!empty($ARG['id'])) {
@@ -58,7 +63,7 @@ class Sync extends \OpenTHC\Controller\Base
 			$rec = array_merge($rec, $rec['_source']);
 			unset($rec['_source']);
 
-			var_dump($rec);
+			// var_dump($rec);
 			$arg = array(
 				':l' => $_SESSION['License']['id'],
 				':g' => $rec['guid']
@@ -78,7 +83,7 @@ class Sync extends \OpenTHC\Controller\Base
 					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 404);
 				}
 				if ($LTarget['id'] != $_SESSION['License']['id']) {
-					echo "<br>Skip Target: {$LTarget['name']}<br>";
+					// echo "<br>Skip Target: {$LTarget['name']}<br>";
 					continue;
 					// _exit_text('License Mis-Match', 409);
 					// var_dump($midx);
@@ -108,7 +113,7 @@ class Sync extends \OpenTHC\Controller\Base
 				);
 
 				$sql = 'UPDATE transfer_incoming SET hash = :h, meta = :m, stat = :s WHERE id = :id';
-				var_dump($upd);
+				// var_dump($upd);
 
 				$this->_container->DB->query($sql, $upd);
 			}
@@ -131,8 +136,6 @@ class Sync extends \OpenTHC\Controller\Base
 		//	$data = array();
 		//	return $this->_container->view->render($RES, 'page/transfer/empty.html', $data);
 		//}
-
-		exit;
 
 		return $RES->withRedirect('/transfer');
 
