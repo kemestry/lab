@@ -1,7 +1,2 @@
-#
-# Hello robots!
-#
-
-User-Agent: *
-
-Disallow: /share
+user-agent: *
+disallow: /
