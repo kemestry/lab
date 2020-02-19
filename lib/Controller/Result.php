@@ -13,7 +13,30 @@ class Result extends \OpenTHC\Controller\Base
 			'Page' => array('title' => 'Lab Results'),
 			'sync_want' => false,
 			'result_list' => array(),
+			'result_stat' => [
+				'100' => 0,
+				'200' => 0,
+				'400' => 0,
+			]
 		);
+
+
+		$sql = <<<SQL
+SELECT count(id) AS c, stat
+FROM lab_result
+ LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
+WHERE lab_result.license_id = :l0
+ OR lab_result_license.license_id = :l0
+GROUP BY stat
+ORDER BY stat
+SQL;
+		$arg = array(':l0' => $_SESSION['License']['id']);
+		$res = $this->_container->DB->fetchAll($sql, $arg);
+		foreach ($res as $rec) {
+			$data['result_stat'][ $rec['stat'] ] = $rec['c'];
+		}
+		// _exit_text($data);
+
 
 		// Stuff my Company is linked to?
 		$sql = <<<SQL
