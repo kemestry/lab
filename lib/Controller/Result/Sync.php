@@ -227,6 +227,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 		case 'intermediate/ end product/end_product/solid_edible':
 		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
+		case 'intermediate/ end product/intermediate_product/hydrocarbon_concentrate':
 		case 'intermediate_product/co2_concentrate':
 		case 'intermediate_product/food_grade_solvent_concentrate':
 		case 'intermediate_product/infused_cooking_medium':
@@ -361,10 +362,14 @@ class Sync extends \OpenTHC\Controller\Base
 		// 	return '-leafdata-fix-';
 		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
 		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
+		case 'intermediate/ end product/intermediate_product/hydrocarbon_concentrate':
 		case 'intermediate_product/ethanol_concentrate':
 			return 'Concentrate';
+		case 'intermediate/ end product/end_product/liquid_edible':
 		case 'intermediate/ end product/end_product/solid_edible':
 			return 'Edible';
+		case 'intermediate/ end product/end_product/tinctures':
+			return 'Tincture';
 		case 'intermediate/ end product/end_product/topical':
 			return 'Topical';
 		case 'plant/end_product':

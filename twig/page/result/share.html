@@ -35,12 +35,17 @@
 </div>
 <div class="col-md-4">
 	<div class="form-group">
-		<label>Print Link</label>
+		<label>Print Link
+			<span data-toggle="tooltip" data-placement="top" style="cursor:help;" title="Waiting for the Product Owner or Laboratory to upload these documents">
+				<i class="fas fa-info-circle"></i>
+			</span>
+		</label>
 		<div class="input-group">
 			{% if Result.coa_file %}
 				<a class="btn btn-block btn-outline-primary" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
 			{% else %}
-				<a class="btn btn-block btn-outline-secondary disabled" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
+				<!-- <a class="btn btn-block btn-outline-secondary disabled" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a> -->
+				<div class="btn btn-block btn-outline-secondary disabled"><i class="fas fa-print"></i> Waiting for Upload</div>
 			{% endif %}
 		</div>
 	</div>

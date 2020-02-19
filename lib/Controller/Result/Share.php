@@ -28,6 +28,7 @@ class Share extends \OpenTHC\Controller\Base
 		if (empty($QAR['id'])) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#030]'),
+				'lab_result_id' => null, // $ARG['id'],
 			);
 			$RES = $RES->withStatus(404);
 			return $this->_container->view->render($RES, 'page/result/404.html', $data);
@@ -37,6 +38,7 @@ class Share extends \OpenTHC\Controller\Base
 		if (empty($meta)) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#039]'),
+				'lab_result_id' => $QAR['id'],
 			);
 			$RES = $RES->withStatus(404);
 			return $this->_container->view->render($RES, 'page/result/404.html', $data);
