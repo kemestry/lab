@@ -46,12 +46,10 @@ class Accept extends \OpenTHC\Controller\Base
 		$data = array(
 			'Page' => array('title' => 'Transfer :: Accept'),
 			'Transfer' => $T1,
-			'Origin_License' => $Origin,
-			'Target_License' => $Target,
+			'Origin_License' => $Origin->toArray(),
+			'Target_License' => $Target->toArray(),
 			'Zone_list' => $zone_list,
 		);
-
-		//_exit_text($data);
 
 		return $this->_container->view->render($RES, 'page/transfer/accept.html', $data);
 
@@ -111,7 +109,7 @@ class Accept extends \OpenTHC\Controller\Base
 
 		}
 
-		Session::flash('info', 'Transfer Accepted, it could take LeafData 10 minutes to recognize');
+		Session::flash('info', 'Transfer Accepted, Inventory changes in LeafData generally take up to 10 minutes to synchronize.');
 
 		return $RES->withRedirect('/transfer/' . $ARG['id']);
 

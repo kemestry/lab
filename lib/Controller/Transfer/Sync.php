@@ -297,8 +297,9 @@ class Sync extends \OpenTHC\Controller\Base
 			case 'transporter/open':
 				return 100;
 			case 'pick-up/ready-for-pickup':
-			case 'delivery/in-transit':
 				return 200;
+			case 'delivery/in-transit':
+			case 'pick-up/in-transit':
 				return 301;
 			case 'delivery/received':
 			case 'pick-up/received':

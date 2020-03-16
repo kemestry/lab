@@ -18,6 +18,18 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 	{
 		$RES = parent::__invoke($REQ, $RES, $ARG);
 
+		$x = $RES->getStatusCode();
+		switch ($x) {
+		case 200:
+		case 301:
+		case 302:
+			// OK
+			break;
+		default:
+			_exit_text(sprintf('Invalid Session State "%d" [CAC#028]', $x), 500);
+			return $RES;
+		}
+
 		if (empty($_SESSION['cre-auth'])) {
 			_exit_text('Invalid Session State [CAC#025]', 400);
 		}
@@ -102,8 +114,9 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 		// Sending Application may give us information this way?
 		// And we provide the bearer token from our p2p configuration
 		if (!empty($this->_connect_info)) {
+			$res = [];
 			if (!empty($this->_connect_info['pingback'])) {
-				$cfg = \OpenTHC\Config::get('p2p');
+				$cfg = \OpenTHC\Config::get('openthc_p2p');
 				$res = HTTP::get($this->_connect_info['pingback'], array(
 					sprintf('Authorization: Bearer %s', $cfg['public_key']),
 				));

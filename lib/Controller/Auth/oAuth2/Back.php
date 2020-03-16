@@ -57,8 +57,6 @@ class Back extends \App\Controller\Auth\oAuth2
 			$x = $p->getResourceOwner($tok);
 			$x = $x->toArray();
 
-			$x['scope'] = explode(' ', $x['scope']);
-
 			$_SESSION['Contact'] = $x['Contact'];
 			$_SESSION['Company'] = $x['Company'];
 
@@ -82,10 +80,9 @@ class Back extends \App\Controller\Auth\oAuth2
 					'license' => $_SESSION['cre-auth']['license'],
 					'license-key' => $_SESSION['cre-auth']['license-key'],
 				);
-				$x = $cre->auth($cfg);
-
-				if ('success' == $x['status']) {
-					$_SESSION['pipe-token'] = $x['result'];
+				$res = $cre->auth($cfg);
+				if (!empty($res['data'])) {
+					$_SESSION['pipe-token'] = $res['data'];
 				} else {
 					_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
 				}
