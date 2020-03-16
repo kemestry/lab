@@ -20,7 +20,6 @@ class View extends \OpenTHC\Controller\Base
 			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
 
-
 		switch ($_POST['a']) {
 		case 'drop':
 			// need to return the $RES object from these methods to do anything
@@ -65,7 +64,10 @@ class View extends \OpenTHC\Controller\Base
 		);
 		$data['Sample']['id'] = $ARG['id'];
 
-		// _exit_text($data);
+		// cause LeafData makes this one need MEDIACAL stuff, we fake-it in
+		if ('flower' == $data['Product']['intermediate_type']) {
+			$data['Sample']['medically_compliant'] = true;
+		}
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 

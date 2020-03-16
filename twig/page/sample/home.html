@@ -32,7 +32,7 @@
 	<div class="btn-group">
 		<a class="btn btn-outline-secondary" href="?stat=100">Active: {{ sample_stat.100 }}</a>
 		<a class="btn btn-outline-success" href="?stat=200">Completed: {{ sample_stat.200 }}</a>
-		<a class="btn btn-outline-danger" href="?stat=410">Void: {{ sample_stat.410 }}</a>
+		<a class="btn btn-outline-danger" href="?stat=401">Void: {{ sample_stat.401 }}</a>
 		<a class="btn btn-outline-secondary" href="?stat=*">All</a>
 	</div>
 	<input class="form-control">
@@ -57,7 +57,7 @@
 		<!-- Sample Item ID / Name -->
 		<td>
 			<h5><a href="/sample/{{ s.id }}">{{ s.id }}</a></h5>
-
+			Stat: {{ s.stat }}
 			<!-- @TODO -->
 			<!-- Add more vendor information here... maybe a business name? -->
 			<div>

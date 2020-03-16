@@ -3,11 +3,11 @@
  * Search and Import Transfers
  */
 
-namespace App\Controller;
+namespace App\Controller\Transfer;
 
 use Edoceo\Radix\DB\SQL;
 
-class Transfer extends \OpenTHC\Controller\Base
+class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -56,7 +56,7 @@ class Transfer extends \OpenTHC\Controller\Base
 			'transfer_list' => $transfer_list,
 		);
 
-		return $this->_container->view->render($RES, 'page/transfer/index.html', $data);
+		return $this->_container->view->render($RES, 'page/transfer/home.html', $data);
 
 	}
 

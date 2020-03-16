@@ -3,9 +3,9 @@
  * Show Result List
  */
 
-namespace App\Controller;
+namespace App\Controller\Result;
 
-class Result extends \OpenTHC\Controller\Base
+class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -118,7 +118,7 @@ SQL;
 
 		}
 
-		return $this->_container->view->render($RES, 'page/result/index.html', $data);
+		return $this->_container->view->render($RES, 'page/result/home.html', $data);
 
 	}
 }

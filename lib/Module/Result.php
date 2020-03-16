@@ -11,7 +11,7 @@ class Result extends \OpenTHC\Module\Base
 {
 	function __invoke($a)
 	{
-		$a->get('', 'App\Controller\Result');
+		$a->get('', 'App\Controller\Result\Home');
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Result\Sync');
 
 		$a->get('/create', 'App\Controller\Result\Create');

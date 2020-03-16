@@ -7,7 +7,7 @@ namespace App\Controller\Sample;
 
 use Edoceo\Radix\DB\SQL;
 
-class Index extends \OpenTHC\Controller\Base
+class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -33,10 +33,10 @@ SQL;
 		foreach ($res as $rec) {
 			$data['sample_stat'][ $rec['stat'] ] = $rec['c'];
 		}
-		// _exit_text($data);
 
+		// Status
 		$stat = $_GET['stat'];
-		if (empty($stat)) {
+		if (empty($stat) || ('*' == $stat)) {
 
 			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND flag & :f0 = 0 ORDER BY id DESC';
 			$arg = array(
@@ -44,38 +44,12 @@ SQL;
 				':f0' => \App\Lab_Sample::FLAG_DEAD
 			);
 
-
 		} else {
 
-			switch ($stat)
-			{
-				case '100': // Active
-					$flag = \App\Lab_Sample::FLAG_ACTIVE;
-					break;
-
-				case '200': // Completed
-					$flag = \App\Lab_Sample::FLAG_FAILED | \App\Lab_Sample::FLAG_PASSED;
-					break;
-
-				case '410': // Void
-					$flag = \App\Lab_Sample::FLAG_REJECT;
-					break;
-
-				case '*':	// all
-					// 0x8000073 | flag = 0x8000073
-					// $flag = 0x8000073;
-					$flag = \App\Lab_Sample::FLAG_ACTIVE | \App\Lab_Sample::FLAG_FAILED | \App\Lab_Sample::FLAG_PASSED | \App\Lab_Sample::FLAG_REJECT;
-					break;
-
-				default:
-					// flash, wrong stat
-					return $RES->withRedirect('/sample');
-			}
-
-			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND flag | :f0 = :f0 ORDER BY id DESC';
+			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND stat = :s0 ORDER BY id DESC';
 			$arg = array(
 				':l0' => $_SESSION['License']['id'],
-				':f0' => $flag,
+				':s0' => $stat,
 			);
 
 		}
@@ -87,7 +61,7 @@ SQL;
 
 		$data['sample_list'] = $sample_list;
 
-		return $this->_container->view->render($RES, 'page/sample/index.html', $data);
+		return $this->_container->view->render($RES, 'page/sample/home.html', $data);
 	}
 
 }

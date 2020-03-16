@@ -9,7 +9,7 @@ class Transfer extends \OpenTHC\Module\Base
 {
 	function __invoke($a)
 	{
-		$a->get('', 'App\Controller\Transfer');
+		$a->get('', 'App\Controller\Transfer\Home');
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Transfer\Sync');
 
 		$a->get('/{id}', 'App\Controller\Transfer\View');
