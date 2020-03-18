@@ -12,7 +12,9 @@ class Result extends \OpenTHC\Module\Base
 	function __invoke($a)
 	{
 		$a->get('', 'App\Controller\Result\Home');
+
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Result\Sync');
+		$a->map(['GET','POST'], '/{id}/sync', 'App\Controller\Result\Sync');
 
 		$a->get('/create', 'App\Controller\Result\Create');
 		$a->post('/create/save', 'App\Controller\Result\Create:save');
@@ -23,6 +25,7 @@ class Result extends \OpenTHC\Module\Base
 		$a->map(['GET','POST'], '/upload/queue', 'App\Controller\Result\Queue');
 
 		$a->get('/edit', function($REQ, $RES, $ARG) {
+
 			$data = array();
 			$data['Page'] = array('title' => 'Result :: Edit');
 
@@ -92,7 +95,6 @@ class Result extends \OpenTHC\Module\Base
 		});
 
 		$a->map([ 'GET', 'POST'], '/{id}', 'App\Controller\Result\View');
-		$a->get('/{id}/sync', 'App\Controller\Result\Sync'); // @deprecated, post to /sync w/ID
 
 	}
 }

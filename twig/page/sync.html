@@ -27,9 +27,8 @@ $(function() {
 
 	var arg = {};
 
-	$.post('/sync', arg, function(body) {
+	$.post('/transfer/sync', arg, function(body) {
 		$('.hero-core h1').html('<i class="fas fa-check-circle"></i> Great Success!');
-		window.location = '/intent';
 	}).always(function() {
 		window.location = '/intent';
 	});
@@ -37,11 +36,6 @@ $(function() {
 	setTimeout(function() {
 		$('.hero-core h3').show();
 	}, 7500);
-
-	// setTimeout(function() {
-	// 	$('.hero-core h1').html('<i class="fas fa-exclamation-circle"></i> Lets Go Anyway!');
-	// 	window.location = '/intent';
-	// }, 15000);
 
 });
 </script>

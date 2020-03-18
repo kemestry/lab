@@ -20,14 +20,6 @@ class Sync extends \OpenTHC\Controller\Base
 		\session_write_close();
 
 		$this->_cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-		if (empty($this->_cre)) {
-			// Check State, give 500 error
-			return $RES->withJSON([
-				'code' => 500,
-				'data' => null,
-				'meta' => [ 'detail' => 'No PIPE Connection' ]
-			], 500);
-		}
 
 		if (!empty($ARG['id'])) {
 			return $this->syncOne($REQ, $RES, $ARG);

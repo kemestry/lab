@@ -1,6 +1,6 @@
 <?php
 /**
- * Sync One QA Result
+ * Sync One Lab Result
  */
 
 namespace App\Controller\Result;
@@ -14,9 +14,48 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		session_write_close();
 
-		if (empty($ARG['id'])) {
-			return $RES->withStatus(400);
+		if (!empty($ARG['id'])) {
+			return $this->syncOne($REQ, $RES, $ARG);
 		}
+
+		return $this->syncAll($REQ, $RES, $ARG);
+	}
+
+	/**
+	 * Sync All Lab Results
+	 */
+	function syncAll($REQ, $RES, $ARG)
+	{
+		// $dbc = $this->_container->DB;
+
+		// Lab Results
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		$res = $cre->get('/lab?source=true');
+		if ('success' != $res['status']) {
+			return $RES->withJSON(array(
+				'status' => 'failure',
+				'result' => $cre->formatError($res),
+			), 500);
+		}
+
+		foreach ($res['result'] as $rec) {
+			$this->_syncOne($rec);
+		}
+
+		$C = new \OpenTHC\Company($_SESSION['Company']);
+		$C->setOption('sync-qa-time', $_SERVER['REQUEST_TIME']);
+
+		$RES = $RES->withJSON(array(
+			'status' => 'success',
+		));
+
+	}
+
+	/**
+	 *
+	 */
+	function syncOne($REQ, $RES, $ARG)
+	{
 
 		// Filter Shit
 		if (preg_match('/^WAATTEST.+/', $ARG['id'])) {
@@ -171,49 +210,18 @@ class Sync extends \OpenTHC\Controller\Base
 		// Switch Based on Type
 		// First Look at Result Data types
 		// Prefer Product, if we can find it.
-		$pt = sprintf('%s/%s/%s', $Result['batch_type'], $Result['type'], $Result['intermediate_type']);
-		if (!empty($Product['type']) && !empty($Product['intermediate_type'])) {
-			$pt = sprintf('%s/%s', $Product['type'], $Product['intermediate_type']);
-		}
-		$pt = trim($pt, ' /');
+		// $pt = sprintf('%s/%s/%s', $Result['batch_type'], $Result['type'], $Result['intermediate_type']);
+		// if (!empty($Product['type']) && !empty($Product['intermediate_type'])) {
+		// 	$pt = sprintf('%s/%s', $Product['type'], $Product['intermediate_type']);
+		// }
+		// $pt = trim($pt, ' /');
+		// $pt = preg_replace('/^intermediate\/ end product/', null, $pt);
+		// $pt = trim($pt,'/ ');
+
+		$pt = $this->_result_type($Result);
+
 		switch ($pt) {
-		// Product Based Type
-		case 'end_product/concentrate_for_inhalation':
-		case 'end_product/infused_mix':
-		case 'end_product/packaged_marijuana_mix':
-		case 'end_product/usable_marijuana':
-		case 'harvest_materials/flower':
-		case 'harvest_materials/flower_lots':
-		case 'harvest_materials/other_material':
-		case 'harvest_materials/other_material_lots':
-		case 'intermediate_product/hydrocarbon_concentrate':
-		case 'intermediate_product/infused_cooking_medium':
-		case 'intermediate_product/ethanol_concentrate':
-		case 'intermediate_product/marijuana_mix':
-		// Result Based Type, these are all kinds of fucked up data from LD
-		case 'harvest/harvest_materials':
-		case 'harvest/harvest_materials/flower':
-		case 'harvest/intermediate_product/flower':
-		case 'harvest/marijuana':
-		case 'extraction/marijuana':
-		case 'extraction/harvest_materials/flower_lots':
-		case 'extraction/end_product/usable_marijuana':
-		case 'extraction/intermediate_product/flower':
-		case 'extraction/intermediate_product/marijuana_mix':
-		// Wacky New Shit from v1.37.5
-		case 'harvest/intermediate_product/marijuana_mix':
-		case 'intermediate/ end product/end_product':
-		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
-		case 'intermediate/ end product/end_product/usable_marijuana': // their batch type 'intermediate/ end product', yes, with slash+space
-		case 'intermediate/ end product/end_product/infused_mix':
-		case 'intermediate/ end product/harvest_materials':
-		case 'intermediate/ end product/harvest_materials/flower_lots':
-		case 'intermediate/ end product/intermediate_product':
-		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
-		case 'intermediate/ end product/intermediate_product/flower':
-		case 'intermediate/ end product/marijuana':
-		case 'plant/marijuana':
-		case 'propagation material/intermediate_product/flower':
+		case 'Flower':
 
 			// PCT
 			$Result['uom'] = 'pct';
@@ -225,20 +233,10 @@ class Sync extends \OpenTHC\Controller\Base
 
 			break;
 
-		case 'intermediate/ end product/end_product/solid_edible':
-		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
-		case 'intermediate/ end product/intermediate_product/hydrocarbon_concentrate':
-		case 'intermediate_product/co2_concentrate':
-		case 'intermediate_product/food_grade_solvent_concentrate':
-		case 'intermediate_product/infused_cooking_medium':
-		case 'intermediate_product/non-solvent_based_concentrate':
-		case 'end_product/capsules':
-		case 'end_product/liquid_edible':
-		case 'end_product/solid_edible':
-		case 'end_product/suppository':
-		case 'end_product/tinctures':
-		case 'end_product/topical':
-		case 'end_product/transdermal_patches':
+		case 'Concentrate':
+		case 'Edible':
+		case 'Tincture':
+		case 'Topical':
 
 			// The State says to enter these as mg/g values but some labs enter them as percent :(
 			$Result['uom'] = 'mgg';
@@ -300,6 +298,110 @@ class Sync extends \OpenTHC\Controller\Base
 
 	}
 
+	protected function _sync_one($obj)
+	{
+		$dbc = $this->_container->DB;
+
+		$chk = $dbc->fetchOne('SELECT id FROM lab_result WHERE id = ?', array($obj['guid']));
+		if (empty($chk)) {
+			// Add with current company as owner
+			$dbc->insert('lab_result', array(
+				'id' => $obj['guid'],
+				'license_id' => $_SESSION['License']['id'], // Should be Lab License?
+				'created_at' => $obj['_source']['created_at'],
+				'name' => $obj['guid'],
+				'type' => '-',
+				'meta' => json_encode(array('Result' => $obj['_source'])),
+			));
+
+			// Sample Item
+			// $LR = new \App\Lab_Result($rec['guid']);
+			// $LR->tryCOAImport();
+
+		}
+
+		// Labs get this additional attribute, which is a big-data object
+		// if (!empty($rec['_source']['for_inventory'])) {
+		//
+		// 	$S0 = $rec['_source']['for_inventory'];
+		//
+		// 	// If the Current License "Owns" the sample do one thing
+		// 	if ($S0['global_mme_id'] == $_SESSION['License']['guid']) {
+		//
+		// 		$chk = $dbc->fetchOne('SELECT id FROM lab_sample WHERE license_id = :l0 AND id = :ls0', array(
+		// 			':l0' => $_SESSION['License']['id'],
+		// 			':ls0' => $S0['global_id']
+		// 		));
+		//
+		// 		// Insert if not found
+		// 		if (empty($chk['id'])) {
+		// 			// Add to Table, With Me
+		// 			$arg = [
+		// 				'id' => $S0['global_id'],
+		// 				// 'company_id' => $_SESSION['Company']['id'],
+		// 				'license_id' => $_SESSION['License']['id'],
+		// 				'name' => $S0['inventory_type_name'],
+		// 				'meta' => json_encode($S0),
+		// 			];
+		// 			try {
+		// 				$dbc->insert('lab_sample', $arg);
+		// 			} catch (Exception $e) {
+		// 				var_dump($arg);
+		// 				echo $e->getMessage();
+		// 				exit;
+		// 			}
+		// 		}
+		// 	} else {
+		//
+		// 		// What Now?
+		// 		$L1 = \OpenTHC\License::findByGUID($S0['global_mme_id']);
+		// 		if (empty($L1['id'])) {
+		// 			throw new Exception('Invalid L1');
+		// 		}
+		// 		$chk = $dbc->fetchOne('SELECT id FROM lab_sample WHERE license_id = :l0 AND id = :ls0', array(
+		// 			':l0' => $L1['id'],
+		// 			':ls0' => $S0['global_id']
+		// 		));
+		//
+		// 		// Insert if not found
+		// 		if (empty($chk['id'])) {
+		// 			// Add to Table, With Me
+		// 			$arg = [
+		// 				'id' => $S0['global_id'],
+		// 				// 'company_id' => $L1['company_id'],
+		// 				'license_id' => $L1['id'],
+		// 				'name' => $S0['inventory_type_name'],
+		// 				'meta' => json_encode($S0),
+		// 			];
+		//
+		// 			try {
+		// 				$dbc->insert('lab_sample', $arg);
+		// 			} catch (\Exception $e) {
+		// 				//var_dump($arg);
+		// 				//echo $e->getMessage();
+		// 				//exit;
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		// Link Lab Sample to this License
+		$arg = array(
+			':l0' => $_SESSION['License']['id'],
+			':lr' => $obj['guid']
+		);
+		$sql = 'SELECT * FROM lab_result_license WHERE lab_result_id = :lr AND license_id = :l0';
+		$chk = $dbc->fetchRow($sql, $arg);
+		if (empty($chk)) {
+			$sql = 'INSERT INTO lab_result_license (lab_result_id, license_id) values (:lr, :l0)';
+			$dbc->query($sql, $arg);
+		}
+
+	}
+
+	/**
+	 * Determine Product Type
+	 */
 	protected function _product_type($P)
 	{
 		if (empty($P['type'])) {
@@ -317,6 +419,9 @@ class Sync extends \OpenTHC\Controller\Base
 		// throw new Exception('Invalid Product Type');
 	}
 
+	/**
+	 * Determine Result Type
+	 */
 	protected function _result_type($R)
 	{
 		if (preg_match('/^WAATTESTED/', $R['id'])) {
@@ -325,6 +430,9 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$rt = sprintf('%s/%s/%s', $R['batch_type'], $R['type'], $R['intermediate_type']);
 		$rt = trim($rt,'/ ');
+		$rt = preg_replace('/^intermediate\/ end product/', null, $rt);
+		$rt = trim($rt,'/ ');
+
 		switch ($rt) {
 		case 'extraction/end_product/usable_marijuana':
 		case 'extraction/harvest_materials/flower_lots':
@@ -338,42 +446,81 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'harvest/marijuana':
 		case 'harvest_materials/flower_lots':
 		case 'harvest/harvest_materials/flower_lots':
-		case 'intermediate/ end product/end_product':
-		case 'intermediate/ end product/end_product/usable_marijuana':
-		case 'intermediate/ end product/harvest_materials/flower_lots':
-		case 'intermediate/ end product/harvest_materials':
-		case 'intermediate/ end product/intermediate_product':
-		case 'intermediate/ end product/intermediate_product/flower':
-		case 'intermediate/ end product/marijuana':
+		case 'end_product':
+		case 'end_product/usable_marijuana':
+		case 'harvest_materials/flower_lots':
+		case 'harvest_materials':
+		case 'intermediate_product':
+		case 'intermediate_product/flower':
+		case 'marijuana':
 		case 'plant/marijuana':
 		case 'propagation material/marijuana':
 		case 'propagation material/intermediate_product/flower':
 		case 'marijuana':
+
+////////
+		// // Product Based Type
+		// case 'end_product/concentrate_for_inhalation':
+		// 	case 'end_product/infused_mix':
+		// 	case 'end_product/packaged_marijuana_mix':
+		// 	case 'end_product/usable_marijuana':
+		// 	case 'harvest_materials/flower':
+		// 	case 'harvest_materials/flower_lots':
+		// 	case 'harvest_materials/other_material':
+		// 	case 'harvest_materials/other_material_lots':
+		// 	case 'intermediate_product/hydrocarbon_concentrate':
+		// 	case 'intermediate_product/infused_cooking_medium':
+		// 	case 'intermediate_product/ethanol_concentrate':
+		// 	case 'intermediate_product/marijuana_mix':
+		// 	// Result Based Type, these are all kinds of fucked up data from LD
+		// 	case 'harvest/harvest_materials':
+		// 	case 'harvest/harvest_materials/flower':
+		// 	case 'harvest/intermediate_product/flower':
+		// 	case 'harvest/marijuana':
+		// 	case 'extraction/marijuana':
+		// 	case 'extraction/harvest_materials/flower_lots':
+		// 	case 'extraction/end_product/usable_marijuana':
+		// 	case 'extraction/intermediate_product/flower':
+		// 	case 'extraction/intermediate_product/marijuana_mix':
+		// 	// Wacky New Shit from v1.37.5
+		// 	case 'harvest/intermediate_product/marijuana_mix':
+		// 	case 'end_product':
+		// 	case 'end_product/infused_mix':
+		// 	case 'harvest_materials':
+		// 	case 'harvest_materials/flower_lots':
+		// 	case 'intermediate_product':
+		// 	case 'intermediate_product/ethanol_concentrate':
+		// 	case 'intermediate_product/flower':
+		// 	case 'marijuana':
+		// 	case 'plant/marijuana':
+		// 	case 'propagation material/intermediate_product/flower':
+////////
 			return 'Flower';
 			break;
 		case 'extraction/intermediate_product/marijuana_mix':
 		case 'harvest/intermediate_product/marijuana_mix':
-		case 'intermediate/ end product/intermediate_product/marijuana_mix':
-		case 'intermediate/ end product/end_product/infused_mix':
+		case 'intermediate_product/marijuana_mix':
+		case 'end_product/infused_mix':
 			return 'Mix';
 		 // Attested Stuff
-		// case 'intermediate/ end product/end_product/':
-		// case 'intermediate/ end product/harvest_materials/':
+		// case 'end_product/':
+		// case 'harvest_materials/':
 		// 	return '-leafdata-fix-';
-		case 'intermediate/ end product/end_product/concentrate_for_inhalation':
-		case 'intermediate/ end product/intermediate_product/ethanol_concentrate':
-		case 'intermediate/ end product/intermediate_product/hydrocarbon_concentrate':
+		case 'end_product/concentrate_for_inhalation':
+		case 'intermediate_product/ethanol_concentrate':
+		case 'intermediate_product/food_grade_solvent_concentrate':
+		case 'intermediate_product/hydrocarbon_concentrate':
 		case 'intermediate_product/ethanol_concentrate':
 			return 'Concentrate';
-		case 'intermediate/ end product/end_product/liquid_edible':
-		case 'intermediate/ end product/end_product/solid_edible':
+		case 'end_product/liquid_edible':
+		case 'end_product/solid_edible':
 			return 'Edible';
-		case 'intermediate/ end product/end_product/tinctures':
+		case 'end_product/tinctures':
 			return 'Tincture';
-		case 'intermediate/ end product/end_product/topical':
+		case 'end_product/topical':
 			return 'Topical';
-		case 'plant/end_product':
-			return 'Plant?';
+		// case 'plant/end_product':
+		// 	return 'Plant?';
 		default:
 			_exit_text("Invalid Result Type: '$rt' [CRS#282]", 500);
 		}
@@ -401,8 +548,8 @@ class Sync extends \OpenTHC\Controller\Base
 //		}
 //
 //		// Load Lab Data
-//		//$res = HTTP::get('https://directory.openthc.com/api/search?kind=QA&license=' . $this->Inventory['lab_license']);
-//		////Radix::dump($res);
+//		//$res = HTTP::get('https://directory.openthc.com/api/search?type=Laboratory&license=' . $this->Inventory['lab_license']);
+//		//var_dump($res);
 //		//$res = json_decode($res['body'], true);
 //		//$this->Laboratory = $res['result'];
 //		//$this->Laboratory['id'] = $Inv['lab_license'];
