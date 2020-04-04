@@ -22,7 +22,7 @@ class Home extends \OpenTHC\Controller\Base
 
 		// Filter
 		if (empty($_GET['stat'])) {
-			$_GET['stat'] = 200;
+			$_GET['stat'] = 301;
 		} elseif ('*' == $_GET['stat']) {
 			unset($_GET['stat']);
 		}
@@ -52,6 +52,7 @@ class Home extends \OpenTHC\Controller\Base
 
 		$data = array(
 			'Page' => array('title' => 'Transfers'),
+			'GET' => $_GET,
 			'transfer_stat' => $transfer_stat,
 			'transfer_list' => $transfer_list,
 		);
