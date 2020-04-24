@@ -47,7 +47,6 @@
 			</small>
 		</td>
 		<td class="r">{{ iti.qty }}</td>
-		<!-- <td><pre>{{ dump(iti) }}</pre></td> -->
 		<td>
 			<input name="lot-receive-guid-{{ iti.global_id }}" type="hidden" value="{{ iti.global_id }}">
 			<input class="form-control form-control-sm r" name="lot-receive-count-{{ iti.global_id }}" value="{{ iti.received_qty ?: iti.qty }}">

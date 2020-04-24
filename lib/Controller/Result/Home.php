@@ -94,14 +94,23 @@ SQL;
 
 			$x = sprintf('%s/%s', $rec['testing_status'], $rec['status']);
 			switch ($x) {
+			case '/failed':
 			case 'completed/failed':
 				$stat[] = '<i class="fas fa-check-square" style="color: var(--red);"></i>';
 				break;
 			case 'completed/passed':
 				$stat[] = '<i class="fas fa-check-square" style="color: var(--green);"></i>';
 				break;
+			case 'in_progress/failed':
+				$stat[] = '<i class="fas fa-clock" style="color: var(--gray);"></i>';
+				$stat[] = '<i class="fas fa-check-square" style="color: var(--red);"></i>';
+				break;
 			case 'in_progress/passed':
 				$stat[] = '<i class="fas fa-clock"></i> <i class="fas fa-check-square" style="color: var(--green);"></i>';
+				break;
+			case 'not_started/failed':
+				$stat[] = '<i class="fas fa-clock"></i>';
+				$stat[] = '<i class="fas fa-check-square" style="color: var(--red);"></i>';
 				break;
 			default:
 				$stat[] = h($x);

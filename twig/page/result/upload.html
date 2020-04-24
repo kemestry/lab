@@ -121,27 +121,6 @@ $(function() {
 		e.preventDefault();
 	});
 
-	var clipcopy = new ClipboardJS('.btn-clipcopy');
-	clipcopy.on('error', function(e) {
-		alert(e);
-	});
-	clipcopy.on('success', function(e) {
-
-		e.clearSelection();
-
-		var $btn = $(e.trigger);
-		$btn.tooltip({
-			title: 'Copied!',
-			trigger: 'manual',
-		});
-		$btn.tooltip('show');
-		setTimeout(function() {
-			$btn.tooltip('dispose');
-		}, 2000);
-
-	});
-
-
 });
 </script>
 {% endblock %}

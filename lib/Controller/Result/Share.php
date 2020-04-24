@@ -5,9 +5,6 @@
 
 namespace App\Controller\Result;
 
-use Edoceo\Radix\DB\SQL;
-use Edoceo\Radix\Net\HTTP;
-
 class Share extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
