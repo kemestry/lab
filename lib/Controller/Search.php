@@ -17,6 +17,7 @@ class Search extends \OpenTHC\Controller\Base
 			'Page' => array('title' => 'Search'),
 			'result_list' => [],
 		);
+		$data = $this->loadSiteData($data);
 
 		$q = trim($_GET['q']);
 		if (!empty($q)) {

@@ -19,7 +19,13 @@
 
 				<p>Request from Lab</p>
 				<div class="form-group">
-					<input class="form-control" readonly value="https://lab.openthc.org/intent?_={{ coa_upload_hash }}">
+					<div class="input-group">
+						<input class="form-control" readonly value="https://{{ Site.host }}/intent?_={{ coa_upload_hash }}">
+						<div class="input-group-append">
+							<a class="btn btn-outline-secondary" href="mailto:?subject=Upload%20Lab%20Results&amp;body=Please%20upload%20my%20lab%20results%20to%20this%20page%3A%0A%0A%20%20https%3A%2F%2F{{ Site.host }}%2Fintent%3F_%3D{{ coa_upload_hash }}"><i class="fas fa-envelope-open-text"></i></a>
+							<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://{{ Site.host }}/intent?_={{ coa_upload_hash }}" type="button"><i class="fas fa-clipboard"></i></button>
+						</div>
+					</div>
 				</div>
 
 			</div>

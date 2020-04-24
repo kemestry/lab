@@ -1,6 +1,6 @@
 <?php
 /**
- * Home Controller
+ * Base Controller
  *
  * This file is part of OpenTHC Laboratory Portal
  *
@@ -19,28 +19,18 @@
 
 namespace App\Controller;
 
-class Home extends \OpenTHC\Controller\Base
+class Base extends \OpenTHC\Controller\Base
 {
-	function __invoke($REQ, $RES, $ARG)
+	function loadSiteData($data)
 	{
-		$data = array(
-			'Page' => array('title' => 'Dashboard'),
-			'Company' => $_SESSION['Company'],
-			'License' => $_SESSION['License'],
-			'Contact' => $_SESSION['Contact'],
-		);
-		$data = $this->loadSiteData($data);
-
-		$file = 'page/home-supply.html';
-		switch ($_SESSION['License']['type']) {
-		case '':
-		case 'Laboratory':
-			$file = 'page/home-lab.html';
-			break;
-		}
-
-		return $this->_container->view->render($RES, $file, $data);
-
+		$cfg = \OpenTHC\Config::get('application');
+		$base = [
+			'Site' => [
+				'base' => sprintf('https://%s', $_SERVER['SERVER_NAME']),
+				'host' => $_SERVER['SERVER_NAME'],
+			]
+		];
+		$data = array_merge($base, $data);
+		return $data;
 	}
-
 }

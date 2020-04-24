@@ -337,37 +337,53 @@ class Create extends \OpenTHC\Controller\Base
 
 		}
 
-		// _exit_text($lab_result_arg);
-
-		$res = $c->post('/api/v1/lab_results', [
+		$tmp = $c->post('/api/v1/lab_results', [
 			'json' => [
 				'lab_result' => $lab_result_arg
 			]
 		]);
 
-		$buf = $res->getBody()->getContents();
+		$res = [];
+		$res['code'] = $tmp->getStatusCode();
+		$tmp = json_decode($tmp->getBody(), true);
+		$res['data'] = $tmp[0];
 
-		if ($res->getStatusCode() === 200) {
+		switch ($res['code']) {
+		case 200:
 
-			$res = json_decode($buf, true);
-			$res = $res[0];
+			// OK
 			if ('passed' == $res['status']) {
 				Session::flash('info', 'Results Accepted and Passed!');
 			} else {
 				Session::flash('warn', 'Results Accepted but are not considered Passed');
 			}
 
-			// Sync One
-			return $RES->withRedirect('/result/' . $res[0]['global_id'] . '/sync');
+			// Mark Sample Lot as Tested/OK/Done
+			$dbc = $this->_container->DB;
+			// $Lab_Sample['stat'] = 200;
+			// $Lab_Sample->save();
+			$sql = 'UPDATE lab_sample SET stat = 200 WHERE id = :ls0';
+			$arg = [ ':ls0' => $Sample['id'] ];
+			$dbc->query($sql, $arg);
 
-		} else {
+			// Sync One
+			// $CRS = new Sync($this->_container);
+			// $CRS->_sync_one($res['data']);
+			// return $RES->withRedirect('/result/' . $res['data']['global_id']);
+
+			return $RES->withREdirect(sprintf('/result/%s/sync', $res['data']['global_id']));
+
+			break;
+
+		default:
+			// Failure
 			echo "<h2>Results Rejected!</h2>";
-			Session::flash('fail', $buf);
+			Session::flash('fail', $tmp);
+			throw new \Exception('Unexpected Response from LeafData');
 			return $RES->withRedirect($_SERVER['HTTP_REFERER']);
 		}
 
 		// How to Link Together?
-		// Mark Sample Lot as Tested/OK/Done
 
 	}
 

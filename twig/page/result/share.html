@@ -26,9 +26,9 @@
 	<div class="form-group">
 		<label>Share Link</label>
 		<div class="input-group">
-			<input class="form-control" readonly value="https://lab.openthc.org/share/{{ Result.global_id }}.html">
+			<input class="form-control" readonly value="https://{{ Site.host }}/share/{{ Result.global_id }}.html">
 			<div class="input-group-append">
-				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://lab.openthc.org/share/{{ Result.global_id }}.html" type="button"><i class="fas fa-clipboard"></i></button>
+				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://{{ Site.host }}/share/{{ Result.global_id }}.html" type="button"><i class="fas fa-clipboard"></i></button>
 			</div>
 		</div>
 	</div>
@@ -42,9 +42,9 @@
 		</label>
 		<div class="input-group">
 			{% if Result.coa_file %}
-				<a class="btn btn-block btn-outline-primary" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
+				<a class="btn btn-block btn-outline-primary" href="https://{{ Site.host }}/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
 			{% else %}
-				<!-- <a class="btn btn-block btn-outline-secondary disabled" href="https://lab.openthc.org/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a> -->
+				<!-- <a class="btn btn-block btn-outline-secondary disabled" href="https://{{ Site.host }}/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a> -->
 				<div class="btn btn-block btn-outline-secondary disabled"><i class="fas fa-print"></i> Waiting for Documents</div>
 			{% endif %}
 		</div>
@@ -62,7 +62,7 @@
 <div class="form-actions">
 	<button class="btn btn-outline-primary" name="a" data-toggle="modal" data-target="#modal-result-email" type="button"><i class="far fa-envelope"></i> Email</button>
 	<button class="btn btn-outline-primary" data-toggle="modal" data-target="#modal-scan-qr" type="button"><i class="fas fa-qrcode"></i> QR Code</button>
-	<a class="btn btn-outline-secondary" href="https://lab.openthc.org/share/{{ Result.global_id }}.json"> JSON</a>
+	<a class="btn btn-outline-secondary" href="https://{{ Site.host }}/share/{{ Result.global_id }}.json"> JSON</a>
 </div>
 
 </div>

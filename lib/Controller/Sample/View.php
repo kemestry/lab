@@ -69,6 +69,7 @@ class View extends \OpenTHC\Controller\Base
 			$data['Sample']['medically_compliant'] = true;
 		}
 
+		$data = $this->loadSiteData($data);
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 
 	}

@@ -10,9 +10,13 @@ use Edoceo\Radix\Net\HTTP;
 
 class Sync extends \OpenTHC\Controller\Base
 {
+	private $cre = null;
+
 	function __invoke($REQ, $RES, $ARG)
 	{
 		session_write_close();
+
+		$this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 
 		if (!empty($ARG['id'])) {
 			return $this->syncOne($REQ, $RES, $ARG);
@@ -29,17 +33,18 @@ class Sync extends \OpenTHC\Controller\Base
 		// $dbc = $this->_container->DB;
 
 		// Lab Results
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-		$res = $cre->get('/lab?source=true');
+		$res = $this->cre->get('/lab?source=true');
 		if ('success' != $res['status']) {
 			return $RES->withJSON(array(
 				'status' => 'failure',
-				'result' => $cre->formatError($res),
+				'result' => $this->cre->formatError($res),
 			), 500);
 		}
 
 		foreach ($res['result'] as $rec) {
-			$this->_syncOne($rec);
+			$rec = array_merge($rec, $rec['_source']);
+			$rec['id'] = $rec['global_id'];
+			$this->_sync_one($rec);
 		}
 
 		$C = new \OpenTHC\Company($_SESSION['Company']);
@@ -56,6 +61,7 @@ class Sync extends \OpenTHC\Controller\Base
 	 */
 	function syncOne($REQ, $RES, $ARG)
 	{
+		$dbc = $this->_container->DB;
 
 		// Filter Shit
 		if (preg_match('/^WAATTEST.+/', $ARG['id'])) {
@@ -63,7 +69,7 @@ class Sync extends \OpenTHC\Controller\Base
 				':lr' => $ARG['id'],
 				':f1' => \App\Lab_Result::FLAG_SYNC
 			];
-			$this->_container->DB->query('UPDATE lab_result SET flag = flag | :f1 WHERE id = :lr', $arg);
+			$dbc->query('UPDATE lab_result SET flag = flag | :f1 WHERE id = :lr', $arg);
 			return $RES->withJSON([
 				'meta' => [ 'detail' => 'Placeholder Result' ],
 			]);
@@ -73,19 +79,52 @@ class Sync extends \OpenTHC\Controller\Base
 			return $RES->withStatus(403);
 		}
 
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-		$res = $cre->get('/lab/' . $ARG['id']);
+		$res = $this->cre->get('/lab/' . $ARG['id']);
 		if (empty($res)) {
 			_exit_text('Cannot Load QA from CRE [CRS#029]', 500);
 		}
 		if ('success' != $res['status']) {
-			_exit_text($cre->formatError($res), 200);
+			_exit_text($this->cre->formatError($res), 200);
 		}
 
 		$Result = $res['result'];
 		$Result['id'] = $Result['global_id'];
+		$QAR = $this->_sync_one($Result);
+
+		if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			return $RES->withStatus(204);
+		}
+
+		return $RES->withRedirect('/result/' . $QAR['id']);
+
+	}
+
+	/**
+	 * Actually Sync
+	 */
+	function _sync_one($Result)
+	{
+		$dbc = $this->_container->DB;
+
+		$chk = $dbc->fetchOne('SELECT id FROM lab_result WHERE id = ?', array($Result['id']));
+		if (empty($chk)) {
+			// Add with current company as owner
+			$dbc->insert('lab_result', array(
+				'id' => $Result['id'],
+				'license_id' => $_SESSION['License']['id'], // Should be Lab License?
+				'created_at' => $Result['created_at'],
+				'name' => $Result['id'],
+				'type' => '-',
+				'meta' => json_encode(array('Result' => $Result)),
+			));
+
+			// Sample Item
+			// $LR = new \App\Lab_Result($rec['guid']);
+			// $LR->tryCOAImport();
+
+		}
+
 		$Result['type_nice'] = $this->_result_type($Result);
-		// _exit_text($Result);
 
 		if (!empty($Result['global_inventory_id'])) {
 			// 	die("I'M A LAB MAYBE?");
@@ -94,15 +133,11 @@ class Sync extends \OpenTHC\Controller\Base
 
 		// Find Sample
 		$Sample = $Result['for_inventory'];
-		$Sample['id'] = $Sample['global_id'];
-		// 	'name' => '- Not Found -',
-		// 	'type_nice' => '-None-',
-		// _exit_text($Result);
 
 		// Is the Sample one of my own ?
 		if ($Sample['global_mme_id'] == $_SESSION['License']['guid']) {
 
-			$chk = $cre->get('/lot/' . $Sample['id']);
+			$chk = $this->cre->get('/lot/' . $Sample['id']);
 			// var_dump($chk); exit;
 			if ('success' == $chk['status']) {
 				$Sample = array_merge($chk['result'], $Sample);
@@ -114,37 +149,24 @@ class Sync extends \OpenTHC\Controller\Base
 			// Do We Have a Sample Record?
 			$sql = 'SELECT * FROM lab_sample WHERE license_id = :c AND id = :g';
 			$arg = array(
+				':g' => $Sample['global_id'],
 				':c' => $_SESSION['License']['id'],
-				':g' => $Sample['id'],
 			);
-			$chk = $this->_container->DB->fetchRow($sql, $arg);
+			$chk = $dbc->fetchRow($sql, $arg);
 			if (empty($chk['id'])) {
-				// $L1 = SQL::fetch_row('SELECT id, company_id FROM license WHERE guid = ?', [ $Sample['global_mme_id'] ]);
 				$add = array(
-					'id' => $Sample['id'],
+					'id' => $Sample['global_id'],
 					'license_id' => $_SESSION['License']['id'],
-					// 'company_id' => $L1['company_id'],
-					// 'company_ulid' => $_SESSION['Company']['ulid'],
 					'meta' => json_encode(array(
 						'Lot' => $Sample,
-						// 'Product' => $Product,
-						// 'Strain' => $Strain,
 					)),
 				);
-				SQL::insert('lab_sample', $add);
+				$dbc->insert('lab_sample', $add);
 			}
 		} else {
 			// This Sample belongs to someone else, we only care about the results then
 		}
 
-		// 	// Find License by Global ID?
-		// 	$chk = SQL::fetch_row('SELECT lab_sample.id, lab_sample.license_id, lab_sample.meta FROM lab_sample JOIN license ON lab_sample.license_id = license.id WHERE license.guid = :l1 AND lab_sample.id = :s0', array(
-		// 		':l1' => $Sample['global_mme_id'],
-		// 		':s0' => $Sample['id']
-		// 	));
-		// 	var_dump($chk);
-		//
-		// }
 
 		// Find License
 		$License_Lab = array();
@@ -190,12 +212,12 @@ class Sync extends \OpenTHC\Controller\Base
 
 		if ($Sample['global_inventory_type_id']) {
 
-			$res = $cre->get('/config/product/' . $Sample['global_inventory_type_id']);
+			$res = $this->cre->get('/config/product/' . $Sample['global_inventory_type_id']);
 			$Product = $res['result'];
 			$Product['id'] = $Product['global_id'];
 			$Product['type_nice'] = $this->_product_type($Product);
 
-			$res = $cre->get('/config/strain/' . $Sample['global_strain_id']);
+			$res = $this->cre->get('/config/strain/' . $Sample['global_strain_id']);
 			$Strain = $res['result'];
 			if (!empty($Strain['global_id'])) {
 				$Strain['id'] = $Strain['global_id'];
@@ -222,6 +244,8 @@ class Sync extends \OpenTHC\Controller\Base
 
 		switch ($pt) {
 		case 'Flower':
+		case 'Mix':
+		case 'Plant':
 
 			// PCT
 			$Result['uom'] = 'pct';
@@ -263,7 +287,6 @@ class Sync extends \OpenTHC\Controller\Base
 			'Product' => $Product,
 			'Strain' => $Strain,
 		);
-		//var_dump($ret);
 
 		$QAR = new \App\Lab_Result($Result['id']);
 		if (empty($QAR['id'])) {
@@ -289,36 +312,6 @@ class Sync extends \OpenTHC\Controller\Base
 
 		// _ksort_r($ret);
 		// _exit_text($ret);
-
-		if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-			return $RES->withStatus(204);
-		}
-
-		return $RES->withRedirect('/result/' . $QAR['id']);
-
-	}
-
-	protected function _sync_one($obj)
-	{
-		$dbc = $this->_container->DB;
-
-		$chk = $dbc->fetchOne('SELECT id FROM lab_result WHERE id = ?', array($obj['guid']));
-		if (empty($chk)) {
-			// Add with current company as owner
-			$dbc->insert('lab_result', array(
-				'id' => $obj['guid'],
-				'license_id' => $_SESSION['License']['id'], // Should be Lab License?
-				'created_at' => $obj['_source']['created_at'],
-				'name' => $obj['guid'],
-				'type' => '-',
-				'meta' => json_encode(array('Result' => $obj['_source'])),
-			));
-
-			// Sample Item
-			// $LR = new \App\Lab_Result($rec['guid']);
-			// $LR->tryCOAImport();
-
-		}
 
 		// Labs get this additional attribute, which is a big-data object
 		// if (!empty($rec['_source']['for_inventory'])) {
@@ -388,7 +381,7 @@ class Sync extends \OpenTHC\Controller\Base
 		// Link Lab Sample to this License
 		$arg = array(
 			':l0' => $_SESSION['License']['id'],
-			':lr' => $obj['guid']
+			':lr' => $Result['id']
 		);
 		$sql = 'SELECT * FROM lab_result_license WHERE lab_result_id = :lr AND license_id = :l0';
 		$chk = $dbc->fetchRow($sql, $arg);
@@ -396,6 +389,8 @@ class Sync extends \OpenTHC\Controller\Base
 			$sql = 'INSERT INTO lab_result_license (lab_result_id, license_id) values (:lr, :l0)';
 			$dbc->query($sql, $arg);
 		}
+
+		return $QAR;
 
 	}
 
@@ -444,6 +439,7 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'harvest/intermediate_product':
 		case 'harvest/intermediate_product/flower':
 		case 'harvest/marijuana':
+		case 'harvest_materials/flower':
 		case 'harvest_materials/flower_lots':
 		case 'harvest/harvest_materials/flower_lots':
 		case 'end_product':
@@ -456,16 +452,12 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'plant/marijuana':
 		case 'propagation material/marijuana':
 		case 'propagation material/intermediate_product/flower':
-		case 'marijuana':
-
+		case 'propagation material/end_product/usable_marijuana':
 ////////
 		// // Product Based Type
 		// case 'end_product/concentrate_for_inhalation':
 		// 	case 'end_product/infused_mix':
 		// 	case 'end_product/packaged_marijuana_mix':
-		// 	case 'end_product/usable_marijuana':
-		// 	case 'harvest_materials/flower':
-		// 	case 'harvest_materials/flower_lots':
 		// 	case 'harvest_materials/other_material':
 		// 	case 'harvest_materials/other_material_lots':
 		// 	case 'intermediate_product/hydrocarbon_concentrate':
@@ -474,26 +466,16 @@ class Sync extends \OpenTHC\Controller\Base
 		// 	case 'intermediate_product/marijuana_mix':
 		// 	// Result Based Type, these are all kinds of fucked up data from LD
 		// 	case 'harvest/harvest_materials':
-		// 	case 'harvest/harvest_materials/flower':
-		// 	case 'harvest/intermediate_product/flower':
 		// 	case 'harvest/marijuana':
 		// 	case 'extraction/marijuana':
-		// 	case 'extraction/harvest_materials/flower_lots':
 		// 	case 'extraction/end_product/usable_marijuana':
-		// 	case 'extraction/intermediate_product/flower':
 		// 	case 'extraction/intermediate_product/marijuana_mix':
 		// 	// Wacky New Shit from v1.37.5
 		// 	case 'harvest/intermediate_product/marijuana_mix':
 		// 	case 'end_product':
-		// 	case 'end_product/infused_mix':
 		// 	case 'harvest_materials':
-		// 	case 'harvest_materials/flower_lots':
 		// 	case 'intermediate_product':
-		// 	case 'intermediate_product/ethanol_concentrate':
-		// 	case 'intermediate_product/flower':
 		// 	case 'marijuana':
-		// 	case 'plant/marijuana':
-		// 	case 'propagation material/intermediate_product/flower':
 ////////
 			return 'Flower';
 			break;
@@ -507,10 +489,11 @@ class Sync extends \OpenTHC\Controller\Base
 		// case 'harvest_materials/':
 		// 	return '-leafdata-fix-';
 		case 'end_product/concentrate_for_inhalation':
+		case 'harvest/end_product/concentrate_for_inhalation':
 		case 'intermediate_product/ethanol_concentrate':
 		case 'intermediate_product/food_grade_solvent_concentrate':
 		case 'intermediate_product/hydrocarbon_concentrate':
-		case 'intermediate_product/ethanol_concentrate':
+		case 'intermediate_product/non-solvent_based_concentrate':
 			return 'Concentrate';
 		case 'end_product/liquid_edible':
 		case 'end_product/solid_edible':
@@ -520,7 +503,8 @@ class Sync extends \OpenTHC\Controller\Base
 		case 'end_product/topical':
 			return 'Topical';
 		// case 'plant/end_product':
-		// 	return 'Plant?';
+		case 'plant/mature_plant/mature_plant':
+			return 'Plant';
 		default:
 			_exit_text("Invalid Result Type: '$rt' [CRS#282]", 500);
 		}

@@ -9,7 +9,7 @@ use Edoceo\Radix\Session;
 use Edoceo\Radix\DB\SQL;
 use Edoceo\Radix\Net\HTTP;
 
-class View extends \OpenTHC\Controller\Base
+class View extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -112,6 +112,7 @@ class View extends \OpenTHC\Controller\Base
 		// }
 
 		$data = array();
+		$data = $this->loadSiteData($data);
 		$data['MetricList'] = $MetricList;
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Sample']  = $meta['Sample'];
