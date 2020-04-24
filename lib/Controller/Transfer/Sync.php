@@ -87,7 +87,7 @@ class Sync extends \OpenTHC\Controller\Base
 				$rec = array(
 					'id' => $rec['guid'],
 					'license_id' => $LTarget['id'], // Me
-					'license_id_source' => $LOrigin['id'],
+					'license_id_origin' => $LOrigin['id'],
 					'created_at' => $rec['created_at'],
 					'hash' => $rec['hash'],
 					'meta' => json_encode($rec),
@@ -153,7 +153,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$sql.= ' license.code AS license_code,';
 		$sql.= ' license.name AS license_name';
 		$sql.= ' FROM transfer_incoming';
-		$sql.= ' JOIN license ON transfer_incoming.license_id_source = license.id';
+		$sql.= ' JOIN license ON transfer_incoming.license_id_origin = license.id';
 		$sql.= ' WHERE transfer_incoming.id = :g';
 		$sql.= ' AND transfer_incoming.license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id'], ':g' => $ARG['id']);

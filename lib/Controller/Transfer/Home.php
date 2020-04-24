@@ -19,8 +19,6 @@ class Home extends \OpenTHC\Controller\Base
 		foreach ($res as $rec) {
 			$transfer_stat[ $rec['stat'] ] = $rec['c'];
 		}
-		// var_dump($transfer_stat);
-		// exit;
 
 		// Filter
 		if (empty($_GET['stat'])) {
@@ -47,7 +45,7 @@ class Home extends \OpenTHC\Controller\Base
 			$rec['date'] = strftime('%m/%d', strtotime($rec['meta']['created_at']));
 
 			$rec['target_license'] = new \OpenTHC\License($rec['license_id']);
-			$rec['origin_license'] = new \OpenTHC\License($rec['license_id_source']);
+			$rec['origin_license'] = new \OpenTHC\License($rec['license_id_origin']);
 
 			$transfer_list[] = $rec;
 		}

@@ -28,7 +28,7 @@ class View extends \OpenTHC\Controller\Base
 			'Page' => array('title' => sprintf('Transfer %s', $ARG['id'])),
 			'Transfer' => $res['result'],
 			'Target_License' => new \OpenTHC\License($T['license_id']),
-			'Origin_License' => new \OpenTHC\License($T['license_id_source']),
+			'Origin_License' => new \OpenTHC\License($T['license_id_origin']),
 		);
 
 		// _exit_text($data);

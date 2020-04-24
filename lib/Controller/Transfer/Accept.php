@@ -41,7 +41,7 @@ class Accept extends \OpenTHC\Controller\Base
 		$zone_list = $res['result'];
 
 		$Target = new \OpenTHC\License($T0['license_id']);
-		$Origin = new \OpenTHC\License($T0['license_id_source']);
+		$Origin = new \OpenTHC\License($T0['license_id_origin']);
 
 		$data = array(
 			'Page' => array('title' => 'Transfer :: Accept'),
