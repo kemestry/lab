@@ -5,7 +5,7 @@
 
 namespace App\Controller\Result;
 
-class Share extends \OpenTHC\Controller\Base
+class Share extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -41,7 +41,7 @@ class Share extends \OpenTHC\Controller\Base
 			return $this->_container->view->render($RES, 'page/result/404.html', $data);
 		}
 
-		$data = array();
+		$data = $this->loadSiteData([]);
 		$data['Page'] = array('title' => 'Result :: View');
 		$data['Result'] = $meta['Result'];
 		unset($data['Result']['coa_file']);

@@ -243,6 +243,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$pt = $this->_result_type($Result);
 
 		switch ($pt) {
+		case 'Concentrate':
 		case 'Flower':
 		case 'Mix':
 		case 'Plant':
@@ -251,13 +252,12 @@ class Sync extends \OpenTHC\Controller\Base
 			$Result['uom'] = 'pct';
 			$Result['thc'] = $Result['cannabinoid_d9_thc_percent'] + ($Result['cannabinoid_d9_thca_percent'] * 0.877);
 			$Result['cbd'] = $Result['cannabinoid_cbd_percent'] + ($Result['cannabinoid_cbda_percent'] * 0.877);
-			$Result['sum'] = sprintf('%0.2f%%', $Result['thc'] + $Result['cbd']);
 			$Result['thc'] = sprintf('%0.2f%%', $Result['thc']);
 			$Result['cbd'] = sprintf('%0.2f%%', $Result['cbd']);
+			$Result['sum'] = sprintf('%0.2f%%', $Result['thc'] + $Result['cbd']);
 
 			break;
 
-		case 'Concentrate':
 		case 'Edible':
 		case 'Tincture':
 		case 'Topical':
@@ -266,9 +266,9 @@ class Sync extends \OpenTHC\Controller\Base
 			$Result['uom'] = 'mgg';
 			$Result['thc'] = $Result['cannabinoid_d9_thc_mg_g'] + ($Result['cannabinoid_d9_thca_mg_g'] * 0.877);
 			$Result['cbd'] = $Result['cannabinoid_cbd_mg_g'] + ($Result['cannabinoid_cbda_mg_g'] * 0.877);
-			$Result['sum'] = sprintf('%0.2f mg/g', $Result['thc'] + $Result['cbd']);
 			$Result['thc'] = sprintf('%0.2f mg/g', $Result['thc']);
 			$Result['cbd'] = sprintf('%0.2f mg/g', $Result['cbd']);
+			$Result['sum'] = sprintf('%0.2f mg/g', $Result['thc'] + $Result['cbd']);
 
 			break;
 
