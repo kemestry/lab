@@ -19,7 +19,7 @@
 
 namespace App\Controller;
 
-class Home extends \OpenTHC\Controller\Base
+class Home extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{

@@ -1,6 +1,6 @@
 <?php
 /**
- * Front Controller for lab.openthc.org
+ * Front Controller for lab.openthc
  *
  * This file is part of OpenTHC Laboratory Portal
  *
