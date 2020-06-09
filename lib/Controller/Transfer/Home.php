@@ -11,11 +11,13 @@ class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
+		$dbc = $this->_container->DB;
+
 		// Load Transfer Stats
 		$transfer_stat = [];
 		$sql = 'SELECT count(id) AS c, stat FROM transfer_incoming WHERE license_id = :l GROUP BY stat ORDER BY stat';
 		$arg = array(':l' => $_SESSION['License']['id']);
-		$res = $this->_container->DB->fetchAll($sql, $arg);
+		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 			$transfer_stat[ $rec['stat'] ] = $rec['c'];
 		}
@@ -38,7 +40,7 @@ class Home extends \OpenTHC\Controller\Base
 
 		$sql.= ' ORDER BY created_at DESC';
 
-		$res = SQL::fetch_all($sql, $arg);
+		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
 			$rec['meta'] = json_decode($rec['meta'], true);

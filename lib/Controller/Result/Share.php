@@ -21,7 +21,9 @@ class Share extends \App\Controller\Base
 			return $this->_container->view->render($RES, 'page/share/example.html', $data);
 		}
 
-		$QAR = new \App\Lab_Result($ARG['id']);
+		$dbc = $this->_container->DB;
+
+		$QAR = new \App\Lab_Result($dbc, $ARG['id']);
 		if (empty($QAR['id'])) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#030]'),

@@ -12,6 +12,8 @@ class Home extends \OpenTHC\Controller\Base
 	function __invoke($REQ, $RES, $ARG)
 	{
 
+		$dbc = $this->_container->DB;
+
 		$data = array(
 			'Page' => [ 'title' => 'Samples' ],
 			'sample_list' => [],
@@ -29,7 +31,7 @@ SQL;
 		$arg = [
 			':l0' => $_SESSION['License']['id'],
 		];
-		$res = SQL::fetch_all($sql, $arg);
+		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 			$data['sample_stat'][ $rec['stat'] ] = $rec['c'];
 		}
@@ -54,7 +56,7 @@ SQL;
 
 		}
 
-		$sample_list = SQL::fetch_all($sql, $arg);
+		$sample_list = $dbc->fetchAll($sql, $arg);
 		array_walk($sample_list, function(&$v, $k) {
 			$v['meta'] = json_decode($v['meta'], true);
 		});
