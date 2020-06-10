@@ -9,6 +9,8 @@ use Edoceo\Radix\DB\SQL;
 
 class View extends \App\Controller\Base
 {
+	private $cre;
+
 	function __invoke($REQ, $RES, $ARG)
 	{
 		if (empty($ARG['id'])) {
@@ -16,6 +18,8 @@ class View extends \App\Controller\Base
 		}
 
 		$dbc = $this->_container->DB;
+
+		$this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 
 		$Lab_Sample = new \App\Lab_Sample($dbc, $ARG['id']);
 		if (empty($Lab_Sample['id'])) {
@@ -25,31 +29,29 @@ class View extends \App\Controller\Base
 		switch ($_POST['a']) {
 		case 'drop':
 			// need to return the $RES object from these methods to do anything
-			return $this->_dropSample($RES, $ARG, $cre);
+			return $this->_dropSample($RES, $ARG);
 		case 'void':
-			$this->_voidSample($RES, $ARG, $cre);
+			$this->_voidSample($RES, $ARG);
 			break;
 		case 'done':
-			return $this->_finishSample($RES, $ARG, $cre);
+			return $this->_finishSample($RES, $ARG);
 		}
 
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-
 		// Get Fresh Lot Data?
-		// $res = $cre->get('/lot/' . $Lab_Sample['id']);
+		// $res = $this->cre->get('/lot/' . $Lab_Sample['id']);
 
-		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
+		//$res = $this->cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
 		//var_dump($P);
 
 		// Find Laboratory License
-		//$res = $cre->get('/config/license/' . $QAS['global_created_by_mme_id']);
+		//$res = $this->cre->get('/config/license/' . $QAS['global_created_by_mme_id']);
 		//$L_Lab = $res['result'];
 
 		// Find Owner License
-		// $res = $cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
+		// $res = $this->cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
 		$L_Own = new \OpenTHC\License($dbc);
 		$L_Own->loadBy('guid', $LSm['Lot']['global_created_by_mme_id']);
 
@@ -73,10 +75,8 @@ class View extends \App\Controller\Base
 
 	}
 
-	function _finishSample($RES, $ARG, $cre)
+	function _finishSample($RES, $ARG)
 	{
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-
 		$sql = 'SELECT * from lab_sample where id = :pk';
 		$res = SQL::fetch_all($sql, [
 			':pk' => $ARG['id'],
@@ -93,14 +93,12 @@ class View extends \App\Controller\Base
 		return $RES->withRedirect('/sample');
 	}
 
-	function _dropSample($RES, $ARG, $cre)
+	function _dropSample($RES, $ARG)
 	{
 		\session_write_close();
 
-		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-		// $res = $cre->get('/lot?source=true');
-
-		$res = $cre->delete('/lot/' . $ARG['id']);
+		// $res = $this->cre->get('/lot?source=true');
+		$res = $this->cre->delete('/lot/' . $ARG['id']);
 
 		$sql = 'SELECT * from lab_sample where id = :pk';
 		$res = SQL::fetch_all($sql, [

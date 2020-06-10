@@ -8,7 +8,7 @@ namespace App\Controller;
 use Edoceo\Radix\Session;
 use Edoceo\Radix\DB\SQL;
 
-class Search extends \OpenTHC\Controller\Base
+class Search extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{

@@ -11,8 +11,11 @@ class Pager
 	private $_show_size_prev = 5;
 	private $_show_size_next = 5;
 
+	private $item_count = 0;
+
 	private $page_min = 1;
 	private $page_max = -1;
+	private $page_current = 1;
 
 	function __construct($row_count, $page_size, $page_pick)
 	{
@@ -43,7 +46,7 @@ class Pager
 			return null;
 		}
 
-		$page_cur = max($this->min, $this->page_current);
+		$page_cur = max($this->page_min, $this->page_current);
 		$page_cur = min($this->page_max, $page_cur);
 
 		/**

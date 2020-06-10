@@ -9,7 +9,10 @@ use App\Lab_Sample;
 
 class Sync extends \OpenTHC\Controller\Base
 {
+	private $cre;
+
 	private $insert_count = 0;
+
 	private $update_count = 0;
 
 	/**
@@ -59,7 +62,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 		if ('success' != $res['status']) {
 			return $RES->withJSON([
-				'meta' => [ 'detail' => $cre->formatError($res) ]
+				'meta' => [ 'detail' => $this->cre->formatError($res) ]
 			]);
 		}
 
@@ -110,6 +113,8 @@ class Sync extends \OpenTHC\Controller\Base
 
 		if (empty($chk['id'])) {
 
+			// Create It
+
 			$x = $this->cre->get('/config/product/' . $obj['global_inventory_type_id']);
 			$Product = $x['result'];
 
@@ -148,7 +153,12 @@ class Sync extends \OpenTHC\Controller\Base
 				$m['Product'] = $x['result'];
 			}
 
-			if (!empty($obj['global_strain_id'])) {
+			if (empty($obj['global_strain_id'])) {
+				$m['Strain'] = [
+					'id' => null,
+					'name' => '- Not Set -',
+				];
+			} else {
 				$x = $this->cre->get('/config/strain/' . $obj['global_strain_id']);
 				if (!empty($x['result'])) {
 					$m['Strain'] = $x['result'];
@@ -160,11 +170,13 @@ class Sync extends \OpenTHC\Controller\Base
 				$chk['stat'] = Lab_Sample::STAT_DONE;
 			}
 
-			$dbc->query('UPDATE lab_sample SET stat = :s1, meta = :m0 WHERE id = :pk', array(
+			$arg = [
 				':pk' => $chk['id'],
 				':s1' => $chk['stat'],
+				':t1' => trim(sprintf('%s/%s', $m['Product']['type'], $m['Product']['intermediate_type'])),
 				':m0' => \json_encode($m)
-			));
+			];
+			$dbc->query('UPDATE lab_sample SET stat = :s1, product_type = :t1, meta = :m0 WHERE id = :pk', $arg);
 
 			$this->update_count++;
 

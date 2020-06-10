@@ -70,6 +70,8 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 		switch ($_GET['action']) {
 		case 'share-transfer':
 
+			throw new \Exception('Invalid Request');
+			// @todo should this be _connect_info ?
 			$out_link = '/transfer/import/' . $tmp_auth['transfer']['guid'];
 
 			break;
