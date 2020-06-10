@@ -36,9 +36,9 @@ class Lab_Sample extends \OpenTHC\SQL\Record
 	public $_Company;
 	public $_License;
 
-	function __construct($x=null)
+	function __construct($dbc=null, $rec=null)
 	{
-		parent::__construct($x);
+		parent::__construct($dbc, $rec);
 
 		// $sql = 'SELECT * FROM lab_sample WHERE guid = ?';
 		// $arg = array($oid);

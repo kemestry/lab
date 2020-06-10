@@ -46,8 +46,8 @@ class Home extends \OpenTHC\Controller\Base
 			$rec['meta'] = json_decode($rec['meta'], true);
 			$rec['date'] = strftime('%m/%d', strtotime($rec['meta']['created_at']));
 
-			$rec['target_license'] = new \OpenTHC\License($rec['license_id']);
-			$rec['origin_license'] = new \OpenTHC\License($rec['license_id_origin']);
+			$rec['target_license'] = new \OpenTHC\License($dbc, $rec['license_id']);
+			$rec['origin_license'] = new \OpenTHC\License($dbc, $rec['license_id_origin']);
 
 			$transfer_list[] = $rec;
 		}
