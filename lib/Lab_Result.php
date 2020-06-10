@@ -21,9 +21,9 @@ class Lab_Result extends \OpenTHC\SQL\Record
 	//protected $_Inventory;
 	public $_Result;
 
-	function __construct($oid)
+	function __construct($dbc=null, $obj=null)
 	{
-		parent::__construct($oid);
+		parent::__construct($dbc, $obj);
 
 		if (!empty($this->_data['meta'])) {
 			$this->_meta = json_decode($this->_data['meta'], true);

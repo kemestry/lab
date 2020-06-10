@@ -7,7 +7,7 @@ namespace App\Controller\Sample;
 
 use Edoceo\Radix\DB\SQL;
 
-class View extends \OpenTHC\Controller\Base
+class View extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
@@ -15,8 +15,10 @@ class View extends \OpenTHC\Controller\Base
 			_exit_text('Invalid Request', 400);
 		}
 
-		$Lab_Sample = new \App\Lab_Sample($ARG['id']);
-		if (empty($Lab_Sample)) {
+		$dbc = $this->_container->DB;
+
+		$Lab_Sample = new \App\Lab_Sample($dbc, $ARG['id']);
+		if (empty($Lab_Sample['id'])) {
 			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
 
@@ -33,17 +35,14 @@ class View extends \OpenTHC\Controller\Base
 
 		$LSm = json_decode($Lab_Sample['meta'], true);
 
-		// $cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+
+		// Get Fresh Lot Data?
 		// $res = $cre->get('/lot/' . $Lab_Sample['id']);
 
 		//$res = $cre->get('/config/product/' . $QAS['global_inventory_type_id']);
 		//$P = $res['result'];
 		//var_dump($P);
-
-		//$res = $cre->get('/config/strain/' . $QAS['global_strain_id']);
-		//$St = $res['result'];
-		//var_dump($St);
-		// $St = array('name' => $QAS['global_strain_id']);
 
 		// Find Laboratory License
 		//$res = $cre->get('/config/license/' . $QAS['global_created_by_mme_id']);
@@ -51,17 +50,18 @@ class View extends \OpenTHC\Controller\Base
 
 		// Find Owner License
 		// $res = $cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
-		$L_Own = new \OpenTHC\License($LSm['Lot']['global_created_by_mme_id']);
+		$L_Own = new \OpenTHC\License($dbc);
+		$L_Own->loadBy('guid', $LSm['Lot']['global_created_by_mme_id']);
 
-		$data = array(
+		$data = $data = $this->loadSiteData([
 			'Page' => array('title' => 'Sample :: View'),
+			'Lab_Sample' => $Lab_Sample->toArray(),
 			'Sample' => $LSm['Lot'],
 			'Product' => $LSm['Product'],
 			'Strain' => $LSm['Strain'],
 			'Result' => $LSm['Result'],
 			'License_Owner' => $L_Own->toArray(),
-		//	'License_Lab' => //$L_Lab,
-		);
+		]);
 		$data['Sample']['id'] = $ARG['id'];
 
 		// cause LeafData makes this one need MEDIACAL stuff, we fake-it in
@@ -69,7 +69,6 @@ class View extends \OpenTHC\Controller\Base
 			$data['Sample']['medically_compliant'] = true;
 		}
 
-		$data = $this->loadSiteData($data);
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 
 	}

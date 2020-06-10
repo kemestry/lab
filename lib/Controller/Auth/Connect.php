@@ -7,7 +7,6 @@ namespace App\Controller\Auth;
 
 use Edoceo\Radix;
 use Edoceo\Radix\Session;
-use Edoceo\Radix\DB\SQL;
 use Edoceo\Radix\Net\HTTP;
 
 use OpenTHC\Contact;
@@ -52,12 +51,14 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 			$_SESSION['pipe-token'] = $res['result'];
 		}
 
+		$dbc = $this->_container->DB;
+
 		// Action Action?
 		$out_link = '/home';
 
 		// Sync?
 		$do_sync = false;
-		$C = new \OpenTHC\Company($_SESSION['Company']);
+		$C = new \OpenTHC\Company($dbc, $_SESSION['Company']);
 		$chk = $C->getOption('sync-time-lab');
 		$chk = intval($chk);
 		$age = $_SERVER['REQUEST_TIME'] - $chk;

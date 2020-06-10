@@ -7,6 +7,12 @@
 			"App\\": "./lib"
 		}
 	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/openthc/api.git"
+		}
+	],
 	"require": {
 		"php": ">=7.3.0",
 		"ext-curl": "*",
@@ -16,18 +22,19 @@
 		"ext-session": "*",
 		"ext-sockets": "*",
 		"edoceo/radix": "dev-master",
-		"endroid/qr-code": "3.5.8",
-		"erusev/parsedown": "1.7.3",
+		"endroid/qr-code": "3.8.1",
+		"erusev/parsedown": "1.7.4",
 		"league/oauth2-client": "2.4.1",
+		"openthc/api": "dev-master",
 		"openthc/common": "dev-master",
 		"pear/net_smtp": "1.8.1",
 		"phing/phing": "2.16.0",
-		"tecnickcom/tcpdf": "6.2.26"
+		"tecnickcom/tcpdf": "6.3.5"
 	},
 	"require-dev": {
-		"phpmd/phpmd": "2.7.0",
-		"phpstan/phpstan": "0.11.16",
-		"phpunit/phpunit": "8.3.4",
-		"sebastian/phpcpd": "4.1.0"
+		"phpmd/phpmd": "2.8.2",
+		"phpstan/phpstan": "0.12.28",
+		"phpunit/phpunit": "9.1.5",
+		"sebastian/phpcpd": "5.0.2"
 	}
 }
