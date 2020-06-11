@@ -29,13 +29,13 @@
 <p>A List of all Active Samples, use Filters or Search to find old stuff.</p>
 -->
 <div class="sample-stat form-inline">
-	<div class="btn-group">
+	<div class="btn-group mr-2">
 		<a class="btn btn-outline-secondary" href="?stat=100">Active: {{ sample_stat.100 }}</a>
 		<a class="btn btn-outline-success" href="?stat=200">Completed: {{ sample_stat.200 }}</a>
 		<a class="btn btn-outline-danger" href="?stat=401">Void: {{ sample_stat.401 }}</a>
 		<a class="btn btn-outline-secondary" href="?stat=*">All</a>
 	</div>
-	<input class="form-control">
+	<input class="form-control" name="q">
 </div>
 </div>
 
@@ -59,7 +59,7 @@
 		<!-- Sample Item ID / Name -->
 		<td>
 			<h5><a href="/sample/{{ s.id }}">{{ s.id }}</a></h5>
-			Stat: {{ s.stat }}
+			<!-- Stat: {{ s.stat }} -->
 			<!-- @TODO -->
 			<!-- Add more vendor information here... maybe a business name? -->
 			<div>
@@ -70,10 +70,10 @@
 
 		<!-- Sample Type -->
 		<td>
-			<div class="row">
+			<div>
 				{{ s.meta.Product.name }}
 			</div>
-			<div class="row">
+			<div>
 				{% if s.meta.global_inventory_type_id %}
 				<small>
 					({{ s.meta.global_inventory_type_id }})

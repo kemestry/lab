@@ -20,6 +20,17 @@ class Home extends \OpenTHC\Controller\Base
 			]
 		);
 
+		$dbc = $this->_container->DB;
+
+		$sql_limit = 100;
+		$sql_offset = 0;
+		if (!empty($_GET['p'])) {
+			$p = intval($_GET['p']) - 1;
+			$sql_offset = $p * 100;
+		}
+
+
+
 
 		$sql = <<<SQL
 SELECT count(id) AS c, stat
@@ -29,9 +40,11 @@ WHERE lab_result.license_id = :l0
  OR lab_result_license.license_id = :l0
 GROUP BY stat
 ORDER BY stat
+OFFSET $sql_offset
+LIMIT $sql_limit
 SQL;
 		$arg = array(':l0' => $_SESSION['License']['id']);
-		$res = $this->_container->DB->fetchAll($sql, $arg);
+		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 			$data['result_stat'][ $rec['stat'] ] = $rec['c'];
 		}
@@ -45,13 +58,15 @@ FROM lab_result
 LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
 WHERE lab_result.license_id = :l0 OR lab_result_license.license_id = :l0
 ORDER BY created_at DESC, lab_result.id
+OFFSET $sql_offset
+LIMIT $sql_limit
 SQL;
 
 		$arg = array(':l0' => $_SESSION['License']['id']);
-		$res = $this->_container->DB->fetchAll($sql, $arg);
+		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
-			$QAR = new \App\Lab_Result($rec);
+			$QAR = new \App\Lab_Result($dbc, $rec);
 
 			$rec['meta'] = \json_decode($rec['meta'], true);
 
@@ -124,6 +139,17 @@ SQL;
 			}
 
 			$data['result_list'][] = $rec;
+
+			// Get Matching Record Counts
+			$sql_count = preg_replace('/SELECT.+FROM /ms', 'SELECT count(*) FROM ', $sql);
+			$sql_count = preg_replace('/LIMIT.+$/ms', null, $sql_count);
+			$sql_count = preg_replace('/OFFSET.+$/ms', null, $sql_count);
+			$sql_count = preg_replace('/ORDER BY.+$/ms', null, $sql_count);
+
+			$c = $dbc->fetchOne($sql_count, $arg);
+			$Pager = new \App\UI\Pager($c, $sql_limit, $_GET['p']);
+
+			$data['page_list_html'] = $Pager->getHTML();
 
 		}
 

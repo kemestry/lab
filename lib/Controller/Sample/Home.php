@@ -74,6 +74,7 @@ SQL;
 		// Get Matching Record Counts
 		$sql_count = preg_replace('/SELECT.+FROM /', 'SELECT count(*) FROM ', $sql);
 		$sql_count = preg_replace('/LIMIT.+$/', null, $sql_count);
+		$sql_count = preg_replace('/OFFSET.+$/', null, $sql_count);
 		$sql_count = preg_replace('/ORDER BY.+$/', null, $sql_count);
 
 		$c = $dbc->fetchOne($sql_count, $arg);
