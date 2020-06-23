@@ -21,7 +21,7 @@ namespace App\Controller;
 
 class Base extends \OpenTHC\Controller\Base
 {
-	function loadSiteData($data)
+	function loadSiteData($data=[])
 	{
 		$cfg = \OpenTHC\Config::get('application');
 		$base = [
