@@ -68,7 +68,7 @@ class Pager
 		ob_start();
 
 		// Output
-		echo '<div class="btn-toolbar justify-content-center mb-2" role="toolbar" aria-label="Toolbar with button groups">';
+		echo '<div class="btn-toolbar mb-2" role="toolbar" aria-label="page selection tool">';
 
 
 		// Previous and First Pages

@@ -17,11 +17,8 @@
  * along with OpenTHC Laboratory Portal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-define('APP_HOST', 'lab.openthc.org');
-define('APP_NAME', 'OpenTHC | Lab');
 define('APP_ROOT', __DIR__);
-define('APP_SITE', 'https://' . APP_HOST);
-define('APP_SALT', sha1(APP_NAME . APP_SITE . APP_ROOT));
+define('APP_SALT', sha1('$PUT_YOUR_SECRET_VALUE_HERE'));
 define('APP_BUILD', '420.19.123');
 
 openlog('openthc-lab', LOG_ODELAY|LOG_PID, LOG_LOCAL0);
@@ -29,14 +26,3 @@ openlog('openthc-lab', LOG_ODELAY|LOG_PID, LOG_LOCAL0);
 error_reporting(E_ALL & ~ E_NOTICE);
 
 require_once(APP_ROOT . '/vendor/autoload.php');
-
-// Still need this Static Connection :(
-try {
-	$cfg = \OpenTHC\Config::get('database_main');
-	$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
-	$u = $cfg['username'];
-	$p = $cfg['password'];
-	\Edoceo\Radix\DB\SQL::init($c, $u, $p);
-} catch (Exception $e) {
-	_exit_text('Fatal, Cannot Connect to Database [APP#040]', 500);
-}
