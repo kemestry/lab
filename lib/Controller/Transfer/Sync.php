@@ -48,8 +48,9 @@ class Sync extends \OpenTHC\Controller\Base
 			), 500);
 		}
 
-		$transfer_list = array();
+		$dbc = $this->_container->DB;
 
+		$transfer_list = [];
 		foreach ($res['result'] as $midx => $rec) {
 
 			$rec = array_merge($rec, $rec['_source']);
@@ -61,16 +62,16 @@ class Sync extends \OpenTHC\Controller\Base
 				':g' => $rec['guid']
 			);
 			// Select a incoming transfer by the Lab User's lic ID, and it's unique guid.
-			$chk = $this->_container->DB->fetchOne('SELECT id,hash FROM transfer_incoming WHERE license_id = :l AND id = :g', $arg);
+			$chk = $dbc->fetchOne('SELECT id,hash FROM b2b_incoming WHERE license_id = :l AND id = :g', $arg);
 			if (empty($chk)) {
 
-				$LOrigin = \OpenTHC\License::findByGUID($rec['global_from_mme_id']);
+				$LOrigin = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_from_mme_id']);
 				if (empty($LOrigin['id'])) {
 					_exit_text("Cannot find: '{$rec['global_from_mme_id']}'", 404);
 				}
 				// var_dump($LOrigin);
 
-				$LTarget = \OpenTHC\License::findByGUID($rec['global_to_mme_id']);
+				$LTarget = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_to_mme_id']);
 				if (empty($LTarget['id'])) {
 					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 404);
 				}
@@ -93,7 +94,7 @@ class Sync extends \OpenTHC\Controller\Base
 					'meta' => json_encode($rec),
 					'stat' => $this->_map_stat($rec)
 				);
-				$this->_container->DB->insert('transfer_incoming', $rec);
+				$this->_container->DB->insert('b2b_incoming', $rec);
 
 			} else {
 
@@ -104,7 +105,7 @@ class Sync extends \OpenTHC\Controller\Base
 					':s' => $this->_map_stat($rec)
 				);
 
-				$sql = 'UPDATE transfer_incoming SET hash = :h, meta = :m, stat = :s WHERE id = :id';
+				$sql = 'UPDATE b2b_incoming SET hash = :h, meta = :m, stat = :s WHERE id = :id';
 				// var_dump($upd);
 
 				$this->_container->DB->query($sql, $upd);
@@ -149,13 +150,13 @@ class Sync extends \OpenTHC\Controller\Base
 		$RC->connect('127.0.0.1');
 
 		// Load Transfer
-		$sql = 'SELECT transfer_incoming.*,';
+		$sql = 'SELECT b2b_incoming.*,';
 		$sql.= ' license.code AS license_code,';
 		$sql.= ' license.name AS license_name';
-		$sql.= ' FROM transfer_incoming';
-		$sql.= ' JOIN license ON transfer_incoming.license_id_origin = license.id';
-		$sql.= ' WHERE transfer_incoming.id = :g';
-		$sql.= ' AND transfer_incoming.license_id = :l';
+		$sql.= ' FROM b2b_incoming';
+		$sql.= ' JOIN license ON b2b_incoming.license_id_origin = license.id';
+		$sql.= ' WHERE b2b_incoming.id = :g';
+		$sql.= ' AND b2b_incoming.license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id'], ':g' => $ARG['id']);
 		$data['transfer'] = $this->_container->DB->fetchRow($sql, $arg);
 
@@ -171,7 +172,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$data['transfer']['stat'] = $this->_map_stat($T);
 
 		// Cleanup for re-add
-		$sql = 'DELETE FROM transfer_incoming_item WHERE transfer_id = :t';
+		$sql = 'DELETE FROM b2b_incoming_item WHERE transfer_id = :t';
 		$arg = array($data['transfer']['id']);
 		$this->_container->DB->query($sql, $arg);
 
@@ -244,17 +245,17 @@ class Sync extends \OpenTHC\Controller\Base
 			);
 
 			$add['meta'] = json_encode($add['meta']);
-			$this->_container->DB->insert('transfer_incoming_item', $add);
+			$this->_container->DB->insert('b2b_incoming_item', $add);
 
 			$full_price += floatval($rec['price']);
 
 		}
 
-		$sql = 'SELECT count(id) FROM transfer_incoming_item WHERE transfer_id = :t';
+		$sql = 'SELECT count(id) FROM b2b_incoming_item WHERE transfer_id = :t';
 		$arg = array(':t' => $data['transfer']['id']);
 		$c0 = $this->_container->DB->fetchOne($sql, $arg);
 
-		$sql = "SELECT count(id) FROM transfer_incoming_item WHERE transfer_id = :t AND meta->'Item'->>'is_sample' = '1'";
+		$sql = "SELECT count(id) FROM b2b_incoming_item WHERE transfer_id = :t AND meta->'Item'->>'is_sample' = '1'";
 		$arg = [':t' => $data['transfer']['id']];
 		$c1 = $this->_container->DB->fetchOne($sql, $arg);
 
@@ -262,7 +263,7 @@ class Sync extends \OpenTHC\Controller\Base
 			$data['transfer']['flag'] = $data['transfer']['flag'] | \App\Transfer::FLAG_SAMPLE;
 		}
 
-		$this->_container->DB->query('UPDATE transfer_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
+		$this->_container->DB->query('UPDATE b2b_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
 			':t' => $data['transfer']['id'],
 			':f1' => ($data['transfer']['flag'] | \App\Transfer::FLAG_SYNC),
 			':s' => $data['transfer']['stat'],
@@ -289,9 +290,11 @@ class Sync extends \OpenTHC\Controller\Base
 			case 'transporter/open':
 				return 100;
 			case 'pick-up/ready-for-pickup':
+			case 'transporter/ready-for-pickup':
 				return 200;
 			case 'delivery/in-transit':
 			case 'pick-up/in-transit':
+			case 'transporter/in-transit':
 				return 301;
 			case 'delivery/received':
 			case 'pick-up/received':

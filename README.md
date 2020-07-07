@@ -4,6 +4,16 @@ This service provides a method for all interested parties to upload and share th
 
 It integrates with BioTrackTHC, Franwell/METRC and MJ Freeway/LeafData.
 
+## Installation
+
+Clone this repo, install dependencies, connect the database.
+
+```shell
+git clone ...
+composer update
+npm update
+```
+
 ## Install Ghostscript
 
 Get pdf_info.ps from here: http://git.ghostscript.com/?p=ghostpdl.git;a=tree;f=toolbin;hb=HEAD

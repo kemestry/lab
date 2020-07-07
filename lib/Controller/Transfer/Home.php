@@ -14,8 +14,13 @@ class Home extends \OpenTHC\Controller\Base
 		$dbc = $this->_container->DB;
 
 		// Load Transfer Stats
-		$transfer_stat = [];
-		$sql = 'SELECT count(id) AS c, stat FROM transfer_incoming WHERE license_id = :l GROUP BY stat ORDER BY stat';
+		$transfer_stat = [
+			'100' => 0,
+			'301' => 0,
+			'307' => 0,
+			'410' => 0,
+		];
+		$sql = 'SELECT count(id) AS c, stat FROM b2b_incoming WHERE license_id = :l GROUP BY stat ORDER BY stat';
 		$arg = array(':l' => $_SESSION['License']['id']);
 		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
@@ -30,7 +35,7 @@ class Home extends \OpenTHC\Controller\Base
 		}
 
 		// Query
-		$sql = 'SELECT * FROM transfer_incoming WHERE license_id = :l';
+		$sql = 'SELECT * FROM b2b_incoming WHERE license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id']);
 
 		if (!empty($_GET['stat'])) {

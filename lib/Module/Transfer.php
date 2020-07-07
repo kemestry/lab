@@ -11,7 +11,8 @@ class Transfer extends \OpenTHC\Module\Base
 	{
 		$a->get('', 'App\Controller\Transfer\Home');
 
-		$a->map(['GET','POST'], '/create', 'App\Controller\Transfer\Create');
+		$a->get('/create', 'App\Controller\Transfer\Create');
+		$a->post('/create', 'App\Controller\Transfer\Create:post');
 
 		$a->map(['GET','POST'], '/sync', 'App\Controller\Transfer\Sync');
 		$a->map(['GET', 'POST'], '/{id}/sync', 'App\Controller\Transfer\Sync');
