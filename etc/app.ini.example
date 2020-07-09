@@ -20,9 +20,9 @@
 ;
 [oauth]
 	hostname = "sso.openthc.dev"
-	urlAuthorize = "https://%h/oauth2/authorize"
-	urlAccessToken = "https://%h/oauth2/token"
-	urlResourceOwnerDetails = "https://%h/oauth2/profile"
+	urlAuthorize = "https://sso.openthc.dev/oauth2/authorize"
+	urlAccessToken = "https://sso.openthc.dev/oauth2/token"
+	urlResourceOwnerDetails = "https://sso.openthc.dev/oauth2/profile"
 
 
 ;

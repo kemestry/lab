@@ -20,7 +20,7 @@ class Home extends \OpenTHC\Controller\Base
 			'307' => 0,
 			'410' => 0,
 		];
-		$sql = 'SELECT count(id) AS c, stat FROM b2b_incoming WHERE license_id = :l GROUP BY stat ORDER BY stat';
+		$sql = 'SELECT count(id) AS c, stat FROM b2b_incoming WHERE license_id_target = :l GROUP BY stat ORDER BY stat';
 		$arg = array(':l' => $_SESSION['License']['id']);
 		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
@@ -35,7 +35,7 @@ class Home extends \OpenTHC\Controller\Base
 		}
 
 		// Query
-		$sql = 'SELECT * FROM b2b_incoming WHERE license_id = :l';
+		$sql = 'SELECT * FROM b2b_incoming WHERE license_id_target = :l';
 		$arg = array(':l' => $_SESSION['License']['id']);
 
 		if (!empty($_GET['stat'])) {
@@ -51,8 +51,8 @@ class Home extends \OpenTHC\Controller\Base
 			$rec['meta'] = json_decode($rec['meta'], true);
 			$rec['date'] = strftime('%m/%d', strtotime($rec['meta']['created_at']));
 
-			$rec['target_license'] = new \OpenTHC\License($dbc, $rec['license_id']);
-			$rec['origin_license'] = new \OpenTHC\License($dbc, $rec['license_id_origin']);
+			$rec['license_target'] = new \OpenTHC\License($dbc, $rec['license_id_target']);
+			$rec['license_source'] = new \OpenTHC\License($dbc, $rec['license_id_source']);
 
 			$transfer_list[] = $rec;
 		}

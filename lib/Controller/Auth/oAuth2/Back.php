@@ -27,27 +27,22 @@ class Back extends \App\Controller\Auth\oAuth2
 				'code' => $_GET['code']
 			]);
 		} catch (\Exception $e) {
-			//_exit_text($e, 500);
-			Session::flash('fail', 'CAB#037: Invalid Access Token');
-			Radix::redirect('/auth/fail');
+			_exit_html('<h1>Invalid Access Token [CAB#030]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		if (empty($tok)) {
-			Session::flash('fail', 'CAB#042: Invalid Access Token');
-			Radix::redirect('/auth/fail');
+			_exit_html('<h1>Invalid Access Token [CAB#034]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		// Array-ify
 		$tok_a = json_decode(json_encode($tok), true);
 
 		if (empty($tok_a['access_token'])) {
-			Session::flash('fail', 'Invalid Access Token');
-			Radix::redirect('/auth/fail');
+			_exit_html('<h1>Invalid Access Token [CAB#041]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		if (empty($tok_a['token_type'])) {
-			Session::flash('fail', 'Invalid Access Token');
-			Radix::redirect('/auth/fail');
+			_exit_html('<h1>Invalid Access Token [CAB#045]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		// Using the access token, we may look up details about the
@@ -100,19 +95,20 @@ class Back extends \App\Controller\Auth\oAuth2
 
 			}
 
-
-			// Redirect
-			$r = $_GET['r'];
-			if (empty($r)) {
-				$r = '/home';
-			}
-
-			Radix::redirect($r);
-
 		} catch (\Exception $e) {
-			Session::flash('fail', $e->getMessage());
-			Radix::redirect('/auth/fail');
+			unset($_SESSION['cre']);
+			unset($_SESSION['cre-auth']);
+			// _exit_text($e->getTraceAsString(), 500);
+			// _exit_html('<h1>Authentication Exception [CAB#108]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 500);
 		}
+
+		// Redirect
+		$r = $_GET['r'];
+		if (empty($r)) {
+			$r = '/home';
+		}
+
+		Radix::redirect($r);
 
 	}
 
