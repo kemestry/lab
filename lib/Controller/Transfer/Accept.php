@@ -46,8 +46,8 @@ class Accept extends \OpenTHC\Controller\Base
 		$data = array(
 			'Page' => array('title' => 'Transfer :: Accept'),
 			'Transfer' => $T1,
-			'Origin_License' => $Origin->toArray(),
-			'Target_License' => $Target->toArray(),
+			'License_Source' => $Origin->toArray(),
+			'License_Target' => $Target->toArray(),
 			'Zone_list' => $zone_list,
 		);
 

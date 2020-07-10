@@ -62,33 +62,27 @@ class Sync extends \OpenTHC\Controller\Base
 				':g' => $rec['guid']
 			);
 			// Select a incoming transfer by the Lab User's lic ID, and it's unique guid.
-			$chk = $dbc->fetchOne('SELECT id,hash FROM b2b_incoming WHERE license_id = :l AND id = :g', $arg);
+			$chk = $dbc->fetchOne('SELECT id,hash FROM b2b_incoming WHERE license_id_target = :l AND id = :g', $arg);
 			if (empty($chk)) {
 
-				$LOrigin = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_from_mme_id']);
-				if (empty($LOrigin['id'])) {
-					_exit_text("Cannot find: '{$rec['global_from_mme_id']}'", 404);
+				$L_Source = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_from_mme_id']);
+				if (empty($L_Source['id'])) {
+					_exit_text("Cannot find: '{$rec['global_from_mme_id']}'", 500);
 				}
-				// var_dump($LOrigin);
 
-				$LTarget = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_to_mme_id']);
-				if (empty($LTarget['id'])) {
-					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 404);
+				$L_Target = $dbc->fetchRow('SELECT * FROM license WHERE guid = ?', $rec['global_to_mme_id']);
+				if (empty($L_Target['id'])) {
+					_exit_text("Cannot find: '{$rec['global_to_mme_id']}'", 500);
 				}
-				if ($LTarget['id'] != $_SESSION['License']['id']) {
-					// echo "<br>Skip Target: {$LTarget['name']}<br>";
+				if ($L_Target['id'] != $_SESSION['License']['id']) {
 					continue;
-					// _exit_text('License Mis-Match', 409);
-					// var_dump($midx);
-					// var_dump($LTarget);
-					// die("<br>Bad Target '{$LTarget['id']} != {$_SESSION['License']['id']}");
 				}
-				// var_dump($LTarget);
+				// var_dump($L_Target);
 
 				$rec = array(
 					'id' => $rec['guid'],
-					'license_id' => $LTarget['id'], // Me
-					'license_id_origin' => $LOrigin['id'],
+					'license_id_target' => $L_Target['id'], // Me
+					'license_id_source' => $L_Source['id'],
 					'created_at' => $rec['created_at'],
 					'hash' => $rec['hash'],
 					'meta' => json_encode($rec),
@@ -154,7 +148,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$sql.= ' license.code AS license_code,';
 		$sql.= ' license.name AS license_name';
 		$sql.= ' FROM b2b_incoming';
-		$sql.= ' JOIN license ON b2b_incoming.license_id_origin = license.id';
+		$sql.= ' JOIN license ON b2b_incoming.license_id_source = license.id';
 		$sql.= ' WHERE b2b_incoming.id = :g';
 		$sql.= ' AND b2b_incoming.license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id'], ':g' => $ARG['id']);

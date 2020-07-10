@@ -3,8 +3,8 @@
 	<div class="form-group">
 		<label>From:</label>
 		<div class="input-group">
-			<input class="form-control" readonly value="{{ Origin_License.name }} #{{ Origin_License.code }}">
-			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ Origin_License.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
+			<input class="form-control" readonly value="{{ License_Source.name }} #{{ License_Source.code }}">
+			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ License_Source.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
 		</div>
 		<small>{{ Transfer.global_from_mme_id }}</small>
 	</div>
@@ -13,8 +13,8 @@
 	<div class="form-group">
 		<label>Ship To:</label>
 		<div class="input-group">
-			<input class="form-control" readonly value="{{ Target_License.name }} #{{ Target_License.code }}">
-			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ Demand_License.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
+			<input class="form-control" readonly value="{{ License_Target.name }} #{{ License_Target.code }}">
+			<div class="input-group-append"><a class="btn btn-outline-secondary" href="https://directory.openthc.com/company?id={{ License_Target.company_id }}" target="_blank"><i class="fas fa-address-book"></i></a></div>
 		</div>
 		<small>{{ Transfer.global_to_mme_id }}</small>
 	</div>

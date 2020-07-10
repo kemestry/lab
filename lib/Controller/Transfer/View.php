@@ -36,8 +36,8 @@ class View extends \OpenTHC\Controller\Base
 			'Page' => array('title' => sprintf('Transfer %s', $T['id'])),
 			'Transfer' => $T,
 			'Transfer_Item_List' => $til,
-			'Target_License' => new \OpenTHC\License($dbc, $T['license_id']),
-			'Origin_License' => new \OpenTHC\License($dbc, $T['license_id_origin']),
+			'License_Target' => new \OpenTHC\License($dbc, $T['license_id_target']),
+			'License_Source' => new \OpenTHC\License($dbc, $T['license_id_source']),
 		);
 
 		return $this->_container->view->render($RES, 'page/transfer/view.html', $data);
