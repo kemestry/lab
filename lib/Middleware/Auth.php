@@ -5,7 +5,8 @@
 
 namespace App\Middleware;
 
-use Edoceo\Radix\DB\SQL;
+use OpenTHC\Company;
+use OpenTHC\Contact;
 
 class Auth extends \OpenTHC\Middleware\Base
 {
@@ -62,10 +63,12 @@ class Auth extends \OpenTHC\Middleware\Base
 		$service_key = trim($_SERVER['PHP_AUTH_USER']);
 		$company_key = trim($_SERVER['PHP_AUTH_PW']);
 
+		$dbc = $this->_container->DB;
+
 		// Should be a Software Vendor
 		$sql = 'SELECT * FROM auth_hash WHERE hash = ?';
 		$arg = array($service_key);
-		$res = SQL::fetch_row($sql, $arg);
+		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
 			return $RES->withJSON(array(
 				'status' => 'failure',
@@ -73,7 +76,7 @@ class Auth extends \OpenTHC\Middleware\Base
 			), 403);
 		}
 		$data = json_decode($res['json'], true);
-		$Company = new Company($data['company_id']);
+		$Company = new Company($dbc, $data['company_id']);
 		if (empty($Company['id'])) {
 			return $RES->withJSON(array(
 				'status' => 'failure',
@@ -86,7 +89,7 @@ class Auth extends \OpenTHC\Middleware\Base
 		// Should be a Licensed Operator
 		$sql = 'SELECT * FROM auth_hash WHERE hash = ?';
 		$arg = array($company_key);
-		$res = SQL::fetch_row($sql, $arg);
+		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
 			return $RES->withJSON(array(
 				'status' => 'failure',
@@ -94,7 +97,7 @@ class Auth extends \OpenTHC\Middleware\Base
 			), 403);
 		}
 		$data = json_decode($res['json'], true);
-		$Company = new Company($data['company_id']);
+		$Company = new Company($dbc, $data['company_id']);
 
 		if (empty($Company['id'])) {
 			return $RES->withJSON(array(
@@ -112,13 +115,15 @@ class Auth extends \OpenTHC\Middleware\Base
 	*/
 	protected function _bearer($REQ, $RES, $tok)
 	{
+		$dbc = $this->_container->DB;
+
 		// Find Directly Supplied Hash
-		$res = SQL::fetch_row('SELECT * FROM auth_hash WHERE hash = :hash', array($tok));
+		$res = $dbc->fetchRow('SELECT * FROM auth_hash WHERE hash = :hash', array($tok));
 		if (!empty($res)) {
 
 			$data = json_decode($res['json'], true);
-			$Company = new Company($res['company_id']);
-			$Contact = new Contact($res['uid']);
+			$Company = new Company($dbc, $res['company_id']);
+			$Contact = new Contact($dbc, $res['uid']);
 
 			if (empty($Company['id'])) {
 				return $RES->withJSON(array(
@@ -143,10 +148,11 @@ class Auth extends \OpenTHC\Middleware\Base
 
 		}
 
+		// @deprecated
 		// Then Try the Machine Token
-		// Only WeedTraQR is allow this, and it's very stupid /djb 20171111
+		// Only our APP is allowed this, and it's very stupid /djb 20171111
 		$hash = sprintf('machine-%s', $tok);
-		$res = SQL::fetch_row('SELECT * FROM auth_hash WHERE hash = :hash', array($hash));
+		$res = $dbc->fetchRow('SELECT * FROM auth_hash WHERE hash = :hash', array($hash));
 		if (!empty($res)) {
 			$RES = $NMW($REQ, $RES);
 			return $RES;
