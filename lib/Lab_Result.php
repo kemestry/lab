@@ -5,20 +5,16 @@
 
 namespace App;
 
-use Edoceo\Radix;
 use Edoceo\Radix\DB\SQL;
 use Edoceo\Radix\Net\HTTP;
 
 class Lab_Result extends \OpenTHC\SQL\Record
 {
-	const TABLE = 'lab_result';
-
 	const FLAG_SYNC = 0x00100000;
 	const FLAG_MUTE = 0x04000000;
 
 	protected $_table = 'lab_result';
 
-	//protected $_Inventory;
 	public $_Result;
 
 	function __construct($dbc=null, $obj=null)
@@ -33,13 +29,36 @@ class Lab_Result extends \OpenTHC\SQL\Record
 	}
 
 	/**
+	 * Get the Metrics
+	 */
+	function getMetrics()
+	{
+		$sql = <<<SQL
+SELECT lab_result_metric.*
+, lab_metric.name AS lab_metric_name
+FROM lab_result_metric
+JOIN lab_metric ON lab_result_metric.lab_metric_id = lab_metric.id
+WHERE lab_result_metric.lab_result_id = :lr0
+SQL;
+
+		// $res = $this->_dbc->fetchAll('SELECT * FROM lab_metric');
+		// $res_
+
+		$arg = [
+			':lr0' => $this->_data['id']
+		];
+
+		$res = $this->_dbc->fetchAll($sql, $arg);
+	}
+
+	/**
 	 * Returns the COA File Path for this Lab Result
 	 * @return [type] [description]
 	 */
 	function getCOAFile()
 	{
 		if (empty($this->_data['id'])) {
-			throw new Exception('Invalid Result [LQR#044]');
+			throw new \Exception('Invalid Result [LQR#044]');
 		}
 
 		// if (!empty($coa_file) && is_file($coa_file) && is_readable($coa_file)) {

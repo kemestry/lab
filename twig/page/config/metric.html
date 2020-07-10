@@ -1,0 +1,28 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+
+<table class="table table-sm table-bordered">
+<thead class="thead-dark">
+	<tr>
+		<th>Type</th>
+		<th>Name</th>
+		<!-- <th>META</th> -->
+		<th colspan="3">Products</th>
+	</tr>
+</thead>
+{% for m in metric_list %}
+
+	<tr>
+		<td>{{ m.type }}</td>
+		<td>{{ m.name }}</td>
+		<!-- <td>{{ m.meta }}</td> -->
+		<td><label>Flower <input type="checkbox"></label></td>
+		<td><label>Extract <input type="checkbox"></label></td>
+		<td><label>Editble <input type="checkbox"></label></td>
+	</tr>
+
+{% endfor %}
+</table>
+
+{% endblock %}

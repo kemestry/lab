@@ -45,12 +45,6 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 </div>
 <div class="col">
 	<div class="form-group">
-		<label>Strain</label>
-		<input class="form-control" readonly value="{{ Strain.name }}">
-	</div>
-</div>
-<div class="col">
-	<div class="form-group">
 		<label>Type</label>
 		<input class="form-control" readonly value="{{ Product.type }} / {{ Product.intermediate_type }}">
 	</div>
@@ -58,18 +52,26 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 </div>
 
 <div class="row">
-<div class="col">
-	<div class="form-group">
-		<label>Quantity</label>
-		<div class="input-group">
-			<input class="form-control r" readonly value="{{ Sample.qty }}">
-			<div class="input-group-append">
-				<div class="input-group-text">{{ Product.uom }}</div>
+	<div class="col">
+		<div class="form-group">
+			<label>Strain</label>
+			<input class="form-control" readonly value="{{ Strain.name }}">
+		</div>
+	</div>
+	<div class="col">
+		<div class="form-group">
+			<label>Quantity</label>
+			<div class="input-group">
+				<input class="form-control r" readonly value="{{ Lot.qty }}">
+				<div class="input-group-append">
+					<div class="input-group-text">{{ Product.uom }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
-<div class="col">
+
+<!-- <div class="col">
 	<div class="form-group">
 		<label>Net Weight</label>
 		<input class="form-control r" readonly value="{{ Sample.net_weight }}">
@@ -80,8 +82,7 @@ from <strong>{{ License_Owner.name }}</strong> [{{ License_Owner.code }}]
 		<label>Total Marijuana in Grams</label>
 		<input class="form-control r" readonly value="{{ Sample.total_marijuana_in_grams }}">
 	</div>
-</div>
-</div>
+</div> -->
 
 <form method="post">
 <div class="form-actions">

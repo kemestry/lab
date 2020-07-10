@@ -6,8 +6,6 @@
 namespace App\Controller\Result;
 
 use Edoceo\Radix\Session;
-use Edoceo\Radix\DB\SQL;
-use Edoceo\Radix\Net\HTTP;
 
 class View extends \App\Controller\Base
 {
@@ -18,8 +16,10 @@ class View extends \App\Controller\Base
 			_exit_text('Invalid Request', 400);
 		}
 
+		$dbc = $this->_container->DB;
+
 		// Get Result
-		$LR = new \App\Lab_Result($id);
+		$LR = new \App\Lab_Result($dbc, $id);
 		if (empty($LR['id'])) {
 			_exit_html(sprintf('QA Result Not Found, please <a href="/result/%s/sync">sync this result</a>', $id), 404);
 		}
@@ -32,9 +32,11 @@ class View extends \App\Controller\Base
 			return $this->_postHandler($RES, $LR, $meta);
 		}
 
+		$LR->getMetrics();
+
 		// Get authoriative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
-		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
+		$metricTab = $dbc->fetchAll($sql);
 		// _exit_text($metricTab);
 		$MetricList = array(); // This list is organized by the metric's type. I need it to make render the view eaiser.
 		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made

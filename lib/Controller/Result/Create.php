@@ -6,7 +6,9 @@
 namespace App\Controller\Result;
 
 use Edoceo\Radix\Session;
-use Edoceo\Radix\DB\SQL;
+
+use App\Lab_Result;
+use App\Lab_Sample;
 
 class Create extends \OpenTHC\Controller\Base
 {
@@ -15,29 +17,27 @@ class Create extends \OpenTHC\Controller\Base
 		$data = array();
 		$data['Page'] = array('title' => 'Result :: Create');
 
+		$dbc = $this->_container->DB;
+
 		// @todo should be License ID
 		$sql = 'SELECT * FROM lab_sample WHERE license_id = :l0 AND id = :g0';
 		$arg = array(':l0' => $_SESSION['License']['id'], ':g0' => $_GET['sample_id']);
-		$chk = SQL::fetch_row($sql, $arg);
+		$chk = $dbc->fetchRow($sql, $arg);
 		if (empty($chk['id'])) {
 			_exit_text('Invalid Sample [CRC#022]', 400);
 		}
 
-		// $Sample = new \App\Lab_Sample($chk);
 		$meta = \json_decode($chk['meta'], true);
 
-		$data['Sample']  = $meta['Lot'];
-		$data['Product']  = $meta['Product'];
+		$data['Lot'] = $chk;
+		$data['Sample'] = $meta['Lot'];
+		$data['Product'] = $meta['Product'];
 		$data['Product']['type_nice'] = sprintf('%s/%s', $data['Product']['type'], $data['Product']['intermediate_type']);
-		$data['Strain']  = $meta['Strain'];
-
-		//$data['Result']  = $res['Result'];
-		//$data['Product'] = $QAR['Product'];
-
+		$data['Strain'] = $meta['Strain'];
 
 		// Get authoriative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
-		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
+		$metricTab = $dbc->fetchAll($sql);
 		// _exit_text($metricTab);
 		$MetricList = array(); // This list is organized by the metric's type. I need it to make render the view eaiser.
 		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made
@@ -77,8 +77,6 @@ class Create extends \OpenTHC\Controller\Base
 
 		$file = 'page/result/create.html';
 
-		// _exit_text($data);
-
 		return $this->_container->view->render($RES, $file, $data);
 
 	}
@@ -94,7 +92,7 @@ class Create extends \OpenTHC\Controller\Base
 	{
 		switch ($_POST['a']) {
 		case 'commit':
-			return $this->_save($REQ, $RES, $ARG);
+			return $this->_commit($REQ, $RES, $ARG);
 		case 'save':
 			return $this->_save($REQ, $RES, $ARG);
 		default:
@@ -104,11 +102,23 @@ class Create extends \OpenTHC\Controller\Base
 
 	private function _save($REQ, $RES, $ARG)
 	{
-		// _exit_text($_SESSION);
+		$dbc = $this->_container->DB;
+
+		// Get and validate the QA Sample
+		$sampleId = $_POST['sample_id'];
+		$sql = 'SELECT * from lab_sample WHERE id = :id AND license_id = :lic';
+		$args = [
+			':id' => $sampleId,
+			':lic' => $_SESSION['License']['id'],
+		];
+		$Sample = $dbc->fetchRow($sql, $args);
+		if (empty($Sample['id'])) {
+			_exit_text(sprintf('Could not find Sample Lot: %s [LPC#128]', $sampleId), 409);
+		}
 
 		// Get the authorative lab metrics
 		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
-		$metricTab = \Edoceo\Radix\DB\SQL::fetch_all($sql);
+		$metricTab = $dbc->fetchAll($sql);
 		// This list is type-flat, and it's IDs the row ULID
 		$MetricList = array();
 		foreach ($metricTab as $index => $metric) {
@@ -241,23 +251,55 @@ class Create extends \OpenTHC\Controller\Base
 
 		//_exit_text($ResultTable);
 
+		$dbc->query('BEGIN');
+
+		$LR = new Lab_Result($dbc);
+		$LR['id'] = _ulid();
+		$LR['license_id'] = $_SESSION['License']['id'];
+		$LR['stat'] = 200;
+		$LR['flag'] = 0;
+		$LR['type'] = 'unknown';
+		$LR['name'] = sprintf('Lab Result for Sample Lot: %s', $Sample['id']);
+		$LR->save();
+
+		// Save Metrics
+		foreach ($lab_metric as $k => $m) {
+			$dbc->insert('lab_result_metric', [
+				'id' => _ulid(),
+				'lab_result_id' => $LR['id'],
+				'lab_metric_id' => $k,
+				'flag' => null,
+				'qom' => $_POST[$k],
+				'uom' => $m['uom'],
+				// LOD
+				// LOQ
+			]);
+		}
+
+		$dbc->query('INSERT INTO lab_result_lot (lot_id, lab_result_id) VALUES (:ls0, :lr0)', [
+			':ls0' => $Sample['id'],
+			':lr0' => $LR['id'],
+		]);
+
 		// Persist the result to the Sample's meta field with md5 hash
 		// $resultsCache = json_encode($ResultTable);
 		// $hash = md5($resultsCache);
 
-		// Get and validate the QA Sample
-		$sampleId = $_POST['sample_id'];
-		$sql = 'SELECT * from lab_sample WHERE id = :id AND license_id = :lic';
-		$args = [
-			':id' => $sampleId,
-			':lic' => $_SESSION['License']['id'],
-		];
-		$Sample = SQL::fetch_row($sql, $args);
-		if (empty($Sample['id'])) {
-			_exit_text(sprintf('Could not find: %s [LPC#128]', $sampleId), 409);
-		}
+		$sql = 'UPDATE lab_sample SET stat = 200 WHERE id = :ls0';
+		$arg = [ ':ls0' => $Sample['id'] ];
+		$dbc->query($sql, $arg);
 
-		$meta = json_decode($Sample['meta'], true);
+		$dbc->query('COMMIT');
+
+		// How to Link Together?
+
+		return $RES->withRedirect('/result/' . $LR['id']);
+
+	}
+
+	function commit($REQ, $RES, $ARG)
+	{
+
 		//_exit_text($meta);
 		$Sample = $meta['Lot'];
 		$Product = $meta['Product'];
@@ -349,23 +391,14 @@ class Create extends \OpenTHC\Controller\Base
 		$res['data'] = $tmp[0];
 
 		switch ($res['code']) {
-		case 200:
+			case 200:
 
-			// OK
-			if ('passed' == $res['status']) {
-				Session::flash('info', 'Results Accepted and Passed!');
-			} else {
-				Session::flash('warn', 'Results Accepted but are not considered Passed');
-			}
-
-			// Mark Sample Lot as Tested/OK/Done
-			$dbc = $this->_container->DB;
-			// $Lab_Sample['stat'] = 200;
-			// $Lab_Sample->save();
-			$sql = 'UPDATE lab_sample SET stat = 200 WHERE id = :ls0';
-			$arg = [ ':ls0' => $Sample['id'] ];
-			$dbc->query($sql, $arg);
-
+				// OK
+				if ('passed' == $res['status']) {
+					Session::flash('info', 'Results Accepted and Passed!');
+				} else {
+					Session::flash('warn', 'Results Accepted but are not considered Passed');
+				}
 			// Sync One
 			// $CRS = new Sync($this->_container);
 			// $CRS->_sync_one($res['data']);
@@ -383,13 +416,6 @@ class Create extends \OpenTHC\Controller\Base
 			return $RES->withRedirect($_SERVER['HTTP_REFERER']);
 		}
 
-		// How to Link Together?
-
-	}
-
-	function commit($REQ, $RES, $ARG)
-	{
-		// Actuall Send to CRE Here
 	}
 
 	private function isValidResultValue($resultValue, $metric)
@@ -405,14 +431,12 @@ class Create extends \OpenTHC\Controller\Base
 			case 'cfu/g':
 			case 'aw':
 				return is_numeric($resultValue);
-
 			case 'bool':
 				return ('true' === strtolower($resultValue) || 'false' === strtolower($resultValue));
-
 			default:
 				return false;
+
 		}
 	}
-
 
 }

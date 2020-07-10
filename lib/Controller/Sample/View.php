@@ -19,12 +19,13 @@ class View extends \App\Controller\Base
 
 		$dbc = $this->_container->DB;
 
-		$this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+		// $this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 
 		$Lab_Sample = new \App\Lab_Sample($dbc, $ARG['id']);
 		if (empty($Lab_Sample['id'])) {
 			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
+		// var_dump($Lab_Sample);
 
 		switch ($_POST['a']) {
 		case 'drop':
@@ -53,18 +54,22 @@ class View extends \App\Controller\Base
 		// Find Owner License
 		// $res = $this->cre->get('/config/license/' . $LSm['Lot']['global_created_by_mme_id']);
 		$L_Own = new \OpenTHC\License($dbc);
-		$L_Own->loadBy('guid', $LSm['Lot']['global_created_by_mme_id']);
+		$L_Own->loadBy('id', $LSm['Lot']['global_created_by_mme_id']);
 
 		$data = $data = $this->loadSiteData([
 			'Page' => array('title' => 'Sample :: View'),
-			'Lab_Sample' => $Lab_Sample->toArray(),
-			'Sample' => $LSm['Lot'],
+			'Lab_Sample' => $Lab_Sample->toArray(), // @deprecated
+			'Sample' => $LSm['Lot'], // @deprecated
+			'Lot' => $Lab_Sample->toArray(),
 			'Product' => $LSm['Product'],
 			'Strain' => $LSm['Strain'],
 			'Result' => $LSm['Result'],
 			'License_Owner' => $L_Own->toArray(),
 		]);
 		$data['Sample']['id'] = $ARG['id'];
+		if (empty($data['Product']['uom'])) {
+			$data['Product']['uom'] = 'g';
+		}
 
 		// cause LeafData makes this one need MEDIACAL stuff, we fake-it in
 		if ('flower' == $data['Product']['intermediate_type']) {
