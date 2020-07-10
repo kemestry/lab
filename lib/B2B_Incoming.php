@@ -21,7 +21,8 @@ class B2B_Incoming extends \OpenTHC\SQL\Record
 			throw new \Exception('Invalid Parameter');
 		}
 
-		$B2BI['transfer_id'] = $this->_data['id'];
+		$B2BI['b2b_incoming_id'] = $this->_data['id'];
+		$B2BI['hash'] = $B2BI->getHash();
 		$B2BI->save();
 
 		return $B2BI;

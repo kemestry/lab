@@ -11,7 +11,7 @@ class View extends \OpenTHC\Controller\Base
 	{
 		$dbc = $this->_container->DB;
 
-		$sql = 'SELECT * FROM b2b_incoming WHERE license_id = :l0 AND id = :id';
+		$sql = 'SELECT * FROM b2b_incoming WHERE license_id_target = :l0 AND id = :id';
 		$arg = array(
 			':l0' => $_SESSION['License']['id'],
 			':id' => $ARG['id'],
@@ -25,10 +25,10 @@ class View extends \OpenTHC\Controller\Base
 			// if ('success' != $res['status']) {
 			// 	print_r($res);
 			// 	die("Cannot Load Transfer");
-			// }	
+			// }
 		}
 
-		$til = $dbc->fetchAll('SELECT * FROM b2b_incoming_item WHERE transfer_id = ?', $T['id']);
+		$til = $dbc->fetchAll('SELECT * FROM b2b_incoming_item WHERE b2b_incoming_id = ?', $T['id']);
 		$T['inventory_transfer_items'] = $til;
 
 
