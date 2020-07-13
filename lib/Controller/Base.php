@@ -33,4 +33,14 @@ class Base extends \OpenTHC\Controller\Base
 		$data = array_merge($base, $data);
 		return $data;
 	}
+
+	function render($file)
+	{
+		ob_start();
+		$file = sprintf('%s/view/%s', APP_ROOT, $file);
+		require_once($file);
+		$html = ob_get_clean();
+		return $html;
+	}
+
 }

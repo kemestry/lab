@@ -1,0 +1,10 @@
+{% extends "layout/html.html" %}
+
+{% block body %}
+{{ html|raw }}
+{% endblock %}
+
+{% block foot_script %}
+{{ parent() }}
+{{ foot_script|raw }}
+{% endblock %}
