@@ -25,46 +25,57 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 			// OK
 			break;
 		default:
-			_exit_text(sprintf('Invalid Session State "%d" [CAC#028]', $x), 500);
+			// _exit_text(sprintf('Invalid Session State "%d" [CAC#028]', $x), 500);
 			return $RES;
 		}
 
-		if (empty($_SESSION['cre-auth'])) {
-			_exit_text('Invalid Session State [CAC#025]', 400);
+		// Sending Application may give us information this way?
+		// And we provide the bearer token from our p2p configuration
+		if (empty($this->_connect_info)) {
+			return $RES->withJSON([
+				'data' => null,
+				'meta' => [ 'detail' => 'Invalid Connection Information [CAC#038]' ]
+			], 400);
 		}
 
-		// No Authentication already?
-		// Get one from the passed in credentials
-		if (empty($_SESSION['pipe-token'])) {
-
-			$auth_req = array(
-				'cre' => $_SESSION['cre']['engine'],
-				'license' => $_SESSION['cre-auth']['license'],
-				'license-key' => $_SESSION['cre-auth']['license-key'],
-			);
-			$cre = new \OpenTHC\CRE();
-			$res = $cre->auth($auth_req);
-			if ('success' != $res['status']) {
-				_exit_text($cre->formatError($res), 500);
-			}
-
-			$_SESSION['pipe-token'] = $res['result'];
+		if (empty($this->_connect_info['pingback'])) {
+			return $RES->withJSON([
+				'data' => null,
+				'meta' => [ 'detail' => 'Invalid Connection Information [CAC#044]' ]
+			], 400);
 		}
 
-		$dbc = $this->_container->DB;
+		$res = [];
+		$cfg = \OpenTHC\Config::get('openthc_p2p');
+		$res = HTTP::get($this->_connect_info['pingback'], array(
+			sprintf('Authorization: Bearer %s', $cfg['public_key']),
+		));
+		if (200 != $res['info']['http_code']) {
+			_exit_text('Invalid Response from connection pingback', 500);
+		}
+		$res = json_decode($res['body'], true);
+		unset($res['result']);
+		unset($res['status']);
+		var_dump($res);
+
+		$_SESSION['dsn'] = $res['data']['dsn'];
+
+		// if (empty($_SESSION['cre-auth'])) {
+		// 	_exit_text('Invalid Session State [CAC#025]', 400);
+		// }
 
 		// Action Action?
 		$out_link = '/home';
 
 		// Sync?
 		$do_sync = false;
-		$C = new \OpenTHC\Company($dbc, $_SESSION['Company']);
-		$chk = $C->getOption('sync-time-lab');
-		$chk = intval($chk);
-		$age = $_SERVER['REQUEST_TIME'] - $chk;
-		if ($age >= 3600) {
-			$do_sync = true;
-		}
+		// $C = new \OpenTHC\Company($dbc, $_SESSION['Company']);
+		// $chk = $C->getOption('sync-time-lab');
+		// $chk = intval($chk);
+		// $age = $_SERVER['REQUEST_TIME'] - $chk;
+		// if ($age >= 3600) {
+		// 	$do_sync = true;
+		// }
 
 		// Action
 		switch ($_GET['action']) {
@@ -112,21 +123,6 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 		default:
 			// Viewer Only
 			break;
-		}
-
-		// Sending Application may give us information this way?
-		// And we provide the bearer token from our p2p configuration
-		if (!empty($this->_connect_info)) {
-			$res = [];
-			if (!empty($this->_connect_info['pingback'])) {
-				$cfg = \OpenTHC\Config::get('openthc_p2p');
-				$res = HTTP::get($this->_connect_info['pingback'], array(
-					sprintf('Authorization: Bearer %s', $cfg['public_key']),
-				));
-				if (200 != $res['info']['http_code']) {
-					_exit_text('Invalid Response from connection pingback', 500);
-				}
-			}
 		}
 
 		//_exit_html("<a href='$out_link'>$out_link</a>");

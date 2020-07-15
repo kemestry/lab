@@ -21,6 +21,7 @@
 		"ext-PDO": "*",
 		"ext-session": "*",
 		"ext-sockets": "*",
+		"edoceo/lowline_php": "dev-master",
 		"edoceo/radix": "dev-master",
 		"endroid/qr-code": "3.8.1",
 		"erusev/parsedown": "1.7.4",
