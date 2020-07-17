@@ -51,56 +51,26 @@ class Back extends \App\Controller\Auth\oAuth2
 
 			$x = $p->getResourceOwner($tok);
 			$x = $x->toArray();
+			// var_dump($x); exit;
 
-			$_SESSION['Contact'] = $x['Contact'];
 			$_SESSION['Company'] = $x['Company'];
+			$_SESSION['License'] = $x['License'][0];
+			$_SESSION['Contact'] = $x['Contact'];
 
 			Session::flash('info', sprintf('Signed in as: %s', $_SESSION['Contact']['username']));
 
 			$_SESSION['uid'] = $x['Contact']['id'];
-			$_SESSION['gid'] = $x['Company']['id'];
-			$_SESSION['email'] = $x['Contact']['username'];
-
-			if (!empty($x['Contact']['meta']['cre'])) {
-				$_SESSION['cre'] = $x['Contact']['meta']['cre'];
-				$_SESSION['cre-auth'] = $x['Contact']['meta']['cre-auth'];
-			}
-
-			if (!empty($_SESSION['cre'])) {
-
-				// Authenticate via PIPE
-				$cre = new \OpenTHC\CRE();
-				$cfg = array(
-					'cre' => $_SESSION['cre'],
-					'license' => $_SESSION['cre-auth']['license'],
-					'license-key' => $_SESSION['cre-auth']['license-key'],
-				);
-				$res = $cre->auth($cfg);
-				if (!empty($res['data'])) {
-					$_SESSION['pipe-token'] = $res['data'];
-				} else {
-					_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
-				}
-
-				// Find the License in the CRE
-				$lic = '/config/license/' . $_SESSION['cre-auth']['license'];
-				$res = $cre->get($lic);
-
-				if ('success' == $res['status']) {
-					$L = \OpenTHC\License::findByGUID($res['result']['guid']);
-					$_SESSION['License'] = $L->toArray();
-				} else {
-					_exit_text('License Not Found. Please contact support [AOB#107]', 500);
-				}
-
-			}
 
 		} catch (\Exception $e) {
-			unset($_SESSION['cre']);
-			unset($_SESSION['cre-auth']);
+			unset($_SESSION['Company']);
+			unset($_SESSION['License']);
+			unset($_SESSION['Contact']);
 			// _exit_text($e->getTraceAsString(), 500);
 			// _exit_html('<h1>Authentication Exception [CAB#108]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 500);
 		}
+
+		// Maybe?
+		// $this->connectCRE();
 
 		// Redirect
 		$r = $_GET['r'];
@@ -108,7 +78,52 @@ class Back extends \App\Controller\Auth\oAuth2
 			$r = '/home';
 		}
 
-		Radix::redirect($r);
+		return $RES->withRedirect($r);
+
+	}
+
+	/**
+	 * Attempt to Connect via PIPE
+	 */
+	function connectCRE()
+	{
+		if (empty($_SESSION['Contact']['meta']['cre'])) {
+			return(null);
+		}
+
+		$_SESSION['cre'] = $_SESSION['Contact']['meta']['cre'];
+		$_SESSION['cre-auth'] = $_SESSION['Contact']['meta']['cre-auth'];
+
+		try {
+			// Authenticate via PIPE
+			$cre = new \OpenTHC\CRE();
+			$cfg = array(
+				'cre' => $_SESSION['cre'],
+				'license' => $_SESSION['cre-auth']['license'],
+				'license-key' => $_SESSION['cre-auth']['license-key'],
+			);
+			$res = $cre->auth($cfg);
+			if (!empty($res['data'])) {
+				$_SESSION['pipe-token'] = $res['data'];
+			} else {
+				_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
+			}
+
+			// Find the License in the CRE
+			// $lic = '/config/license/' . $_SESSION['cre-auth']['license'];
+			// $res = $cre->get($lic);
+
+			// if ('success' == $res['status']) {
+			// 	$L = \OpenTHC\License::findByGUID($res['result']['guid']);
+			// 	// $_SESSION['License'] = $L->toArray();
+			// } else {
+			// 	_exit_text('License Not Found. Please contact support [AOB#107]', 500);
+			// }
+
+		} catch (\Exception $e) {
+			unset($_SESSION['cre']);
+			unset($_SESSION['cre-auth']);
+		}
 
 	}
 
