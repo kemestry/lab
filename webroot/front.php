@@ -1,6 +1,6 @@
 <?php
 /**
- * Front Controller for lab.openthc
+ * Front Controller
  *
  * This file is part of OpenTHC Laboratory Portal
  *
@@ -66,19 +66,10 @@ $app->map(['GET','POST'], '/intent', 'App\Controller\Intent')
 
 // Authentication
 $app->group('/auth', function() {
-
-	// Unique Auth/Open for this site
-	// $this->map(['GET', 'POST'], '/open', 'App\Controller\Auth\Open');
-
-	//$this->map(['GET', 'POST'], '/connect', 'OpenTHC\Controller\Auth\Connect');
-	// $this->map(['GET', 'POST'], '/connect', 'App\Controller\Auth\Connect');
-
-	// oAuth Stuff
-	// $this->get('/oauth/open', 'App\Controller\Auth\oAuth2\Open');
-	// $this->get('/oauth/back', 'App\Controller\Auth\oAuth2\Back');
-
 	$this->get('/open', 'App\Controller\Auth\oAuth2\Open');
+	$this->get('/connect', 'App\Controller\Auth\Connect'); // would like to merge with Open or Back
 	$this->get('/back', 'App\Controller\Auth\oAuth2\Back');
+	$this->get('/init', 'App\Controller\Auth\Init')->setName('auth/init');
 	$this->get('/fail', 'OpenTHC\Controller\Auth\Fail');
 	$this->get('/ping', 'OpenTHC\Controller\Auth\Ping');
 	$this->get('/shut', 'App\Controller\Auth\Shut');
@@ -108,10 +99,10 @@ $app->group('/result', 'App\Module\Result')
 
 
 // Client Group
-$app->group('/client', 'App\Module\Client')
-	->add('App\Middleware\Menu')
-	->add('App\Middleware\Auth')
-	->add('App\Middleware\Session');
+// $app->group('/client', 'App\Module\Client')
+// 	->add('App\Middleware\Menu')
+// 	->add('App\Middleware\Auth')
+// 	->add('App\Middleware\Session');
 
 
 // Search
@@ -149,45 +140,7 @@ $app->post('/sync', 'App\Controller\Sync:exec')
 	->add('App\Middleware\Session');
 
 
-// Dump Routes?
-if ('routes' == $_GET['_dump']) {
-	$app->dumpRoutes();
-}
-
-
 // Execute Slim
 $res = $app->run();
 
 exit(0);
-
-if ('create' == $_GET['a']) {
-
-	$dbc = $con['DB'];
-
-	$C0 = new \OpenTHC\Company($dbc);
-	if (!$C0->loadBy('id', $_SESSION['Company']['id'])) {
-		$C0['id'] = $_SESSION['Company']['id'];
-		$C0['name'] = $_SESSION['Company']['name'];
-		$C0['hash'] = $C0->getHash();
-		$C0->save();
-		var_dump($C0);
-	}
-	var_dump($C0->getHash());
-
-	$L0 = new \OpenTHC\License($dbc);
-	$arg = [
-		':c0' => $C0['id'],
-		':l0' => $_SESSION['License']['id'],
-	];
-	$chk = $dbc->fetchOne('SELECT id FROM license WHERE company_id = :c0 AND id = :l0', $arg);
-	if (!$L0->loadBy('id', $chk)) {
-		$L0['id'] = $_SESSION['License']['id'];
-		$L0['company_id'] = $C0['id'];
-		$L0['name'] = $_SESSION['License']['name'];
-		$L0['hash'] = $L0->getHash();
-		$L0->save();
-		var_dump($L0);
-	}
-	var_dump($L0->getHash());
-
-}

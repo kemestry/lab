@@ -8,8 +8,8 @@ namespace App\Controller\Auth;
 class oAuth2 extends \OpenTHC\Controller\Base
 {
 	/**
-		Verify the State or DIE
-	*/
+	 * Verify the State or DIE
+	 */
 	function checkState()
 	{
 		$a = $_SESSION['oauth2-state'];

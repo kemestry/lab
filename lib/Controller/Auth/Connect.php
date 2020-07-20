@@ -114,17 +114,6 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 			// throw new \Exception(sprintf('Invalid Action "%s" [CAC#052]', $_GET['action']));
 		}
 
-		switch ($_SESSION['License']['type']) {
-		case 'Laboratory':
-			// var_dump($_SESSION);
-			// die("\nYOU ARE A LAB!");
-			// Lab!!
-			break;
-		default:
-			// Viewer Only
-			break;
-		}
-
 		//_exit_html("<a href='$out_link'>$out_link</a>");
 		return $RES->withRedirect($out_link);
 

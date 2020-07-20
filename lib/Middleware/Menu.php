@@ -59,10 +59,14 @@ class Menu extends \OpenTHC\Middleware\Base
 			// );
 
 			$menu['page'] = array(
-				array(
+				[
+					'link' => '/config',
+					'html' => '<i class="fas fa-cogs"></i>',
+				],
+				[
 					'link' => '/auth/shut',
 					'html' => '<i class="fas fa-power-off"></i>',
-				)
+				]
 			);
 		}
 

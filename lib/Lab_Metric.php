@@ -9,6 +9,10 @@ class Lab_Metric extends \OpenTHC\SQL\Record
 {
 	protected $_table = 'lab_metric';
 
+	const FLAG_FLOWER  = 0x00000010;
+	const FLAG_EDIBLE  = 0x00000020;
+	const FLAG_EXTRACT = 0x00000040;
+
 	function findAll()
 	{
 		$sql = sprintf('SELECT * FROM "%s" ORDER BY code', $this->_table);
