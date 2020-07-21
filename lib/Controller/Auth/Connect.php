@@ -5,12 +5,6 @@
 
 namespace App\Controller\Auth;
 
-use Edoceo\Radix;
-use Edoceo\Radix\Session;
-use Edoceo\Radix\Net\HTTP;
-
-use OpenTHC\Contact;
-
 class Connect extends \OpenTHC\Controller\Auth\Connect
 {
 	function __invoke($REQ, $RES, $ARG)
@@ -29,43 +23,7 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 			return $RES;
 		}
 
-		// Sending Application may give us information this way?
-		// And we provide the bearer token from our p2p configuration
-		if (empty($this->_connect_info)) {
-			return $RES->withJSON([
-				'data' => null,
-				'meta' => [ 'detail' => 'Invalid Connection Information [CAC#038]' ]
-			], 400);
-		}
-
-		if (empty($this->_connect_info['pingback'])) {
-			return $RES->withJSON([
-				'data' => null,
-				'meta' => [ 'detail' => 'Invalid Connection Information [CAC#044]' ]
-			], 400);
-		}
-
-		$res = [];
-		$cfg = \OpenTHC\Config::get('openthc_p2p');
-		$res = HTTP::get($this->_connect_info['pingback'], array(
-			sprintf('Authorization: Bearer %s', $cfg['public_key']),
-		));
-		if (200 != $res['info']['http_code']) {
-			_exit_text('Invalid Response from connection pingback', 500);
-		}
-		$res = json_decode($res['body'], true);
-		unset($res['result']);
-		unset($res['status']);
-		var_dump($res);
-
-		$_SESSION['dsn'] = $res['data']['dsn'];
-
-		// if (empty($_SESSION['cre-auth'])) {
-		// 	_exit_text('Invalid Session State [CAC#025]', 400);
-		// }
-
-		// Action Action?
-		$out_link = '/home';
+		$_SESSION['auth-action'] = [];
 
 		// Sync?
 		$do_sync = false;
@@ -76,6 +34,9 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 		// if ($age >= 3600) {
 		// 	$do_sync = true;
 		// }
+		if ($do_sync) {
+			$_SESSION['auth-action'][] = '/sync';
+		}
 
 		// Action
 		switch ($_GET['action']) {
@@ -91,8 +52,7 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 		case 'share-all': // @deprecated
 		case 'share-one': // @deprecated
 
-			$out_link = '/intent';
-
+			$_SESSION['auth-action'][] = '/intent';
 			$_SESSION['intent'] = 'share-all';
 
 			if (!empty($this->_connect_info['lab-result'])) {
@@ -103,19 +63,11 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 				}
 
 			}
-
-			if ($do_sync) {
-				$out_link = '/sync?r=/intent';
-			}
-
 			break;
 
-		default:
-			// throw new \Exception(sprintf('Invalid Action "%s" [CAC#052]', $_GET['action']));
 		}
 
-		//_exit_html("<a href='$out_link'>$out_link</a>");
-		return $RES->withRedirect($out_link);
+		return $RES->withRedirect('/auth/init');
 
 	}
 

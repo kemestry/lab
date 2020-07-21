@@ -19,7 +19,7 @@
 
 namespace App\Controller;
 
-class Home extends \App\Controller\Base
+class Dashboard extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{

@@ -17,6 +17,8 @@
  * along with OpenTHC Laboratory Portal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Edoceo\Radix\DB\SQL;
+
 require_once(dirname(dirname(__FILE__)) . '/boot.php');
 
 // Slim Application
@@ -24,63 +26,29 @@ $cfg = [];
 $cfg['debug'] = true;
 $app = new \OpenTHC\App($cfg);
 
-// Database Connection
+
+// Container
 $con = $app->getContainer();
 $con['DB'] = function($c) {
 
 	$dbc = null;
 
 	if (!empty($_SESSION['dsn'])) {
-		$dbc = new \Edoceo\Radix\DB\SQL($_SESSION['dsn']);
+		$dbc = new SQL($_SESSION['dsn']);
 	} else {
 		$cfg = \OpenTHC\Config::get('database_main');
 		$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
 		$u = $cfg['username'];
 		$p = $cfg['password'];
-		$dbc = new \Edoceo\Radix\DB\SQL($c, $u, $p);
-		return $dbc;
+		$dbc = new SQL($c, $u, $p);
 	}
 
 	return $dbc;
 
 };
 
-// Pub Home
-$app->get('/', function($REQ, $RES, $ARG) {
-	$data = array(
-		'Page' => array('title' => 'Laboratory Data Portal - OpenTHC'),
-	);
-	return $this->view->render($RES, 'page/home-pub.html', $data);
-})->add('App\Middleware\Menu');
 
-
-// App Home
-$app->get('/home', 'App\Controller\Home')
-	->add('App\Middleware\Menu')
-	->add('App\Middleware\Auth')
-	->add('App\Middleware\Session');
-
-$app->map(['GET','POST'], '/intent', 'App\Controller\Intent')
-	->add('App\Middleware\Session');
-
-
-// Authentication
-$app->group('/auth', function() {
-	$this->get('/open', 'App\Controller\Auth\oAuth2\Open');
-	$this->get('/connect', 'App\Controller\Auth\Connect'); // would like to merge with Open or Back
-	$this->get('/back', 'App\Controller\Auth\oAuth2\Back');
-	$this->get('/init', 'App\Controller\Auth\Init')->setName('auth/init');
-	$this->get('/fail', 'OpenTHC\Controller\Auth\Fail');
-	$this->get('/ping', 'OpenTHC\Controller\Auth\Ping');
-	$this->get('/shut', 'App\Controller\Auth\Shut');
-
-})
-->add('App\Middleware\Menu')
-->add('App\Middleware\Session');
-
-
-// Sample Submit
-// 'App\Module\API'
+// API
 $app->group('/api', 'App\Module\API');
 
 
@@ -131,16 +99,57 @@ $app->group('/config', 'App\Module\Config')
 
 
 // Sync
-$app->get('/sync', 'App\Controller\Sync')
+// $app->get('/sync', 'App\Controller\Sync')
+// 	->add('App\Middleware\Menu')
+// 	->add('App\Middleware\Session');
+
+// $app->post('/sync', 'App\Controller\Sync:exec')
+// 	->add('App\Middleware\Menu')
+// 	->add('App\Middleware\Session');
+
+
+// Dashboard
+$app->get('/dashboard', 'App\Controller\Dashboard')
+	->add('App\Middleware\Menu')
+	->add('App\Middleware\Auth')
+	->add('App\Middleware\Session');
+
+
+// Intent
+$app->map(['GET','POST'], '/intent', 'App\Controller\Intent')
+	->add('App\Middleware\Session');
+
+
+// Authentication
+$app->group('/auth', function() {
+	$this->get('/open', 'App\Controller\Auth\oAuth2\Open');
+	$this->get('/connect', 'App\Controller\Auth\Connect'); // would like to merge with Open or Back
+	$this->get('/back', 'App\Controller\Auth\oAuth2\Back');
+	$this->get('/init', 'App\Controller\Auth\Init')->setName('auth/init');
+	$this->get('/ping', 'OpenTHC\Controller\Auth\Ping');
+	$this->get('/shut', 'OpenTHC\Controller\Auth\Shut');
+})
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Session');
 
-$app->post('/sync', 'App\Controller\Sync:exec')
-	->add('App\Middleware\Menu')
-	->add('App\Middleware\Session');
+
+// Public Home Page
+$app->get('/index', function($REQ, $RES, $ARG) {
+	$data = array(
+		'Page' => array('title' => 'Laboratory Data Portal - OpenTHC'),
+	);
+	return $this->view->render($RES, 'page/home-pub.html', $data);
+})->add('App\Middleware\Menu');
 
 
-// Execute Slim
-$res = $app->run();
+// Custom Middleware?
+// $f = sprintf('%s/Custom/boot.php', APP_ROOT);
+// if (is_file($f)) {
+// 	require_once($f);
+// }
+
+
+// Execute
+$app->run();
 
 exit(0);
