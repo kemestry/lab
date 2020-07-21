@@ -1,12 +1,13 @@
-# OpenTHC QA Portal
+# OpenTHC Laboratory Portal
 
-This service provides a method for all interested parties to upload and share the QA data.
+This service provides a method for all interested parties to upload and share the Cannabis Laboratory Data data.
 
 It integrates with BioTrackTHC, Franwell/METRC and MJ Freeway/LeafData.
 
+
 ## Installation
 
-Clone this repo, install dependencies, connect the database.
+Clone this repo, install dependencies, connect the database (using the CRE schema).
 
 ```shell
 git clone ...
@@ -19,31 +20,29 @@ npm update
 Get pdf_info.ps from here: http://git.ghostscript.com/?p=ghostpdl.git;a=tree;f=toolbin;hb=HEAD
 Save in ./etc/
 
-# Tests for QA Site
 
-# Register Sample
+# Tests for Laboratory Site
 
-### As Business
+```
+./test/test.sh
+```
 
-### As Lab
+# Processes
 
+## Intake
 
-## Publish Results
+Using the B2B Transfer model incoming materials are record to Lab Sample type lots
 
-### As Business
+Then using the Samples section one can review and annotate these items.
 
-### As Lab
+Enter the Lab Results for a Sample, if configured properly the system can even put the inventory materials into a connected CRE.
 
-## Transmit Results
+### Publish Results
 
-### As Business
-
-### As Lab
-
-### As Retailer
+The primary purpose of this software is for publishing and sharing the lab results.
+Each is shared with a simple link and is presented to the end-users as HTML, PDF, PNG, JSON and even as as QR code.
 
 
 ## Alternatives
 
-* https://confidentcannabis.com/
-* https://twitter.com/PharmWareLIMS
+For more information check out https://wiki.openthc.org/LIMS
