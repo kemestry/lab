@@ -35,9 +35,9 @@ class Home extends \OpenTHC\Controller\Base
 		$sql = <<<SQL
 SELECT count(id) AS c, stat
 FROM lab_result
- LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
+--  LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
 WHERE lab_result.license_id = :l0
- OR lab_result_license.license_id = :l0
+--  OR lab_result_license.license_id = :l0
 GROUP BY stat
 ORDER BY stat
 OFFSET $sql_offset
@@ -55,8 +55,9 @@ SQL;
 		$sql = <<<SQL
 SELECT lab_result.*
 FROM lab_result
-LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
-WHERE lab_result.license_id = :l0 OR lab_result_license.license_id = :l0
+--   LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
+WHERE lab_result.license_id = :l0
+--   OR lab_result_license.license_id = :l0
 ORDER BY created_at DESC, lab_result.id
 OFFSET $sql_offset
 LIMIT $sql_limit
