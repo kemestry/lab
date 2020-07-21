@@ -15,9 +15,6 @@ class Create extends \App\Controller\Base
 		$this->data['product_type'] = $this->_container->DB->fetchMix('SELECT id, name FROM product_type');
 		$this->data['html'] = $this->render('sample/create.php');
 
-		var_dump($_SESSION);
-		var_dump($_POST);
-
 		switch ($_POST['a']) {
 			case 'save':
 

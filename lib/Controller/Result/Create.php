@@ -297,7 +297,7 @@ class Create extends \OpenTHC\Controller\Base
 
 	}
 
-	function commit($REQ, $RES, $ARG)
+	private function _commit($REQ, $RES, $ARG)
 	{
 
 		//_exit_text($meta);

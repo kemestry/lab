@@ -23,7 +23,7 @@ class Menu extends \OpenTHC\Middleware\Base
 		);
 
 		$auth = false;
-		if (!empty($_SESSION['uid'])) {
+		if (!empty($_SESSION['Contact']['id'])) {
 			$auth = true;
 		}
 		if (!empty($_SESSION['pipe-token'])) {

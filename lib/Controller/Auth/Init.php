@@ -11,13 +11,6 @@ class Init extends \App\Controller\Auth\oAuth2
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		// @todo Some Logging?
-
-		$r = $_GET['r'];
-		if (empty($r)) {
-			$r = '/dashboard';
-		}
-
 		// Lookup the DSN
 		$cfg = \OpenTHC\Config::get('database_auth');
 		if (empty($cfg)) {
@@ -35,7 +28,7 @@ class Init extends \App\Controller\Auth\oAuth2
 			], 500);
 		}
 
-		$_SESSION['dsn'] = $C1['dsn']; // $_SESSION['Company']['dsn'];
+		$_SESSION['dsn'] = $C1['dsn'];
 
 		unset($_SESSION['Company']['dsn']);
 		unset($_SESSION['cre']);
@@ -44,6 +37,11 @@ class Init extends \App\Controller\Auth\oAuth2
 		unset($_SESSION['gid']);
 		unset($_SESSION['uid']);
 		unset($_SESSION['sql-hash']);
+
+		$r = $_GET['r'];
+		if (empty($r)) {
+			$r = '/dashboard';
+		}
 
 		return $RES->withRedirect($r);
 
