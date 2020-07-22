@@ -4,19 +4,9 @@
 <div class="container">
 
 <h1>
-Sample: {{ Sample.id }}
+Sample :: {{ Sample.id }}
 {{ Sample.flag_medical ? "<i class='fas fa-medkit'></i>"|raw }}
 </h1>
-
-<div class="row">
-<div class="col">
-	{% if Sample.lab_result_id %}
-		<div class="alert alert-success">Result: <a class="alert-link" href="/result/{{ Sample.lab_result_id }}">{{ Sample.lab_result_id }}</a></div>
-	{% else %}
-		<h2 class="alert alert-info">Result: -Pending-</h2>
-	{% endif %}
-</div>
-</div>
 
 <p>Source ID: <code>{{ Sample.global_original_id }}</code>
 	{% if Sample.meta.external_id or Sample.meta.legacy_id %}
@@ -25,6 +15,16 @@ Sample: {{ Sample.id }}
 	{% endif %}
 	from <strong>{{ License_Source.name }}</strong> [{{ License_Source.code }}]
 </p>
+
+<div class="row">
+<div class="col">
+	{% if Sample.lab_result_id %}
+		<div class="alert alert-success">Result: <a class="alert-link" href="/result/{{ Sample.lab_result_id }}">{{ Sample.lab_result_id }}</a></div>
+	{% else %}
+		<div class="alert alert-info">Result: -Pending-</div>
+	{% endif %}
+</div>
+</div>
 
 
 <div class="row">
@@ -42,7 +42,7 @@ Sample: {{ Sample.id }}
 <div class="col">
 	<div class="form-group">
 		<label>Type</label>
-		<input class="form-control" readonly value="{{ Product.type }}">
+		<input class="form-control" readonly value="{{ ProductType.name }}">
 	</div>
 </div>
 </div>
@@ -58,7 +58,7 @@ Sample: {{ Sample.id }}
 		<div class="form-group">
 			<label>Quantity</label>
 			<div class="input-group">
-				<input class="form-control r" readonly value="{{ Sample.qty }}">
+				<input class="form-control r" readonly value="{{ Lot.qty }}">
 				<div class="input-group-append">
 					<div class="input-group-text">{{ Product.uom }}</div>
 				</div>
@@ -82,10 +82,10 @@ Sample: {{ Sample.id }}
 
 <form method="post">
 <div class="form-actions">
-	<a class="btn btn-outline-primary" href="/sample/{{ Sample.id }}/sync"><i class="fas fa-sync"></i> Sync</a>
+	<!-- <a class="btn btn-outline-primary" href="/sample/{{ Sample.id }}/sync"><i class="fas fa-sync"></i> Sync</a> -->
 	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.id }}"><i class="fas fa-plus"></i> Add Results</a>
-	<button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button>
-	<button disabled class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
+	<!-- <button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button> -->
+	<button class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
 	<button class="btn btn-outline-danger" name="a" type="submit" value="drop"><i class="fas fa-trash"></i> Delete</button>
 </div>
 </form>

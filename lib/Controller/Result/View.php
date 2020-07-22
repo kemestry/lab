@@ -29,7 +29,7 @@ class View extends \App\Controller\Base
 		// _exit_text($meta);
 
 		if (!empty($_POST['a'])) {
-			return $this->_postHandler($RES, $LR, $meta);
+			return $this->_postHandler($REQ, $RES, $ARG, $LR, $meta);
 		}
 
 		$LR->getMetrics();
@@ -73,15 +73,54 @@ class View extends \App\Controller\Base
 			case 'coa':
 
 				return $this->_viewCOA($REQ, $RES, $LR);
-
 				break;
-			case 'coa-pdf':
+
+			case 'coa-create': // Canon
+			case 'coa-generate': // Legacy
+			case 'coa-pdf': // Legacy
+
 				// Genereate HTML then PDF
-				// $coa = new \App\Output\COA()
-				// $coa->setResult($LR);
-				// file_contents();
-				// render_with_puppetterrs()
-				return(null);
+				$RES = $this->_viewCOA($REQ, $RES, $LR);
+				$html = $RES->getBody()->__toString();
+
+				// unset($_POST['a']);
+
+				// // Save some HTML (somehow?)
+				// $subC = new self($this->_container);
+				// $subR = $subC->__invoke($REQ, $RES, $ARG);
+				// // var_dump($subR);
+
+				// $html = $subR->getBody()->__toString();
+
+				// var_dump($html);
+
+				// exit;
+
+				// _exit_text($html);
+				$src_file = '/tmp/print.html';
+				file_put_contents($src_file, $html);
+
+				$cmd = [];
+				$cmd[] = '/opt/openthc/lab/Matt/convert-to-pdf.sh';
+				$cmd[] = escapeshellarg(sprintf('file://%s', $src_file));
+				$cmd[] = '/tmp/print.pdf';
+				$cmd[] = '2>&1';
+				$cmd = implode(' ', $cmd);
+				var_dump($cmd);
+
+				$buf = shell_exec($cmd);
+
+				var_dump($buf);
+
+				$out_file = sprintf('%s/webroot/output/COA-%s.pdf', APP_ROOT, $LR['id']);
+				var_dump($out_file);
+
+				rename('/tmp/print.pdf', $out_file);
+
+				var_dump(sprintf('https://lab.openthc.com/output/COA-%s.pdf', $LR['id']));
+
+				exit;
+
 				break;
 			case 'coa-html':
 				// Generate HTML PDF
@@ -150,11 +189,15 @@ class View extends \App\Controller\Base
 			_exit_text($data);
 		}
 
+		if ('paper' == $_GET['o']) {
+			return $this->_container->view->render($RES, 'coa/base.html', $data);
+		}
+
 		return $this->_container->view->render($RES, $file = 'page/result/view.html', $data);
 
 	}
 
-	function _postHandler($RES, $LR, $meta)
+	function _postHandler($REQ, $RES, $ARG, $LR, $meta)
 	{
 		$lab_result_id = $LR['id'];
 		$coa_file = $LR->getCOAFile();
@@ -231,6 +274,7 @@ class View extends \App\Controller\Base
 
 	public function _viewCOA($REQ, $RES, $LR)
 	{
+		$dbc = $this->_container->DB;
 
 		$meta = json_decode($LR['meta'], true);
 		$data = [
@@ -250,13 +294,15 @@ class View extends \App\Controller\Base
 		// @todo whats the difference?
 		if (!empty($LR['license_id']))
 		{
-			$x = new \OpenTHC\License($LR['license_id']);
+			$x = new \OpenTHC\License($dbc, $LR['license_id']);
 			if (!empty($x)) {
 				$data['License'] = $x->toArray();
+				$data['License']['phone'] = _phone_nice($data['License']['phone']);
 			}
 		}
-		// echo '<pre>';
-		// var_dump($data);die;
-		return $this->_container->view->render($RES, $page = 'coa/openthc.html', $data);
+
+		$data['License_Client']['phone'] = _phone_nice($data['License_Client']['phone']);
+
+		return $this->_container->view->render($RES, $page = 'coa/default.html', $data);
 	}
 }

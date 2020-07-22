@@ -8,7 +8,6 @@
 <div style="position:relative;">
 <div style="position:absolute; right: 0.25em; top: 0.25em;">
 	<a class="btn btn-outline-secondary" href="/result/upload"><i class="fas fa-cloud-upload-alt"></i></a>
-	<button class="btn btn-outline-secondary btn-lab-result-sync"><i class="fas fa-sync"></i></button>
 </div>
 </div>
 {% endblock %}
@@ -29,10 +28,6 @@
 -->
 
 <!-- <p>A List of all Active and Recent Results, use Filters or Search to find old stuff.</p> -->
-
-{% if sync_want %}
-	<p class="alert alert-warning">Not all items are fully loaded from backend system, update in progress</p>
-{% endif %}
 
 <div class="data-filter-input-wrap d-flex mb-2">
 <!--
@@ -95,7 +90,6 @@
 		<td class="r">{{ s.cbd }}</td>
 		<td class="r">{{ s.status_html|raw }}</td>
 		<td class="r">
-			<button class="btn btn-sm {{ s.flag_sync ? "btn-outline-secondary" : "btn-outline-warning" }} btn-sync" data-id="{{ s.id }}" data-sync="{{ s.flag_sync }}" type="button"><i class="fas fa-sync"></i></button>
 			<a class="btn btn-sm btn-outline-secondary" href="/share/{{ s.id }}" target="_blank"><i class="fas fa-share-alt"></i></a>
 		</td>
 	</tr>
@@ -103,73 +97,4 @@
 </tbody>
 </table>
 
-{% endblock %}
-
-{% block foot_script %}
-{{ parent() }}
-<script>
-var sync_base = '/result/';
-var sync_wait = 500;
-
-function syncExec($b, cbf)
-{
-	$b.addClass('btn-outline-danger');
-	$b.find('i').addClass('fa-spin');
-	$b.data('sync', '1');
-
-	var arg = {
-		a: 'sync',
-	};
-
-	$.post(sync_base + $b.data('id'), arg, function() {
-		$b.find('i').removeClass('fa-spin');
-		$b.removeClass('btn-outline-warning btn-outline-danger');
-		$b.addClass('btn-outline-secondary');
-		if ((cbf) && (typeof cbf === 'function')) {
-			cbf();
-		}
-	});
-
-}
-
-// Find One
-function syncFind()
-{
-	var $b = null;
-
-	$('.btn-sync').each(function(i, n) {
-		if ('0' == $(n).data('sync')) {
-			$b = $(n);
-			return(false);
-		}
-	});
-
-	return $b;
-
-}
-
-
-function syncPump()
-{
-	var $b = syncFind();
-	if ($b) {
-		syncExec($b, function() {
-			setTimeout(syncPump, sync_wait);
-		});
-	}
-
-}
-
-
-$(function() {
-
-	$('.btn-sync').on('click', function() {
-		var $b = $(this);
-		syncExec($b);
-	});
-
-	setTimeout(syncPump, sync_wait);
-
-});
-</script>
 {% endblock %}

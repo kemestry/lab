@@ -7,6 +7,9 @@ namespace App\Controller\Sample;
 
 use Edoceo\Radix\DB\SQL;
 
+use App\Lab_Sample;
+
+
 class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
@@ -18,9 +21,9 @@ class Home extends \OpenTHC\Controller\Base
 			'Page' => [ 'title' => 'Samples' ],
 			'sample_list' => [],
 			'sample_stat' => [
-				'100' => 0,
-				'200' => 0,
-				'401' => 0,
+				Lab_Sample::STAT_OPEN => 0,
+				Lab_Sample::STAT_DONE => 0,
+				Lab_Sample::STAT_VOID => 0,
 			]
 		);
 
@@ -29,6 +32,7 @@ class Home extends \OpenTHC\Controller\Base
 			$p = intval($_GET['p']) - 1;
 			$item_offset = $p * 100;
 		}
+		$item_limit = 100;
 
 		$sql = <<<SQL
 SELECT count(id) AS c, stat FROM lab_sample WHERE license_id = :l0 GROUP BY stat
@@ -37,31 +41,35 @@ SQL;
 			':l0' => $_SESSION['License']['id'],
 		];
 		$res = $dbc->fetchAll($sql, $arg);
+		var_dump($res);
 		foreach ($res as $rec) {
 			$data['sample_stat'][ $rec['stat'] ] = $rec['c'];
 		}
 
+		$arg = [];
+		$arg[':l0'] = $_SESSION['License']['id'];
+
 		// Status
 		$stat = $_GET['stat'];
-		if (empty($stat) || ('*' == $stat)) {
-
-			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND flag & :f0 = 0 ORDER BY created_at DESC OFFSET %d LIMIT %d ';
-			$sql = sprintf($sql, $item_offset, 100);
-			$arg = array(
-				':l0' => $_SESSION['License']['id'],
-				':f0' => \App\Lab_Sample::FLAG_DEAD
-			);
-
-		} else {
-
-			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND stat = :s0 ORDER BY created_at DESC OFFSET %d LIMIT %d';
-			$sql = sprintf($sql, $item_offset, 100);
-			$arg = array(
-				':l0' => $_SESSION['License']['id'],
-				':s0' => $stat,
-			);
-
+		if (empty($stat)) {
+			$stat = Lab_Sample::STAT_OPEN;
 		}
+
+		if ('*' == $stat) {
+			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 ORDER BY created_at DESC OFFSET %d LIMIT %d';
+		} else {
+			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND stat = :s0 ORDER BY created_at DESC OFFSET %d LIMIT %d';
+			$arg[':s0'] = $stat;
+		}
+
+		$sql = sprintf($sql, $item_offset, $item_limit);
+		// 	$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND flag & :f0 = 0 ORDER BY created_at DESC OFFSET %d LIMIT %d ';
+		// 	$sql = sprintf($sql, $item_offset, $item_limit);
+		// 	$arg = array(
+		// 		':l0' => $_SESSION['License']['id'],
+		// 		':f0' => \App\Lab_Sample::FLAG_DEAD
+		// 	);
+		// }
 
 		// Get Sample Data
 		$sample_list = $dbc->fetchAll($sql, $arg);

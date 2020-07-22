@@ -1,13 +1,11 @@
 <?php
 /**
-	QA Sample
-*/
+ * Lab Sample Inventory Item
+ */
 
 namespace App;
 
-use Edoceo\Radix;
 use Edoceo\Radix\DB\SQL;
-use Edoceo\Radix\Net\HTTP;
 
 use OpenTHC\Company;
 
@@ -21,18 +19,20 @@ class Lab_Sample extends \OpenTHC\SQL\Record
 	const FLAG_REJECT = 0x00000040;
 
 	const FLAG_FILE_IMAGE = 0x00000100;
-	const FLAG_FILE_CERT = 0x00000200;
-	const FLAG_FILE_DATA = 0x00000400;
+	const FLAG_FILE_CERT  = 0x00000200;
+	const FLAG_FILE_DATA  = 0x00000400;
 
+	const FLAG_DONE = 0x01000000;
+	const FLAG_VOID = 0x04000000;
 	const FLAG_DEAD = 0x08000000;
 
 	const STAT_OPEN = 100;
-	const STAT_DONE = 200;
+	const STAT_DONE = 301;
 	const STAT_VOID = 410;
 
 	protected $_table = 'lab_sample';
 
-	public $_Inventory;
+	// public $_Inventory;
 	public $_Company;
 	public $_License;
 
@@ -45,10 +45,10 @@ class Lab_Sample extends \OpenTHC\SQL\Record
 		// //Radix::dump($sql);
 		// //Radix::dump($arg);
 		// $res = SQL::fetch_row($sql, $arg);
-        //
+		//
 		// $this->_data = $res;
 
-		$this->_Inventory = $this->_data;
+		// $this->_Inventory = $this->_data;
 		//$this->_Inventory['guid'] = $oid;
 
 		// Radix::dump($this->_Inventory);
@@ -73,29 +73,6 @@ class Lab_Sample extends \OpenTHC\SQL\Record
 			$this->_Company = new Company($this->_data['company_id']);
 		}
 
-	}
-
-	/**
-
-	*/
-	function getCompany()
-	{
-//		if (!empty($this->_Inventory['company_id'])) {
-//			$x = $this->_Inventory['company_id'];
-//			$res = HTTP::get('https://directory.openthc.com/api/search?id=' . $x);
-//			switch ($res['info']['http_code']) {
-//			case 200:
-//				$res = json_decode($res['body'], true);
-//				// print_r($res['result']);
-//				$this->_Company['id'] = $res['result']['id'];
-//				$this->_Company['guid'] = $res['result']['guid'];
-//				$this->_Company['name'] = $res['result']['name'];
-//				$this->_Company['link_profile'] = 'https://directory.openthc.com/profile?company=' . rawurlencode($this->_Company['guid']);
-//				break;
-//			}
-//		}
-
-		return $this->_Company;
 	}
 
 }

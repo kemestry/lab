@@ -11,7 +11,6 @@ class Home extends \OpenTHC\Controller\Base
 	{
 		$data = array(
 			'Page' => array('title' => 'Lab Results'),
-			'sync_want' => false,
 			'result_list' => array(),
 			'result_stat' => [
 				'100' => 0,
@@ -36,14 +35,15 @@ class Home extends \OpenTHC\Controller\Base
 SELECT count(id) AS c, stat
 FROM lab_result
 --  LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
-WHERE lab_result.license_id = :l0
+-- WHERE lab_result.license_id = :l0
 --  OR lab_result_license.license_id = :l0
 GROUP BY stat
 ORDER BY stat
 OFFSET $sql_offset
 LIMIT $sql_limit
 SQL;
-		$arg = array(':l0' => $_SESSION['License']['id']);
+		$arg = [];
+		// $arg = array(':l0' => $_SESSION['License']['id']);
 		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 			$data['result_stat'][ $rec['stat'] ] = $rec['c'];
@@ -56,44 +56,44 @@ SQL;
 SELECT lab_result.*
 FROM lab_result
 --   LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
-WHERE lab_result.license_id = :l0
+-- WHERE lab_result.license_id = :l0
 --   OR lab_result_license.license_id = :l0
 ORDER BY created_at DESC, lab_result.id
 OFFSET $sql_offset
 LIMIT $sql_limit
 SQL;
-
-		$arg = array(':l0' => $_SESSION['License']['id']);
+		// $arg = array(':l0' => $_SESSION['License']['id']);
 		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
 			$QAR = new \App\Lab_Result($dbc, $rec);
 
+			$rec['_id'] = $rec['id'];
+			$rec['id'] = $rec['guid'];
 			$rec['meta'] = \json_decode($rec['meta'], true);
+			// _exit_json($rec);
 
 			$rec['coa_file'] = $QAR->getCOAFile();
 
 			// Try to Read first from META -- our preferred data
 			$rec['created_at'] = _date('m/d/y', $rec['created_at']);
-			$rec['thc'] = $rec['meta']['Result']['thc'] ?: '-';
-			$rec['cbd'] = $rec['meta']['Result']['cbd'] ?: '-';
-			$rec['sum'] = $rec['meta']['Result']['sum'] ?: '-';
-			$rec['testing_status'] = $rec['meta']['Result']['testing_status'];
-			$rec['status'] = $rec['meta']['Result']['status'];
+			$rec['sum'] = $rec['meta']['sum'] ?: '-';
+			$rec['testing_status'] = $rec['meta']['testing_status'];
+			$rec['status'] = $rec['meta']['status'];
 
 			$t = array();
-			$x = $rec['meta']['Result']['batch_type'];
+			$x = $rec['meta']['batch_type'];
 			$t[] = $x;
 
-			$x = $rec['meta']['Result']['type'];
+			$x = $rec['meta']['type'];
 			$t[] = $x;
 
-			$x = $rec['meta']['Result']['intermediate_type'];
+			$x = $rec['meta']['intermediate_type'];
 			$t[] = $x;
 			$rec['type'] = trim(implode('/', $t), '/');
 			$rec['type_nice'] = $rec['meta']['Product']['type_nice'];
 			if (empty($rec['type_nice'])) {
-				$rec['type_nice'] = $rec['meta']['Result']['type_nice'];
+				$rec['type_nice'] = $rec['meta']['type_nice'];
 			}
 			if (empty($rec['type_nice'])) {
 				$rec['type_nice'] = $rec['type'];
@@ -134,25 +134,20 @@ SQL;
 
 			$rec['status_html'] = implode(' ', $stat);
 
-			$rec['flag_sync'] = ($rec['flag'] & \App\Lab_Result::FLAG_SYNC);
-			if (empty($rec['flag_sync'])) {
-				$data['sync_want'] = true;
-			}
-
 			$data['result_list'][] = $rec;
 
-			// Get Matching Record Counts
-			$sql_count = preg_replace('/SELECT.+FROM /ms', 'SELECT count(*) FROM ', $sql);
-			$sql_count = preg_replace('/LIMIT.+$/ms', null, $sql_count);
-			$sql_count = preg_replace('/OFFSET.+$/ms', null, $sql_count);
-			$sql_count = preg_replace('/ORDER BY.+$/ms', null, $sql_count);
-
-			$c = $dbc->fetchOne($sql_count, $arg);
-			$Pager = new \App\UI\Pager($c, $sql_limit, $_GET['p']);
-
-			$data['page_list_html'] = $Pager->getHTML();
-
 		}
+
+		// Get Matching Record Counts
+		$sql_count = preg_replace('/SELECT.+FROM /ms', 'SELECT count(*) FROM ', $sql);
+		$sql_count = preg_replace('/LIMIT.+$/ms', null, $sql_count);
+		$sql_count = preg_replace('/OFFSET.+$/ms', null, $sql_count);
+		$sql_count = preg_replace('/ORDER BY.+$/ms', null, $sql_count);
+
+		$res = $dbc->fetchOne($sql_count, $arg);
+		$Pager = new \App\UI\Pager($res, $sql_limit, $_GET['p']);
+
+		$data['page_list_html'] = $Pager->getHTML();
 
 		return $this->_container->view->render($RES, 'page/result/home.html', $data);
 
