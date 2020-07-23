@@ -27,7 +27,7 @@ class Lab_Sample extends \OpenTHC\SQL\Record
 	const FLAG_DEAD = 0x08000000;
 
 	const STAT_OPEN = 100;
-	const STAT_DONE = 301;
+	const STAT_DONE = 302;
 	const STAT_VOID = 410;
 
 	protected $_table = 'lab_sample';

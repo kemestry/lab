@@ -9,7 +9,6 @@ use Edoceo\Radix\DB\SQL;
 
 use App\Lab_Sample;
 
-
 class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
@@ -41,7 +40,6 @@ SQL;
 			':l0' => $_SESSION['License']['id'],
 		];
 		$res = $dbc->fetchAll($sql, $arg);
-		var_dump($res);
 		foreach ($res as $rec) {
 			$data['sample_stat'][ $rec['stat'] ] = $rec['c'];
 		}
@@ -55,10 +53,19 @@ SQL;
 			$stat = Lab_Sample::STAT_OPEN;
 		}
 
+		$sql_select = <<<SQL
+SELECT lab_sample.*
+, product.name AS product_name
+, strain.name AS variety_name
+FROM lab_sample
+LEFT JOIN product ON lab_sample.product_id = product.id
+LEFT JOIN strain ON lab_sample.strain_id = strain.id
+SQL;
+
 		if ('*' == $stat) {
-			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 ORDER BY created_at DESC OFFSET %d LIMIT %d';
+			$sql = $sql_select . ' WHERE lab_sample.license_id = :l0 ORDER BY lab_sample.created_at DESC OFFSET %d LIMIT %d';
 		} else {
-			$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = :l0 AND stat = :s0 ORDER BY created_at DESC OFFSET %d LIMIT %d';
+			$sql = $sql_select . ' WHERE lab_sample.license_id = :l0 AND lab_sample.stat = :s0 ORDER BY lab_sample.created_at DESC OFFSET %d LIMIT %d';
 			$arg[':s0'] = $stat;
 		}
 

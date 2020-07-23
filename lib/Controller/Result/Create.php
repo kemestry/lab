@@ -21,7 +21,10 @@ class Create extends \OpenTHC\Controller\Base
 
 		// @todo should be License ID
 		$sql = 'SELECT * FROM lab_sample WHERE license_id = :l0 AND id = :g0';
-		$arg = array(':l0' => $_SESSION['License']['id'], ':g0' => $_GET['sample_id']);
+		$arg = [
+			':l0' => $_SESSION['License']['id'],
+			':g0' => $_GET['sample_id'],
+		];
 		$chk = $dbc->fetchRow($sql, $arg);
 		if (empty($chk['id'])) {
 			_exit_text('Invalid Sample [CRC#022]', 400);
@@ -29,8 +32,7 @@ class Create extends \OpenTHC\Controller\Base
 
 		$meta = \json_decode($chk['meta'], true);
 
-		$data['Lot'] = $chk;
-		$data['Sample'] = $meta['Lot'];
+		$data['Sample'] = $chk; //  $meta['Lot'];
 		$data['Product'] = $meta['Product'];
 		$data['Product']['type_nice'] = sprintf('%s/%s', $data['Product']['type'], $data['Product']['intermediate_type']);
 		$data['Strain'] = $meta['Strain'];
@@ -47,13 +49,8 @@ class Create extends \OpenTHC\Controller\Base
 			$type = $metric['type'];
 			$key = $metric['id'];
 			$meta = json_decode($metric['meta'], true);
-
-			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			// $creEngine = $_SESSION['rbe']['engine'];
-			$creEngine = 'leafdata';
-			$metricPath = $meta['cre'][$creEngine]['path'];
-			if (empty($metricPath) || substr($metricPath, -1) === '~') {
-				continue;
+			if (empty($meta['uom'])) {
+				$meta['uom'] = 'pct';
 			}
 
 			// Filter out read-only or RBE-calculated fields
@@ -104,8 +101,6 @@ class Create extends \OpenTHC\Controller\Base
 	{
 		$dbc = $this->_container->DB;
 
-		// _exit_text($_POST);
-
 		// Get and validate the QA Sample
 		$sampleId = $_POST['sample_id'];
 		$sql = 'SELECT * from lab_sample WHERE id = :id AND license_id = :lic';
@@ -118,11 +113,9 @@ class Create extends \OpenTHC\Controller\Base
 			_exit_text(sprintf('Could not find Sample Lot: %s [LPC#128]', $sampleId), 409);
 		}
 
-		$MetricList = [];
-
 		// Get the authorative lab metrics
 		// This list is type-flat, and it's IDs the row ULID
-		$sql = "SELECT id, meta->>'uom' AS uom FROM lab_metric"; //  ORDER BY type,stat,name';
+		$sql = "SELECT *, meta->>'uom' AS uom FROM lab_metric"; //  ORDER BY type,stat,name';
 		$res_lab_metric = $dbc->fetchAll($sql);
 
 		$dbc->query('BEGIN');
@@ -131,6 +124,7 @@ class Create extends \OpenTHC\Controller\Base
 		$LR['id'] = _ulid();
 		$LR['guid'] = $LR['id'];
 		$LR['license_id'] = $_SESSION['License']['id'];
+		$LR['lab_sample_id'] = $Sample['id'];
 		$LR['stat'] = 200;
 		$LR['flag'] = 0;
 		$LR['type'] = 'unknown';
@@ -154,13 +148,14 @@ class Create extends \OpenTHC\Controller\Base
 			]);
 		}
 
-		// $dbc->query('INSERT INTO lab_result_lot (lot_id, lab_result_id) VALUES (:ls0, :lr0)', [
-		// 	':ls0' => $Sample['id'],
-		// 	':lr0' => $LR['id'],
-		// ]);
 
-		$sql = 'UPDATE lab_sample SET stat = 200 WHERE id = :ls0';
-		$arg = [ ':ls0' => $Sample['id'] ];
+		// Link Sample to this, Most Recent Result
+		$sql = 'UPDATE lab_sample SET stat = :s1, lab_result_id = :lr1 WHERE id = :ls0';
+		$arg = [
+			':ls0' => $Sample['id'],
+			':lr1' => $LR['id'],
+			':s1' => Lab_Sample::STAT_DONE,
+		];
 		$dbc->query($sql, $arg);
 
 		$dbc->query('COMMIT');

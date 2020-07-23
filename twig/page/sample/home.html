@@ -32,8 +32,8 @@
 <div class="sample-stat form-inline">
 	<div class="btn-group mr-2">
 		<a class="btn btn-outline-secondary" href="?stat=100">Active: {{ sample_stat.100 }}</a>
-		<a class="btn btn-outline-success" href="?stat=301">Completed: {{ sample_stat.200 }}</a>
-		<a class="btn btn-outline-danger" href="?stat=410">Void: {{ sample_stat.401 }}</a>
+		<a class="btn btn-outline-success" href="?stat=302">Completed: {{ sample_stat.302 }}</a>
+		<a class="btn btn-outline-danger" href="?stat=410">Void: {{ sample_stat.410 }}</a>
 		<a class="btn btn-outline-secondary" href="?stat=*">All</a>
 	</div>
 	<input class="form-control" name="q">
@@ -48,9 +48,10 @@
 <thead class="thead-dark">
 	<tr>
 		<th>IDs</th>
-		<th>Type</th>
-		<th class="r">Quantity</th>
+		<th>Product</th>
+		<th>Strain</th>
 		<th>Options</th>
+		<th class="r">Quantity</th>
 		<th></th>
 	</tr>
 </thead>
@@ -59,21 +60,14 @@
 	<tr>
 		<!-- Sample Item ID / Name -->
 		<td>
-			<h5><a href="/sample/{{ s.id }}">{{ s.id }}</a></h5>
-			<!-- Stat: {{ s.stat }} -->
-			<!-- @TODO -->
-			<!-- Add more vendor information here... maybe a business name? -->
+			<strong><a href="/sample/{{ s.id }}">{{ s.id }}</a></strong>
 			<div>
 				Origin: {{ s.meta.global_inventory_id ?: s.meta.Lot.global_original_id }}
 			</div>
-
 		</td>
 
 		<!-- Sample Type -->
-		<td>
-			<div>
-				{{ s.meta.Product.name }}
-			</div>
+		<td>{{ s.product_name }}</td>
 			<div>
 				{% if s.meta.global_inventory_type_id %}
 				<small>
@@ -82,17 +76,18 @@
 				{% endif %}
 			</div>
 		</td>
+		<td>{{ s.variety_name }}</td>
 
+		<td>
+			{{ s.meta.Lot.medically_compliant ? "Medical" }}
+		</td>
 		<td class="r">
-			{{ s.meta.Lot.qty }}
+			{{ s.qty }}
 			{% if s.meta.Lot.uom %}
 				/ {{ s.meta.Lot.uom }}
 			{% endif %}
 		</td>
 
-		<td>
-			{{ s.meta.Lot.medically_compliant ? "Medical" }}
-		</td>
 		<td class="r">
 		{% if s.meta.Lot.global_lab_result_id %}
 			<a class="btn btn-sm btn-outline-secondary" href="/result/{{ s.meta.Lot.global_lab_result_id }}/edit">
@@ -108,13 +103,4 @@
 </tbody>
 </table>
 
-{% endblock %}
-
-{% block foot_script %}
-{{ parent() }}
-<script>
-$(function() {
-	$.post('/sample/sync');
-});
-</script>
 {% endblock %}

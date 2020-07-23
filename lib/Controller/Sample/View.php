@@ -5,7 +5,9 @@
 
 namespace App\Controller\Sample;
 
-use Edoceo\Radix\DB\SQL;
+// use Edoceo\Radix\DB\SQL;
+
+use App\Lab_Sample;
 
 class View extends \App\Controller\Base
 {
@@ -38,7 +40,7 @@ class View extends \App\Controller\Base
 		if (empty($Lab_Sample['id'])) {
 			_exit_text('Invalid Lab Sample [CSV#032]', 400);
 		}
-		var_dump($Lab_Sample);
+		// var_dump($Lab_Sample);
 
 		$Product = $dbc->fetchRow('SELECT * FROM product WHERE id = ?', [ $Lab_Sample['product_id'] ]);
 		$ProductType = $dbc->fetchRow('SELECT * FROM product_type WHERE id = ?', [ $Product['product_type_id'] ]);
@@ -120,11 +122,12 @@ class View extends \App\Controller\Base
 			':pk' => $ARG['id'],
 		]);
 
-		$sql = 'UPDATE lab_sample SET stat = 401, flag = flag | :FLAG_DEAD WHERE license_id = :l0 AND id = :pk';
+		$sql = 'UPDATE lab_sample SET stat = :s1, flag = flag | :FLAG_DEAD WHERE license_id = :l0 AND id = :pk';
 		$arg = array(
-			':FLAG_DEAD' => \App\Lab_Sample::FLAG_DEAD,
+			':pk' => $ARG['id'],
 			':l0' => $_SESSION['License']['id'],
-			':pk' => $ARG['id']
+			':s1' => \App\Lab_Sample::STAT_VOID,
+			':f1' => \App\Lab_Sample::FLAG_DEAD,
 		);
 		$res = $dbc->query($sql, $arg);
 

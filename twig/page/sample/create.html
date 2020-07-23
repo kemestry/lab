@@ -1,10 +1,6 @@
-<?php
-/**
- * $this is the Controller
- */
+{% extends "layout/html.html" %}
 
-?>
-
+{% block body %}
 <form method="post">
 <div class="container mt-4">
 
@@ -37,11 +33,9 @@
 				<div class="input-group-text">Product Type:</div>
 			</div>
 			<select class="form-control" name="product-type">
-				<?php foreach ($this->data['product_type'] as $k => $v) { ?>
-					<option value="<?= h($k) ?>"><?= h($v) ?></option>
-				<?php
-				}
-				?>
+				{% for pi, pt in product_type %}
+					<option value="{{ pi }}">{{ pt }}</option>
+				{% endfor %}
 			</select>
 		</div>
 	</div>
@@ -79,16 +73,18 @@
 		</div>
 	</div>
 
-	<div>
+	<div class="form-actions">
 		<button class="btn btn-outline-primary" name="a" value="save"><i class="fas fa-save"></i> Save</button>
 	</div>
 
 </div>
 </form>
+{% endblock %}
 
-<?php
-ob_start();
-?>
+
+
+{% block foot_script %}
+{{ parent() }}
 <script>
 $(function() {
 
@@ -106,7 +102,4 @@ $(function() {
 
 });
 </script>
-<?php
-$code = ob_get_clean();
-
-$this->data['foot_script'] = $code;
+{% endblock %}

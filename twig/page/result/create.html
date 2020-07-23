@@ -10,7 +10,7 @@
 
 <div class="row">
 <div class="col-md-9">
-	<h1>Sample: {{ Sample.global_id }}</h1>
+	<h1>Sample: {{ Sample.id }}</h1>
 	<h2>Origin: {{ Sample.global_original_id }}</h2>
 </div>
 <div class="col-md-3 r">
@@ -39,13 +39,11 @@
 <form action="/result/create/save" method="post">
 <div>
 
-	<h2>Test Metrics</h2>
-
 	{% include "block/qa-result-v2.html" %}
 
 	<div class="form-actions">
 		{{ Helpers._qa_section_status("testing") }}
-		<input name="sample_id" type="hidden" value="{{ Lot.id }}">
+		<input name="sample_id" type="hidden" value="{{ Sample.id }}">
 		<button class="btn btn-outline-secondary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Save</button>
 		<button class="btn btn-outline-primary" name="a" type="submit" value="commit"><i class="fas fa-upload"></i> Commit</button>
 	</div>

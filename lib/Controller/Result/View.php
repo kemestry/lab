@@ -20,9 +20,15 @@ class View extends \App\Controller\Base
 
 		// Get Result
 		$LR = new \App\Lab_Result($dbc, $id);
+		// _exit_text($LR);
+
 		if (empty($LR['id'])) {
 			_exit_html(sprintf('QA Result Not Found, please <a href="/result/%s/sync">sync this result</a>', $id), 404);
 		}
+
+		$Product = $dbc->fetchRow('SELECT * FROM product WHERE id = ?', [ $Lab_Sample['product_id'] ]);
+		$ProductType = $dbc->fetchRow('SELECT * FROM product_type WHERE id = ?', [ $Product['product_type_id'] ]);
+		$Strain = $dbc->fetchRow('SELECT * FROM strain WHERE id = ?', [ $Lab_Sample['strain_id'] ]);
 
 		$meta = json_decode($LR['meta'], true);
 		// _ksort_r($meta);
@@ -32,105 +38,30 @@ class View extends \App\Controller\Base
 			return $this->_postHandler($REQ, $RES, $ARG, $LR, $meta);
 		}
 
-		$LR->getMetrics();
+		// $LR->getMetrics();
 
 		// Get authoriative lab metrics
-		$sql = 'SELECT * FROM lab_metric ORDER BY type,stat,name';
-		$metricTab = $dbc->fetchAll($sql);
-		// _exit_text($metricTab);
-		$MetricList = array(); // This list is organized by the metric's type. I need it to make render the view eaiser.
-		// I could have made it type-flat and made the view branch on the incorrect type. I think this would have made
-		// it more difficult to refactor this for other RCEs.
-		foreach ($metricTab as $index => $metric) {
+		$lab_metric_type_list = [];
+		$lab_result_metric_list = [];
 
-			$type = $metric['type'];
-			$key = $metric['id'];
-			$metric_meta = json_decode($metric['meta'], true);
-
-			// If the last character of CRE path is a deprecation symbol (null, '', '~', ...), then filter out
-			// $creEngine = $_SESSION['rbe']['engine'];
-			$creEngine = 'leafdata';
-			$metricPath = $metric_meta['cre'][$creEngine]['path'];
-			if (empty($metricPath) || substr($metricPath, -1) === '~') {
-				continue;
-			}
-
-			// Promote the user's RCE metric path to the stub
-			$metric_meta['stub'] = $metricPath;
-
-			// Add metric to it's type list, in the Metric List
-			if (empty($MetricList[$type])) $MetricList[$type] = array();
-
-			$metric['meta'] = $metric_meta;
-
-			$metric['result'] = $meta['Result'][$metricPath]; // Load the value from LD into our Metric Table
-			$MetricList[$type][$key] = $metric;
+		$sql = <<<SQL
+	SELECT lab_result_metric.*
+	 , lab_metric.type
+	 , lab_metric.name
+	 , lab_metric.meta
+	FROM lab_result_metric
+	JOIN lab_metric ON lab_result_metric.lab_metric_id = lab_metric.id
+	WHERE lab_result_metric.lab_result_id = :lr0
+	ORDER BY lab_metric.type, lab_metric.sort, lab_metric.stat, lab_metric.name
+	SQL;
+		$arg = [
+			':lr0' => $LR['id']
+		];
+		$res = $dbc->fetchAll($sql, $arg);
+		foreach ($res as $rec) {
+			$lab_metric_type_list[$rec['type']] = $rec['type'];
+			$lab_result_metric_list[$rec['type']][$rec['id']] = $rec;
 		}
-
-		// COA Formats
-		if (!empty($_GET['f'])) {
-			switch ($_GET['f']) {
-			case 'coa':
-
-				return $this->_viewCOA($REQ, $RES, $LR);
-				break;
-
-			case 'coa-create': // Canon
-			case 'coa-generate': // Legacy
-			case 'coa-pdf': // Legacy
-
-				// Genereate HTML then PDF
-				$RES = $this->_viewCOA($REQ, $RES, $LR);
-				$html = $RES->getBody()->__toString();
-
-				// unset($_POST['a']);
-
-				// // Save some HTML (somehow?)
-				// $subC = new self($this->_container);
-				// $subR = $subC->__invoke($REQ, $RES, $ARG);
-				// // var_dump($subR);
-
-				// $html = $subR->getBody()->__toString();
-
-				// var_dump($html);
-
-				// exit;
-
-				// _exit_text($html);
-				$src_file = '/tmp/print.html';
-				file_put_contents($src_file, $html);
-
-				$cmd = [];
-				$cmd[] = '/opt/openthc/lab/Matt/convert-to-pdf.sh';
-				$cmd[] = escapeshellarg(sprintf('file://%s', $src_file));
-				$cmd[] = '/tmp/print.pdf';
-				$cmd[] = '2>&1';
-				$cmd = implode(' ', $cmd);
-				var_dump($cmd);
-
-				$buf = shell_exec($cmd);
-
-				var_dump($buf);
-
-				$out_file = sprintf('%s/webroot/output/COA-%s.pdf', APP_ROOT, $LR['id']);
-				var_dump($out_file);
-
-				rename('/tmp/print.pdf', $out_file);
-
-				var_dump(sprintf('https://lab.openthc.com/output/COA-%s.pdf', $LR['id']));
-
-				exit;
-
-				break;
-			case 'coa-html':
-				// Generate HTML PDF
-				// $coa = new \App\Output\COA()
-				// $coa->setResult($LR);
-				// echo $coa;
-				exit(0);
-			}
-		}
-
 
 		// if (empty($LR['id'])) {
 		// 	$data = array();
@@ -152,26 +83,28 @@ class View extends \App\Controller\Base
 		// 	return $this->_container->view->render($RES, 'page/result/view.html', $data);
 		// }
 
-		$data = array();
-		$data = $this->loadSiteData($data);
-		$data['MetricList'] = $MetricList;
+		$data = $this->loadSiteData();
 		$data['Page'] = array('title' => 'Result :: View');
-		$data['Sample']  = $meta['Sample'];
-		$data['Result']  = $meta['Result'];
+		$data['Result'] = $LR->toArray();
+		// $data['Sample'] = $LS->toArray();
+		// $data['Sample']  = $meta['Sample'];
+		// $data['Result']  = $meta['Result'];
 		$data['Result']['coa_file'] = $LR->getCOAFile();
 		if (!is_file($data['Result']['coa_file'])) {
 			$data['Result']['coa_file'] = null;
 		}
+		$data['metric_type_list'] = $lab_metric_type_list;
+		$data['MetricList'] = $lab_result_metric_list;
 
-		$data['Product'] = $meta['Product'];
-		$data['Strain']  = $meta['Strain'];
+		// $data['Product'] = $meta['Product'];
+		// $data['Strain']  = $meta['Strain'];
 
-		if (!empty($LR['license_id_lab'])) {
-			$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
-			if ($x) {
-				$data['Laboratory'] = $x->toArray();
-			}
-		}
+		// if (!empty($LR['license_id_lab'])) {
+		// 	$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
+		// 	if ($x) {
+		// 		$data['Laboratory'] = $x->toArray();
+		// 	}
+		// }
 
 		$data['coa_upload_hash'] = _encrypt(json_encode(array(
 			'a' => 'coa-upload',
@@ -181,17 +114,11 @@ class View extends \App\Controller\Base
 
 		// https://stackoverflow.com/a/8940515
 		$data['share_mail_link'] = http_build_query(array(
-			'subject' => sprintf('QA Results %s', $data['Result']['global_id']),
-			'body' => sprintf("\n\nHere is the link: https://lab.openthc.org/share/%s.html", $data['Result']['global_id']),
+			'subject' => sprintf('Lab Results %s', $data['Result']['global_id']),
+			'body' => sprintf("\n\nHere is the link: https://%s/share/%s.html", $_SERVER['SERVER_NAME'], $LR['id']),
 		), null, '&', PHP_QUERY_RFC3986);
 
-		if ('data' == $_GET['_dump']) {
-			_exit_text($data);
-		}
-
-		if ('paper' == $_GET['o']) {
-			return $this->_container->view->render($RES, 'coa/base.html', $data);
-		}
+		// _exit_text($data);
 
 		return $this->_container->view->render($RES, $file = 'page/result/view.html', $data);
 
@@ -209,6 +136,56 @@ class View extends \App\Controller\Base
 		$coa_name = sprintf('COA-%s.pdf', $LR['id']);
 
 		switch ($_POST['a']) {
+			case 'coa-create':
+			case 'coa-create-pdf':
+
+				// Genereate HTML then PDF
+				$RES = $this->_viewCOA($REQ, $RES, $LR);
+				$html = $RES->getBody()->__toString();
+
+				// $coa_htm_file = _tempnam();
+				// // Save some HTML (somehow?)
+				// $subC = new self($this->_container);
+				// $subR = $subC->__invoke($REQ, $RES, $ARG);
+				// // var_dump($subR);
+
+				// $html = $subR->getBody()->__toString();
+
+				// var_dump($html);
+
+				// exit;
+				if ('coa-create-pdf' == $_POST['a']) {
+
+					// _exit_text($html);
+					$src_file = '/tmp/print.html';
+					file_put_contents($src_file, $html);
+
+					$cmd = [];
+					$cmd[] = '/opt/openthc/lab/Matt/convert-to-pdf.sh';
+					$cmd[] = escapeshellarg(sprintf('file://%s', $src_file));
+					$cmd[] = '/tmp/print.pdf';
+					$cmd[] = '2>&1';
+					$cmd = implode(' ', $cmd);
+					var_dump($cmd);
+
+					$buf = shell_exec($cmd);
+
+					var_dump($buf);
+
+					$out_file = sprintf('%s/webroot/output/COA-%s.pdf', APP_ROOT, $LR['id']);
+					var_dump($out_file);
+
+					rename('/tmp/print.pdf', $out_file);
+
+					$ret = sprintf('/output/COA-%s.pdf', $LR['id']);
+					return $RES->withRedirect($ret, 303);
+
+				}
+
+				_exit_html($html);
+
+			break;
+
 		case 'coa-download':
 		case 'download-coa':
 
@@ -255,14 +232,16 @@ class View extends \App\Controller\Base
 			return $RES->withRedirect(sprintf('/share/%s.html', $lab_result_id));
 			break;
 		case 'sync':
+			_exit_html('Not Implemented', 501);
 			$S = new Sync($this->_container);
 			return $S->__invoke(null, $RES, array('id' => $lab_result_id));
 			break;
 		case 'void':
-			$cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-			$res = $cre->qa()->delete($lab_result_id); // QAR['guid']);
-			var_dump($res);
-			exit;
+			_exit_html('Not Implemented', 501);
+			// $cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
+			// $res = $cre->qa()->delete($lab_result_id); // QAR['guid']);
+			// var_dump($res);
+			// exit;
 			break;
 		default:
 			var_dump($_POST);
@@ -276,33 +255,35 @@ class View extends \App\Controller\Base
 	{
 		$dbc = $this->_container->DB;
 
-		$meta = json_decode($LR['meta'], true);
-		$data = [
-			'Sample' => $meta['Sample'],
-			'Result' => $meta['Result'],
-			'Product' => $meta['Product'],
-			'Strain' => $meta['Strain'],
-		];
+		// $meta = json_decode($LR['meta'], true);
+		// $data = [
+		// 	'Sample' => $meta['Sample'],
+		// 	'Result' => $meta['Result'],
+		// 	'Product' => $meta['Product'],
+		// 	'Strain' => $meta['Strain'],
+		// ];
 
-		if (!empty($LR['license_id_lab'])) {
-			$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
-			if ($x) {
-				$data['Laboratory'] = $x->toArray();
-			}
-		}
+		// if (!empty($LR['license_id_lab'])) {
+		// 	$x = \OpenTHC\License::findByGUID($LR['license_id_lab']);
+		// 	if ($x) {
+		// 		$data['Laboratory'] = $x->toArray();
+		// 	}
+		// }
 
-		// @todo whats the difference?
-		if (!empty($LR['license_id']))
-		{
-			$x = new \OpenTHC\License($dbc, $LR['license_id']);
-			if (!empty($x)) {
-				$data['License'] = $x->toArray();
-				$data['License']['phone'] = _phone_nice($data['License']['phone']);
-			}
-		}
+		// // @todo whats the difference?
+		// if (!empty($LR['license_id']))
+		// {
+		// 	$x = new \OpenTHC\License($dbc, $LR['license_id']);
+		// 	if (!empty($x)) {
+		// 		$data['License'] = $x->toArray();
+		// 		$data['License']['phone'] = _phone_nice($data['License']['phone']);
+		// 	}
+		// }
 
-		$data['License_Client']['phone'] = _phone_nice($data['License_Client']['phone']);
+		// $data['License_Client']['phone'] = _phone_nice($data['License_Client']['phone']);
 
-		return $this->_container->view->render($RES, $page = 'coa/default.html', $data);
+		$file = 'coa/default.html';
+
+		return $this->_container->view->render($RES, $file, $data);
 	}
 }
