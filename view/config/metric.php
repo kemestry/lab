@@ -15,6 +15,9 @@ use \App\Lab_Metric;
 .table-metric td {
 	font-size: 120%;
 }
+.table-metric td label {
+	user-select: none;
+}
 </style>
 
 <div class="container mt-2">
@@ -22,6 +25,7 @@ use \App\Lab_Metric;
 <h1>Config :: Metrics</h1>
 <p>Configure which metrics are used with which product classes.</p>
 
+<form method="post">
 <table class="table table-sm table-bordered table-metric">
 <?php
 foreach ($this->data['metric_list'] as $m) {
@@ -46,7 +50,7 @@ foreach ($this->data['metric_list'] as $m) {
 		<td><?= h($m['name']) ?></td>
 		<td class="r">
 			<div class="input-group input-group-sm" style="width: 8em;">
-				<input class="form-control form-control-sm" name="<?= sprintf('%s-lod', $m['id']) ?>">
+				<input class="form-control form-control-sm r" name="<?= sprintf('%s-lod', $m['id']) ?>" value="<?= h($m['meta']['lod']) ?>">
 				<div class="input-group-append">
 					<div class="input-group-text">ppm</div>
 				</div>
@@ -54,7 +58,7 @@ foreach ($this->data['metric_list'] as $m) {
 		</td>
 		<td class="r">
 			<div class="input-group input-group-sm" style="width: 8em;">
-				<input class="form-control form-control-sm" name="<?= sprintf('%s-loq', $m['id']) ?>">
+				<input class="form-control form-control-sm r" name="<?= sprintf('%s-loq', $m['id']) ?>" value="<?= h($m['meta']['loq']) ?>">
 				<div class="input-group-append">
 					<div class="input-group-text">ppm</div>
 				</div>
@@ -62,15 +66,15 @@ foreach ($this->data['metric_list'] as $m) {
 		</td>
 		<td class="r">
 			<div class="input-group input-group-sm" style="width: 8em;">
-				<input class="form-control form-control-sm" name="<?= sprintf('%s-max', $m['id']) ?>">
+				<input class="form-control form-control-sm r" name="<?= sprintf('%s-max', $m['id']) ?>" value="<?= h($m['meta']['max']) ?>">
 				<div class="input-group-append">
 					<div class="input-group-text">ppm</div>
 				</div>
 			</div>
 		</td>
-		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_FLOWER) ? 'checked' : null ?> type="checkbox"> Flower</label></td>
-		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_EDIBLE) ? 'checked' : null ?> type="checkbox"> Edible</label></td>
-		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_EXTRACT) ? 'checked' : null ?> type="checkbox"> Extract</label></td>
+		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_FLOWER) ? 'checked' : null ?> name="<?= sprintf('%s-bud', $m['id']) ?>" type="checkbox"> Flower</label></td>
+		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_EDIBLE) ? 'checked' : null ?> name="<?= sprintf('%s-edi', $m['id']) ?>" type="checkbox"> Edible</label></td>
+		<td><label><input <?= ($m['flag'] & Lab_Metric::FLAG_EXTRACT) ? 'checked' : null ?> name="<?= sprintf('%s-ext', $m['id']) ?>"  type="checkbox"> Extract</label></td>
 	</tr>
 
 	<?php
@@ -81,4 +85,18 @@ foreach ($this->data['metric_list'] as $m) {
 }
 ?>
 </table>
+
+<div class="form-actions">
+	<button class="btn btn-outline-primary" name="a" value="save"><i class="fas fa-save"></i> Save</button>
 </div>
+</form>
+
+</div>
+
+<script>
+function randomVal()
+{
+	$('input').val('5.62');
+	$('input[type=checkbox]').prop('checked', true);
+}
+</script>
