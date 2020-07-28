@@ -35,12 +35,12 @@ class Auth extends \OpenTHC\Middleware\Base
 			}
 		}
 
-		_exit_html('<h1>Invalid Authentication [AMA#084]</h1><p>Please <a href="/auth/open">sign in</a> again.</p>', 403);
+		// return $RES->withJSON(array(
+		// 	'data' => [],
+		// 	'meta' => [ 'detail' => '' ],
+		// ), 403);
 
-		return $RES->withJSON(array(
-			'data' => [],
-			'meta' => [ 'detail' => '' ],
-		), 403);
+		return $RES;
 
 	}
 
@@ -63,10 +63,10 @@ class Auth extends \OpenTHC\Middleware\Base
 		$service_key = trim($_SERVER['PHP_AUTH_USER']);
 		$company_key = trim($_SERVER['PHP_AUTH_PW']);
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_Auth;
 
 		// Should be a Software Vendor
-		$sql = 'SELECT * FROM auth_hash WHERE hash = ?';
+		$sql = 'SELECT * FROM auth_context_token WHERE id = ?';
 		$arg = array($service_key);
 		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
@@ -87,7 +87,7 @@ class Auth extends \OpenTHC\Middleware\Base
 		$REQ = $REQ->withAttribute('Company_Vendor', $Company);
 
 		// Should be a Licensed Operator
-		$sql = 'SELECT * FROM auth_hash WHERE hash = ?';
+		$sql = 'SELECT * FROM auth_context_token WHERE id = ?';
 		$arg = array($company_key);
 		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
@@ -115,55 +115,37 @@ class Auth extends \OpenTHC\Middleware\Base
 	*/
 	protected function _bearer($REQ, $RES, $tok)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_Auth;
 
 		// Find Directly Supplied Hash
-		$res = $dbc->fetchRow('SELECT * FROM auth_hash WHERE hash = :hash', array($tok));
+		$res = $dbc->fetchRow('SELECT * FROM auth_context_token WHERE id = :hash', array($tok));
 		if (!empty($res)) {
 
-			$data = json_decode($res['json'], true);
-			$Company = new Company($dbc, $res['company_id']);
-			$Contact = new Contact($dbc, $res['uid']);
-
-			if (empty($Company['id'])) {
-				return $RES->withJSON(array(
-					'status' => 'failure',
-					'detail' => 'MWA#068: Invalid Auth',
-					// '_res' => $res,
-				), 403);
+			$data = json_decode($res['meta'], true);
+			if ('lab' == $data['scope']) {
+				return $RES;
 			}
+			// $Company = new Company($dbc, $res['company_id']);
+			// $Contact = new Contact($dbc, $res['uid']);
 
-			if (empty($Contact['id'])) {
-				return $RES->withJSON(array(
-					'status' => 'failure',
-					'detail' => 'MWA#036: Invalid Auth',
-					// '_res' => $res,
-				), 403);
-			}
+			// if (empty($Company['id'])) {
+			// 	return $RES->withJSON(array(
+			// 		'status' => 'failure',
+			// 		'detail' => 'MWA#068: Invalid Auth',
+			// 		// '_res' => $res,
+			// 	), 403);
+			// }
 
-			$REQ = $REQ->withAttribute('Company', $Company);
-			$REQ = $REQ->withAttribute('Contact', $Contact);
+			// if (empty($Contact['id'])) {
 
-			return $RES;
-
+			// $REQ = $REQ->withAttribute('Company', $Company);
+			// $REQ = $REQ->withAttribute('Contact', $Contact);
 		}
 
-		// @deprecated
-		// Then Try the Machine Token
-		// Only our APP is allowed this, and it's very stupid /djb 20171111
-		$hash = sprintf('machine-%s', $tok);
-		$res = $dbc->fetchRow('SELECT * FROM auth_hash WHERE hash = :hash', array($hash));
-		if (!empty($res)) {
-			$RES = $NMW($REQ, $RES);
-			return $RES;
-		}
-
-		return $RES->withJSON(array(
-			'status' => 'failure',
-			'detail' => 'MWA#034: Token Authorization Failed',
-			'_tok' => $tok,
-			'_hash' => $hash,
-		), 403);
+		return $RES->withJSON([
+			'data' => null,
+			'meta' => 'Bearer Token Not Valid [AMA#147]',
+		], 403);
 
 	}
 

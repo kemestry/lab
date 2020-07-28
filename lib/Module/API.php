@@ -46,28 +46,32 @@ class API extends \OpenTHC\Module\Base
 			//$this->get('/qa/sample', function($REQ, $RES, $ARG) {
 			//	die('List QA Samples');
 			//})->add($MWA);
-			$this->get('/result/{id}.pdf', function($REQ, $RES, $ARG) {
-				return require_once(APP_ROOT . '/api/qa/result.pdf.php');
-			});
-
-			// Create a Sample
-			//$this->post('/qa/sample', function($REQ, $RES, $ARG) {
-			//	require_once(APP_ROOT . '/api/qa/sample-create.php');
-			//})->add('Middleware_Auth');
-
-			// Select Specific QA Sample
-			$this->get('/result/{id}', 'App\Controller\API\Result\View');
 
 			// // Select QA Sample+Result
 			// $this->get('/sample/{code}/result', function($REQ, $RES, $ARG) {
 			// 	require_once(APP_ROOT . '/api/qa/sample.php');
 			// });
 
-			// Update QA Result
-			//$this->post('/qa/{code}/result', function($REQ, $RES, $ARG) {
-			//	require_once(APP_ROOT . '/api/qa/result.php');
+			// Create a Sample
+			//$this->post('/qa/sample', function($REQ, $RES, $ARG) {
+			//	require_once(APP_ROOT . '/api/qa/sample-create.php');
 			//})->add('Middleware_Auth');
 
-		});
+
+			// Select Specific Lab Result
+			$this->get('/result/{id}', 'App\Controller\API\Result\Single');
+
+			$this->get('/result/{id}.pdf', function($REQ, $RES, $ARG) {
+				return require_once(APP_ROOT . '/api/qa/result.pdf.php');
+			});
+
+			// Create a Result
+			$this->post('/result', 'App\Controller\API\Result\Create');
+
+			// Update Result
+			$this->post('/result/{id}', 'App\Controller\API\Result\Update');
+
+		})
+			->add('App\Middleware\Auth');
 	}
 }

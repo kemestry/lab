@@ -5,12 +5,14 @@
 
 namespace App\Controller\API\Result;
 
-class View extends \OpenTHC\Controller\Base
+use App\Lab_Result;
+
+class Single extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
 		// Get Result
-		$QAR = new \App\Lab_Result($ARG['id']);
+		$QAR = new Lab_Result($ARG['id']);
 		//_exit_json($QAR);
 
 		$Result = $QAR->_Result['Result']; // wtf?
@@ -18,20 +20,20 @@ class View extends \OpenTHC\Controller\Base
 		//_exit_json($Result);
 
 		$RET = array(
-			'Company' => $QAS->_Company,
+			'Company' => $QAR->_Company,
 			'License' => array(
-				'id' => $QAS->_License['licensenum'],
-				'name' => $QAS->_License['name'],
+				'id' => $QAR->_License['licensenum'],
+				'name' => $QAR->_License['name'],
 			),
 			'Inventory' => array(
-				'id' => $QAS->_Inventory['guid'],
+				'id' => $QAR->_Inventory['guid'],
 				'type' => array(
-					'id' => $QAS->_Inventory['inventorytype'],
-					'name' => $QAS->_Inventory['inventorytype_name'],
+					'id' => $QAR->_Inventory['inventorytype'],
+					'name' => $QAR->_Inventory['inventorytype_name'],
 				),
-				'strain' => $QAS->_Inventory['strain'],
-				'product' => $QAS->_Inventory['product'],
-				'created_at' => $QAS->_Inventory['created_at'],
+				'strain' => $QAR->_Inventory['strain'],
+				'product' => $QAR->_Inventory['product'],
+				'created_at' => $QAR->_Inventory['created_at'],
 			),
 			'Laboratory' => ($Lab1 ? $Lab1 : $Lab0),
 			//'_Laboratory0' => $Lab0,
