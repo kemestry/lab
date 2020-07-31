@@ -14,7 +14,7 @@ class Update extends \OpenTHC\Controller\Base
 			return $RES->withJSON([
 				'type' => 'https://api.openthc.org/e/400-invalid-content',
 				'data' => null,
-				'meta' => [ 'detail' => 'Request Error [ARC#016]' ],
+				'meta' => [ 'detail' => 'Request Error [ARU#017]' ],
 			], 400);
 		}
 
@@ -22,14 +22,14 @@ class Update extends \OpenTHC\Controller\Base
 			return $RES->withJSON([
 				'type' => 'https://api.openthc.org/e/400-missing-parameter',
 				'data' => null,
-				'meta' => [ 'detail' => 'Request Error [ARC#023]' ],
+				'meta' => [ 'detail' => 'Request Error [ARU#025]' ],
 			], 400);
 		}
 		if (empty($data['license_id'])) {
 			return $RES->withJSON([
 				'type' => 'https://api.openthc.org/e/400-missing-parameter',
 				'data' => null,
-				'meta' => [ 'detail' => 'Request Error [ARC#029]' ],
+				'meta' => [ 'detail' => 'Request Error [ARU#032]' ],
 			], 400);
 		}
 
@@ -45,29 +45,29 @@ class Update extends \OpenTHC\Controller\Base
 			return $RES->withJSON([
 				'type' => 'https://api.openthc.org/e/404',
 				'data' => null,
-				'meta' => [ 'detail' => 'Request Error [ARC#048]' ],
+				'meta' => [ 'detail' => 'Request Error [ARU#048]' ],
 			], 404);
 		}
 
 
 		// Update Record
 		$mod = [
-
+			'type' => $data['type'],
+			'name' => $data['name'],
+			'meta' => json_encode($data['meta'])
 		];
 		$where = [
 			'id' => $data['id'],
 			'license_id' => $data['license_id'],
 		];
-		$dbc->update('lab_result', $mod, $where)
+		$res = $dbc->update('lab_result', $mod, $where);
 
 		// Update METRICs
 
-
 		return $RES->withJSON([
-			'type' => 'https://api.openthc.org/e/400',
-			'data' => null,
-			'meta' => null,
-		]);
+			'data' => $data,
+			'meta' => $res,
+		], 200);
 
 	}
 

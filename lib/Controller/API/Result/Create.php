@@ -44,7 +44,7 @@ class Create extends \OpenTHC\Controller\Base
 				'meta' => [ 'detail' => 'Request Error [ARC#040]' ],
 			], 409);
 		}
-		if ($chk['license_id'] != $data['license_id']) {
+		if (!empty($chk['license_id']) && ($chk['license_id'] != $data['license_id'])) {
 			return $RES->withJSON([
 				'type' => 'https://api.openthc.org/e/409-license-not-matched',
 				'data' => null,
@@ -57,9 +57,14 @@ class Create extends \OpenTHC\Controller\Base
 			'id' => $data['id'],
 			'license_id' => $data['license_id'],
 			'type' => $data['type'],
-			'name' => '',
+			'name' => $data['name'],
+			'meta' => json_encode($data['meta'])
 		]);
 
+		return $RES->withJSON([
+			'data' => $rec,
+			'meta' => [ 'detail' => 'Success' ]
+		]);
 
 	}
 

@@ -5,6 +5,8 @@
 
 namespace App\Controller\Result;
 
+use \App\Lab_Result;
+
 class Share extends \App\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
@@ -14,17 +16,11 @@ class Share extends \App\Controller\Base
 			$ext = trim($m[2], '.');
 		}
 
-		if ('QATEST.ABC123' == $ARG['id']) {
-			$data = array(
-				'Page' => array('title' => 'Example QA Detail')
-			);
-			return $this->_container->view->render($RES, 'page/share/example.html', $data);
-		}
+		$dbc = $this->_container->DBC_Main;
 
-		$dbc = $this->_container->DB;
-
-		$QAR = new \App\Lab_Result($dbc, $ARG['id']);
-		if (empty($QAR['id'])) {
+		// Get Result
+		$LR = new Lab_Result($dbc, $ARG['id']);
+		if (empty($LR['id'])) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#030]'),
 				'lab_result_id' => null,
@@ -33,22 +29,27 @@ class Share extends \App\Controller\Base
 			return $this->_container->view->render($RES, 'page/result/404.html', $data);
 		}
 
-		$meta = json_decode($QAR['meta'], true);
-		if (empty($meta)) {
-			$data = array(
-				'Page' => array('title' => 'Not Found [CRS#039]'),
-				'lab_result_id' => $QAR['id'],
-			);
-			$RES = $RES->withStatus(404);
-			return $this->_container->view->render($RES, 'page/result/404.html', $data);
+		$data = $this->loadSiteData();
+		$data['Page'] = array('title' => 'Result :: View');
+		$meta = json_decode($LR['meta'], true);
+		$data = array_merge($data, $meta);
+		// _exit_text($data);
+
+		if (empty($data['Result']['sum'])) {
+			$data['Result']['sum'] = $data['Result']['thc'] + $data['Result']['cbd'];
+		}
+		$data['Result']['thc'] = sprintf('%0.2f', $data['Result']['thc']);
+		$data['Result']['cbd'] = sprintf('%0.2f', $data['Result']['cbd']);
+		$data['Result']['sum'] = sprintf('%0.2f', $data['Result']['sum']);
+
+		if (empty($data['MetricList'])) {
+			if (!empty($data['Result']['meta']['for_inventory'])) {
+				$data = $this->_map_leafdata($data);
+				// _exit_text($data);
+			}
 		}
 
-		$data = $this->loadSiteData([]);
-		$data['Page'] = array('title' => 'Result :: View');
-		$data['Result'] = $meta['Result'];
-		unset($data['Result']['coa_file']);
-
-		$coa_file = $QAR->getCOAFile();
+		$coa_file = $LR->getCOAFile();
 		if (!empty($coa_file) && is_file($coa_file) && is_readable($coa_file)) {
 			$data['Result']['coa_file'] = $coa_file;
 		}
@@ -59,13 +60,13 @@ class Share extends \App\Controller\Base
 			$data['Sample']['id'] = $data['Result']['global_for_inventory_id'];
 		}
 
-
 		$data['Product'] = $meta['Product'];
 		if (empty($data['Product']['name'])) {
 			$data['Product']['name'] = '- Not Found -';
 		}
 
-		$data['Strain']  = $meta['Strain'];
+		$data['Strain']  = $meta['Variety']; // @deprecated
+		$data['Variety']  = $meta['Variety'];
 
 		switch ($ext) {
 		case '':
@@ -74,7 +75,7 @@ class Share extends \App\Controller\Base
 			break;
 		case 'json':
 			unset($data['Page']);
-			$data = $this->_data_clean($data);
+			$data = $this->_clean_data($data);
 			_ksort_r($data);
 			return $RES->withJSON($data, 200, JSON_PRETTY_PRINT);
 		case 'pdf':
@@ -114,18 +115,23 @@ class Share extends \App\Controller\Base
 
 		}
 
+		$body = sprintf("\n\nHere is the link: https://%s/share/%s.html",
+			$_SERVER['SERVER_NAME'],
+			$data['Result']['id']);
+
 		$data['share_mail_link'] = http_build_query(array(
-			'subject' => sprintf('QA Results %s', $data['Result']['global_id']),
-			'body' => sprintf("\n\nHere is the link: https://lab.openthc.org/share/%s.html", $data['Result']['global_id']),
+			'subject' => sprintf('Lab Results %s', $data['Result']['id']),
+			'body' => $body,
 		), null, '&', PHP_QUERY_RFC3986);
 
-		//_exit_text($data);
+		// _exit_text($data);
 
+		// return $this->_container->view->render($RES, 'coa/default.html', $data);
 		return $this->_container->view->render($RES, 'page/result/share.html', $data);
 
 	}
 
-	function _data_clean($data)
+	function _clean_data($data)
 	{
 		unset($data['Product']['allergens']);
 		unset($data['Product']['contains']);
@@ -159,6 +165,102 @@ class Share extends \App\Controller\Base
 		unset($data['Sample']['value']);
 		unset($data['Strain']['external_id']);
 		//_ksort_r($data);
+		return $data;
+	}
+
+	function _map_leafdata($data)
+	{
+		$type_list = [ 'Cannabinoid', 'General', 'Metal', 'Microbe', 'Mycotoxin', 'Pesticide', 'Solvent', 'Terpene' ];
+		$data['metric_type_list'] = array_combine($type_list, $type_list);
+
+		$data['MetricList'] = [
+			'Cannabinoid' => [],
+			'General' => [],
+			'Metal' => [],
+			'Microbe' => [],
+			'Micotoxin' => [],
+			'Pesticide' => [],
+			'Solvent' => [],
+			'Terpene' => [],
+		];
+
+
+		$lrm = $data['Result']['meta'];
+
+		$data['MetricList']['General']['018NY6XC00LM0PXPG4592M8J14'] = [
+			'name' => 'Moisture',
+			'qom'  => $lrm['moisture_content_percent'],
+		];
+		$data['MetricList']['General']['018NY6XC00LMHF4266DN94JPPX'] = [
+			'name' => 'Water Activity',
+			'qom'  => $lrm['moisture_content_water_activity_rate']
+		];
+		$data['MetricList']['General']['018NY6XC00LMA50497RDC53DB5'] = [
+			'name' => 'Seeds',
+			'qom'  => $lrm['foreign_matter_seeds']
+		];
+		$data['MetricList']['General']['018NY6XC00LMQAZZSDXPYH62SS'] = [
+			'name' => 'Stems',
+			'qom'  => $lrm['foreign_matter_stems']
+		];
+		$data['MetricList']['General']['018NY6XC00LMHGENRW0DAPFQRZ'] = [
+			'name' => 'Other',
+			'qom'  => $lrm['foreign_matter']
+		];
+
+		$data['MetricList']['Cannabinoid']['018NY6XC00LM49CV7QP9KM9QH9'] = [
+			'name' => 'd9-THC',
+			'qom'  => $lrm['cannabinoid_d9_thc_percent'],
+		];
+		$data['MetricList']['Cannabinoid']['018NY6XC00LMB0JPRM2SF8F9F2'] = [
+			'name' => 'd9-THCA',
+			'qom'  => $lrm['cannabinoid_d9_thca_percent'],
+		];
+		$data['MetricList']['Cannabinoid']['018NY6XC00LMK7KHD3HPW0Y90N'] = [
+			'name' => 'CBD',
+			'qom'  => $lrm['cannabinoid_d9_cbd_percent']
+		];
+		$data['MetricList']['Cannabinoid']['018NY6XC00LMENDHEH2Y32X903'] = [
+			'name' => 'CBDA',
+			'qom'  => $lrm['cannabinoid_d9_cbda_percent']
+		];
+
+		//
+		$data['MetricList']['Mycotoxin']['018NY6XC00LM638QCGB50ZKYKJ'] = [
+			'name' => 'Bile Tolerant Bacteria',
+			'qom'  => $lrm['microbial_bile_tolerant_cfu_g']
+		];
+		//
+		$data['MetricList']['Mycotoxin']['018NY6XC00LM7S8H2RT4K4GYME'] = [
+			'name' => 'E.Coli',
+			'qom'  => $lrm['microbial_pathogenic_e_coli_cfu_g']
+		];
+		//
+		$data['MetricList']['Mycotoxin']['018NY6XC00LMS96WE6KHKNP52T'] = [
+			'name' => 'Salmonella',
+			'qom'  => $lrm['microbial_salmonella_cfu_g']
+		];
+		//
+		// $data['MetricList']['Mycotoxin'][''] = [
+		// 	'name' => '',
+		// 	'qom'  => $lrm['medically_compliant_status']
+		// ];
+
+
+		$data['MetricList']['Mycotoxin']['018NY6XC00LMR9PB7SNBP97DAS'] = [
+			'name' => 'Aflatoxins',
+			'qom'  => $lrm['mycotoxin_aflatoxins_ppb']
+		];
+		$data['MetricList']['Mycotoxin']['018NY6XC00LMK15566W1G0ZH5X'] = [
+			'name' => 'Ochratoxin',
+			'qom'  => $lrm['mycotoxin_ochratoxin_ppb']
+		];
+
+
+		// @todo Here we should evaluate LRM to find junk data
+		unset($data['Result']['meta']['for_inventory']);
+		// _exit_text($data);
+
 		return $data;
 	}
 }
