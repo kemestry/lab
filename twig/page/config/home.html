@@ -2,21 +2,47 @@
 
 {% block body %}
 
-<div class="container mt-2">
-	<div class="row card-wrap">
+<div class="container">
+<div class="config-wrap">
 
-	<div class="col-lg-3 col-md-6 mb-4">
-	  <div class="card">
+	<div class="config-card">
+	<div class="card">
+		<h4 class="card-header">Metrics</h4>
 		<div class="card-body">
-		  <h4 class="card-title">Metrics</h4>
-		  <p class="card-text">Use the <a href="/config/metric">Metrics</a> page to configure which metrics for which sample types.</p>
+			<p class="card-text">Use the <a href="/config/metric">Metrics</a> page to configure which metrics for which sample types.</p>
 		</div>
 		<div class="card-footer">
-		  <a href="/config/metric" class="btn btn-primary">Review Metrics</a>
+			<a href="/config/metric" class="btn btn-primary">Review Metrics</a>
 		</div>
-	  </div>
 	</div>
 	</div>
+
+	<div class="config-card">
+	<div class="card">
+		<h4 class="card-header">COA Templates</h4>
+		<div class="card-body">
+			<p class="card-text">Certificate of Analysis Templates allow full control of output formatting</p>
+		</div>
+		<div class="card-footer">
+			<a href="/config/coa-layout" class="btn btn-primary">Upload</a>
+		</div>
+	</div>
+	</div>
+
+	<div class="config-card">
+		<div class="card">
+			<h4 class="card-header">Intake Portal</h4>
+			<div class="card-body">
+				<p class="card-text">Certificate of Analysis Templates allow full control of output formatting</p>
+			</div>
+			<div class="card-footer">
+				<a href="/config/intake" class="btn btn-primary">Configure</a>
+			</div>
+		</div>
+	</div>
+
+
+</div>
 </div>
 
 {% endblock %}
