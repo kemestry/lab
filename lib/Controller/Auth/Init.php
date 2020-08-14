@@ -12,15 +12,8 @@ class Init extends \App\Controller\Auth\oAuth2
 	function __invoke($REQ, $RES, $ARG)
 	{
 		// Lookup the DSN
-		$cfg = \OpenTHC\Config::get('database_auth');
-		if (empty($cfg)) {
-			return $RES->withJSON([
-				'data' => [],
-				'meta' => [ 'detail' => 'Fatal Database Error [CAC#032]'],
-			], 500);
-		}
-		$dbc = new SQL(sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']), $cfg['username'], $cfg['password']);
-		$C1 = $dbc->fetchRow('SELECT * FROM auth_company WHERE ulid = ?', $_SESSION['Company']['id']);
+		$dbc = $this->_container->DBC_Auth;
+		$C1 = $dbc->fetchRow('SELECT * FROM auth_company WHERE id_ulid = ?', $_SESSION['Company']['id']);
 		if (empty($C1['dsn'])) {
 			return $RES->withJSON([
 				'data' => [],
@@ -40,7 +33,7 @@ class Init extends \App\Controller\Auth\oAuth2
 
 		$r = $_GET['r'];
 		if (empty($r)) {
-			$r = '/dashboard';
+			$r = '/home';
 		}
 
 		return $RES->withRedirect($r);
