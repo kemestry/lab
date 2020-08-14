@@ -14,7 +14,7 @@ class Create extends \App\Controller\Base
 		$data = $this->loadSiteData();
 
 		switch ($_POST['a']) {
-			case 'save':
+			case 'create-sample':
 
 				$_POST['product'] = trim($_POST['product']);
 				$_POST['strain'] = trim($_POST['strain']);
@@ -24,7 +24,7 @@ class Create extends \App\Controller\Base
 				$ls = new \App\Lab_Sample($dbc);
 				$ls['id'] = _ulid();
 				$ls['license_id'] = $_SESSION['License']['id'];
-				$ls['license_id_source'] = $_POST['license_id'];
+				$ls['license_id_source'] = $_POST['license-id'];
 
 				// $P1 = new Product()
 				$P1 = $dbc->fetchRow('SELECT * FROM product WHERE license_id = :l0 AND name = :n0', [
@@ -61,7 +61,7 @@ class Create extends \App\Controller\Base
 				$ls['qty'] = floatval($_POST['qty']);
 				$ls['meta'] = json_encode([
 					'Lot_Source' => [
-						'id' => $_POST['lot_id_origin']
+						'id' => $_POST['lot-id-source']
 					],
 				]);
 				$ls['hash'] = $ls->getHash();
@@ -72,7 +72,7 @@ class Create extends \App\Controller\Base
 			break;
 		}
 
-		$data['product_type'] = $this->_container->DB->fetchMix('SELECT id, name FROM product_type');
+		$data['product_type'] = $this->_container->DB->fetchMix('SELECT id, name FROM product_type WHERE stat = 200 ORDER BY name');
 
 		return $this->_container->view->render($RES, 'page/sample/create.html', $data);
 	}

@@ -12,8 +12,9 @@
 				<div class="input-group-text">Origin License:</div>
 			</div>
 			<input autofocus name="license_origin" class="form-control license-autocomplete">
+			<input class="autocomplete-data-id" id="license-id" name="license-id" type="hidden" value="">
 			<div class="input-group-append">
-				<button class="btn btn-outline-secondary" type="button"><i class="fas fa-sync"></i></button>
+				<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
 			</div>
 		</div>
 	</div>
@@ -23,7 +24,7 @@
 			<div class="input-group-prepend">
 				<div class="input-group-text">Origin Identifier:</div>
 			</div>
-			<input name="lot_id_origin" class="form-control">
+			<input name="lot-id-source" class="form-control">
 		</div>
 	</div>
 
@@ -46,9 +47,10 @@
 				<div class="input-group-text">Product:</div>
 			</div>
 			<input name="product" class="form-control product-autocomplete">
-			<div class="input-group-append">
-				<button class="btn btn-outline-secondary" type="button"><i class="fas fa-sync"></i></button>
-			</div>
+			<input id="product-id" name="product-id" type="hidden" value="">
+			<!-- <div class="input-group-append">
+				<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
+			</div> -->
 		</div>
 	</div>
 
@@ -58,8 +60,9 @@
 				<div class="input-group-text">Strain:</div>
 			</div>
 			<input name="strain" class="form-control strain-autocomplete">
+			<input id="strain-id" name="strain-id" type="hidden" value="">
 			<div class="input-group-append">
-				<button class="btn btn-outline-secondary" type="button"><i class="fas fa-sync"></i></button>
+				<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
 			</div>
 		</div>
 	</div>
@@ -70,11 +73,19 @@
 				<div class="input-group-text">QTY:</div>
 			</div>
 			<input name="qty" class="form-control r" type="number" step="0.0001">
+			<div class="input-group-append">
+				<select class="form-control">
+					<option value="ea">ea</option>
+					<option value="g">g</option>
+					<option value="mg">mg</option>
+					<option value="ml">ml</option>
+				</select>
+			</div>
 		</div>
 	</div>
 
 	<div class="form-actions">
-		<button class="btn btn-outline-primary" name="a" value="save"><i class="fas fa-save"></i> Save</button>
+		<button class="btn btn-outline-primary" name="a" value="create-sample"><i class="fas fa-save"></i> Save</button>
 	</div>
 
 </div>
@@ -88,16 +99,26 @@
 <script>
 $(function() {
 
-	$('.license-autocomplete').autocomplete({
-		source: 'https://directory.openthc.com/api/autocomplete/license',
-	});
-
-	$('.product-autocomplete').autocomplete({
-		source: 'https://pdb.openthc.com/api/autocomplete',
-	});
+	// $('.product-autocomplete').autocomplete({
+	// 	source: 'https://pdb.openthc.com/api/autocomplete',
+	// 	search: function(e, ui) {
+	// 		$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
+	// 		debugger;
+	// 	},
+	// 	close: function(e, ui) {
+	// 		$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
+	// 	}
+	// });
 
 	$('.strain-autocomplete').autocomplete({
 		source: 'https://sdb.openthc.org/api/autocomplete',
+		search: function(e, ui) {
+			$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
+			// debugger;
+		},
+		close: function(e, ui) {
+			$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
+		}
 	});
 
 });
