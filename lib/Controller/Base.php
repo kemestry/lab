@@ -26,18 +26,33 @@ class Base extends \OpenTHC\Controller\Base
 		$cfg = \OpenTHC\Config::get('application');
 		$base = [
 			'Site' => [
-				'base' => sprintf('https://%s', $_SERVER['SERVER_NAME']),
-				'host' => $_SERVER['SERVER_NAME'],
-			]
+				'hostname' => $_SERVER['SERVER_NAME'],
+			],
+			'OpenTHC' => []
 		];
+
+		$base['OpenTHC']['dir'] = \OpenTHC\Config::get('openthc/dir');
+		$base['OpenTHC']['sso'] = \OpenTHC\Config::get('openthc/sso');
+
 		$data = array_merge($base, $data);
+
 		return $data;
 	}
 
+	/**
+	 * PHP Script Render Helper
+	 */
 	function render($file)
 	{
+		$root = substr($file, 0, strlen(APP_ROOT));
+		if (APP_ROOT === $root) {
+			// Already a Valid Path
+		} else {
+			$file = trim($file, '/');
+			$file = sprintf('%s/view/%s', APP_ROOT, $file);
+		}
+
 		ob_start();
-		$file = sprintf('%s/view/%s', APP_ROOT, $file);
 		require_once($file);
 		$html = ob_get_clean();
 		return $html;
