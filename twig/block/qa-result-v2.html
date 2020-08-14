@@ -15,27 +15,51 @@ section {
 
 
 <section>
+{{ Helpers._qa_section_head("General", "metric-wrap-general") }}
+
+	<div class="collapse metric-wrap show" id="metric-wrap-general">
+
+		{% set index = 0 %}
+		{% for metricId, metric in MetricList.General %}
+			{% if (index is divisible by(4)) %}
+			<div class="row">
+			{% endif %}
+
+				<div class="col-md-3">
+
+						{# These test results are pass/fail #}
+						{% if 'bool' is same as(metric.meta.uom) %}
+							{{ Helpers._qa_testing_status(metric) }}
+						{% else %}
+							{{ Helpers._qa_pot_input(metric.name, metricId, metric) }}
+						{% endif %}
+				</div>
+
+			{% if ((index % 4) is same as (3) or index is same as ((MetricList.General|length)-1)) %}
+			</div>
+			{% endif %}
+			{% set index = index + 1 %}
+		{% endfor %}
+
+	</div> <!-- /#metric-wrap-general -->
+</section>
+
+
+<!--
+	Cannabinoids
+-->
+<section>
 {{ Helpers._qa_section_head("Cannabinoids", "metric-wrap-cb") }}
 
-<div id="metric-wrap-cb" class="show">
-
-<!-- Cannabinoids Form fields -->
-<div>
-	<!-- Status, etc. -->
-	<div class="row">
-		<div class="col-md-3">
-			{{ Helpers._qa_section_status("cannabinoid") }}
-		</div>
-
-	</div>
+<div class="collapse metric-wrap" id="metric-wrap-cb">
 	{% set index = 0 %}
-	{% for metricId, metric in MetricList.Cannabinoid %}
+	{% for metricId, resultTab in MetricList.Cannabinoid %}
 		{% if (index is divisible by(4)) %}
 		<div class="row">
 		{% endif %}
 
 			<div class="col-md-3">
-				{{ Helpers._qa_pot_input(metric.name, metricId, metric) }}
+				{{ Helpers._qa_pot_input(resultTab.name, metricId, resultTab) }}
 			</div>
 
 		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Cannabinoid|length)-1)) %}
@@ -43,57 +67,20 @@ section {
 		{% endif %}
 		{% set index = index + 1 %}
 	{% endfor %}
-</div>
 
 </div> <!-- /.metric-wrap-->
 </section>
 
 
-<section>
-
-{{ Helpers._qa_section_head("General", "metric-wrap-general") }}
-
-<div class="collapse metric-wrap" id="metric-wrap-general">
-
-	{% set index = 0 %}
-	{% for metricId, metric in MetricList.General %}
-
-		{% if (index is divisible by(4)) %}
-		<div class="row">
-		{% endif %}
-
-			<div class="col-md-3">
-
-					{# These test results are pass/fail #}
-					{% if 'bool' is same as(metric.meta.uom) %}
-						{{ Helpers._qa_testing_status(metric) }}
-					{% else %}
-						{{ Helpers._qa_pot_input(metric.name, metricId, metric) }}
-					{% endif %}
-			</div>
-
-		{% if ((index % 4) is same as (3) or index is same as ((MetricList.General|length)-1)) %}
-		</div>
-		{% endif %}
-
-		{# Don't forget to update the index! #}
-		{% set index = index + 1 %}
-	{% endfor %}
-
-</div> <!-- /#metric-wrap-general -->
-</section>
-
-
+<!--
+	Terpenes
+-->
 <section>
 
 {{ Helpers._qa_section_head("Terpenes", "metric-wrap-t") }}
 
 <div class="collapse metric-wrap" id="metric-wrap-t">
-	<!-- Status, etc. -->
 	<div class="row">
-		<div class="col-md-3">
-			{{ Helpers._qa_section_status("terpene") }}
-		</div>
 		<div class="col-md-9">
 			<div class="btn-group">
 				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
@@ -102,7 +89,7 @@ section {
 			</div>
 		</div>
 	</div>
-<div>
+
 	{% set index = 0 %}
 	{% for metricId, result in MetricList.Terpene %}
 		{% if (index is divisible by(4)) %}
@@ -120,12 +107,14 @@ section {
 		{# Don't forget to update the index! #}
 		{% set index = index + 1 %}
 	{% endfor %}
-</div>
 
 </div> <!-- /#metric-wrap -->
 </section>
 
 
+<!--
+	Microbes
+-->
 <section>
 
 {{ Helpers._qa_section_head("Microbes", "metric-wrap-m") }}
@@ -133,9 +122,6 @@ section {
 <div class="collapse metric-wrap" id="metric-wrap-m">
 	<!-- Status, etc. -->
 	<div class="row">
-			<div class="col-md-3">
-				{{ Helpers._qa_section_status("microbe") }}
-			</div>
 			<div class="col-md-9">
 				<div class="btn-group">
 					<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
@@ -166,6 +152,52 @@ section {
 </div> <!-- /#metric-wrap -->
 </section>
 
+
+<!--
+	Mycotoxin
+-->
+<section>
+
+	{{ Helpers._qa_section_head("Mycotoxin", "metric-wrap-mycotoxin") }}
+
+	<div class="collapse metric-wrap" id="metric-wrap-mycotoxin">
+
+		<div class="row">
+			<div class="col-md-9">
+				<div class="btn-group">
+					<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
+					<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
+					<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
+				</div>
+			</div>
+		</div>
+
+		{% set index = 0 %}
+		{% for metricId, result in MetricList.Mycotoxin %}
+			{% if (index is divisible by(4)) %}
+			<div class="row">
+			{% endif %}
+
+				<div class="col-md-3">
+					{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+				</div>
+
+			{% if ((index % 4) is same as (3) or index is same as ((MetricList.Solvent|length)-1)) %}
+			</div>
+			{% endif %}
+
+			{# Don't forget to update the index! #}
+			{% set index = index + 1 %}
+		{% endfor %}
+
+
+	</div> <!-- /#metric-wrap-s -->
+</section>
+
+
+<!--
+	Pesticides
+-->
 <section>
 
 {{ Helpers._qa_section_head("Pesticides", "metric-wrap-p") }}
@@ -173,9 +205,6 @@ section {
 <div class="collapse metric-wrap" id="metric-wrap-p">
 <!-- Status, etc. -->
 <div class="row">
-		<div class="col-md-3">
-			{{ Helpers._qa_section_status("pesticide") }}
-		</div>
 		<div class="col-md-9">
 			<div class="btn-group">
 				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
@@ -186,13 +215,13 @@ section {
 </div>
 
 	{% set index = 0 %}
-	{% for metricId, result in MetricList.Pesticide %}
+	{% for metricId, resultTab in MetricList.Pesticide %}
 		{% if (index is divisible by(4)) %}
 		<div class="row">
 		{% endif %}
 
 			<div class="col-md-3">
-				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
+				{{ Helpers._qa_pot_input(resultTab.name, resultTab.id, resultTab) }}
 			</div>
 
 		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Pesticide|length)-1)) %}
@@ -207,16 +236,15 @@ section {
 </div> <!-- /#metric-wrap-p -->
 </section>
 
-<section>
 
+<!--
+	Heavy Metal
+-->
+<section>
 {{ Helpers._qa_section_head("Heavy Metals", "metric-wrap-hm") }}
 
 <div class="collapse metric-wrap" id="metric-wrap-hm">
-<!-- Status, etc. -->
 <div class="row">
-		<div class="col-md-3">
-			{{ Helpers._qa_section_status("metal") }}
-		</div>
 		<div class="col-md-9">
 			<div class="btn-group">
 				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
@@ -245,7 +273,7 @@ section {
 	{% endfor %}
 
 
-</div> <!-- /#metric-wrap-p -->
+</div>
 </section>
 
 
@@ -253,16 +281,12 @@ section {
 	Solvents
 -->
 <section>
-
 {{ Helpers._qa_section_head("Solvents", "metric-wrap-s") }}
 
 <div class="collapse metric-wrap" id="metric-wrap-s">
-<!-- Status, etc. -->
+	<!-- Status, etc. -->
 	<div class="row">
 		<div class="col-md-3">
-			{{ Helpers._qa_section_status("solvent") }}
-		</div>
-		<div class="col-md-9">
 			<div class="btn-group">
 				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
 				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
@@ -276,52 +300,6 @@ section {
 		{% if (index is divisible by(4)) %}
 		<div class="row">
 		{% endif %}
-
-			<div class="col-md-3">
-				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
-			</div>
-
-		{% if ((index % 4) is same as (3) or index is same as ((MetricList.Solvent|length)-1)) %}
-		</div>
-		{% endif %}
-
-		{# Don't forget to update the index! #}
-		{% set index = index + 1 %}
-	{% endfor %}
-
-
-</div> <!-- /#metric-wrap-s -->
-</section>
-
-
-<!--
-	Mycotoxin
--->
-<section>
-
-{{ Helpers._qa_section_head("Mycotoxin", "metric-wrap-mycotoxin") }}
-
-<div class="collapse metric-wrap" id="metric-wrap-mycotoxin">
-
-	<div class="row">
-		<div class="col-md-3">
-			{{ Helpers._qa_section_status("mycotoxin") }}
-		</div>
-		<div class="col-md-9">
-			<div class="btn-group">
-				<button class="btn btn-outline-secondary btn-bulk-na" type="button">N/A</button>
-				<button class="btn btn-outline-secondary btn-bulk-nt" type="button">N/T</button>
-				<button class="btn btn-outline-secondary btn-bulk-az" type="button">Zero</button>
-			</div>
-		</div>
-	</div>
-
-	{% set index = 0 %}
-	{% for metricId, result in MetricList.Mycotoxin %}
-		{% if (index is divisible by(4)) %}
-		<div class="row">
-		{% endif %}
-
 			<div class="col-md-3">
 				{{ Helpers._qa_pot_input(result.name, result.id, result) }}
 			</div>
