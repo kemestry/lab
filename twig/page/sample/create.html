@@ -59,8 +59,8 @@
 			<div class="input-group-prepend">
 				<div class="input-group-text">Strain:</div>
 			</div>
-			<input name="strain" class="form-control strain-autocomplete">
-			<input id="strain-id" name="strain-id" type="hidden" value="">
+			<input name="variety-name" class="form-control variety-autocomplete">
+			<input id="variety-id" name="variety-id" type="hidden" value="">
 			<div class="input-group-append">
 				<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
 			</div>
@@ -109,17 +109,6 @@ $(function() {
 	// 		$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
 	// 	}
 	// });
-
-	$('.strain-autocomplete').autocomplete({
-		source: 'https://sdb.openthc.org/api/autocomplete',
-		search: function(e, ui) {
-			$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
-			// debugger;
-		},
-		close: function(e, ui) {
-			$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
-		}
-	});
 
 });
 </script>

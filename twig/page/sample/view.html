@@ -1,70 +1,112 @@
 {% extends "layout/html.html" %}
 
 {% block body %}
+<form method="post">
 <div class="container">
 
 <h1>
-Sample :: {{ Sample.id }}
+Sample :: {{ Sample.id_nice }}
 {{ Sample.flag_medical ? "<i class='fas fa-medkit'></i>"|raw }}
 </h1>
 
-<p>Source ID: <code>{{ Sample.global_original_id }}</code>
+<!-- <p>Source ID: <code>{{ Sample.global_original_id }}</code>
 	{% if Sample.meta.external_id or Sample.meta.legacy_id %}
 		{{ Sample.meta.external_id ? ("External ID: <code>" ~ Sample.meta.external_id ~ "</code>")|raw }}
 		{{ Sample.meta.legacy_id ? ("Legacy ID: <code>" ~ Sample.meta.legacy_id ~ "</code>")|raw }}
 	{% endif %}
 	from <strong>{{ License_Source.name }}</strong> [{{ License_Source.code }}]
-</p>
+</p> -->
 
 <div class="row">
 <div class="col">
-	{% if Sample.lab_result_id %}
-		<div class="alert alert-success">Result: <a class="alert-link" href="/result/{{ Sample.lab_result_id }}">{{ Sample.lab_result_id }}</a></div>
-	{% else %}
+	{% if 0 == lab_result_list|length %}
 		<div class="alert alert-info">Result: -Pending-</div>
+	{% else %}
+		<div class="alert alert-success">Result: <a class="alert-link" href="/result/{{ lab_result_list[0].id }}">{{ lab_result_list[0].id }}</a></div>
 	{% endif %}
 </div>
 </div>
 
 
 <div class="row">
-<div class="col">
+<div class="col-md-6">
 	<div class="form-group">
-		<label>Product</label>
+		<label>Product Type</label>
 		<div class="input-group">
-			<input class="form-control" readonly value="{{ Product.name }}">
+			<select class="form-control" disabled readonly value="{{ ProductType.name }}">
+				{% for k, v in product_type_list %}
+					<option value="{{ k }}">{{ v }}</option>
+				{% endfor %}
+			</select>
 			<div class="input-group-append">
-				<div class="input-group-text">{{ Sample.flag_medical ? 'Med' : 'Rec' }}</div>
+				<button class="btn btn-outline-secondary btn-field-edit" type="button"><i class="fas fa-edit"></i></button>
 			</div>
 		</div>
 	</div>
 </div>
-<div class="col">
+<div class="col-md-6">
 	<div class="form-group">
-		<label>Type</label>
-		<input class="form-control" readonly value="{{ ProductType.name }}">
+		<label>Product</label>
+		<div class="input-group">
+			<input class="form-control" value="{{ Product.name }}">
+			<input id="product-id" name="product-id" type="hidden" value="{{ Product.id }}">
+			<div class="input-group-append">
+				<div class="input-group-text">{{ Sample.flag_medical ? 'Med' : 'Rec' }}</div>
+			</div>
+			<div class="input-group-append">
+				<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
+			</div>
+		</div>
 	</div>
 </div>
 </div>
 
 <div class="row">
-	<div class="col">
+	<div class="col-md-6">
 		<div class="form-group">
-			<label>Strain</label>
-			<input class="form-control" readonly value="{{ Strain.name }}">
+			<label>Variety / Strain:</label>
+			<div class="input-group">
+				<input class="form-control variety-autocomplete" name="variety-name" value="{{ Variety.name }}">
+				<input class="" name="variety-id" type="hidden" value="{{ Variety.id }}">
+				<div class="input-group-append">
+					<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="col">
+	<div class="col-md-6">
 		<div class="form-group">
 			<label>Quantity</label>
 			<div class="input-group">
-				<input class="form-control r" readonly value="{{ Lot.qty }}">
+				<input class="form-control r" name="sample-qty" min="1" step="0.01" type="number" value="{{ Sample.qty }}">
 				<div class="input-group-append">
 					<div class="input-group-text">{{ Product.uom }}</div>
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group">
+			<label>Source License:</label>
+			<div class="input-group">
+				<input name="license-name-source" class="form-control license-autocomplete" value="{{ License_Source.name }}">
+				<input class="autocomplete-data-id" id="license-id-source" name="license-id-source" type="hidden" value="{{ License_Source.id }}">
+				<div class="input-group-append">
+					<button class="btn btn-outline-secondary btn-autocomplete-hint" type="button"><i class="fas fa-sync"></i></button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="form-group">
+			<label>Source Lot Identifier:</label>
+			<input class="form-control" value="{{ Sample.meta.Lot_Source.id }}">
+		</div>
+	</div>
+
 </div>
 
 <!-- <div class="col">
@@ -80,15 +122,27 @@ Sample :: {{ Sample.id }}
 	</div>
 </div> -->
 
-<form method="post">
+{% if lab_result_list %}
+
+	<hr>
+	<h2>Lab Results</h2>
+	{% for lr in lab_result_list %}
+		<p>Lab Result: <a href="/result/{{ lr.id }}">{{ lr.name }}</a></p>
+	{% endfor %}
+
+{% endif %}
+
+
 <div class="form-actions">
 	<!-- <a class="btn btn-outline-primary" href="/sample/{{ Sample.id }}/sync"><i class="fas fa-sync"></i> Sync</a> -->
 	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.id }}"><i class="fas fa-plus"></i> Add Results</a>
+	<button class="btn btn-outline-secondary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Save</button>
+	<!-- <a class="btn btn-outline-secondary" href="/sample/{{ Sample.id }}/edit"><i class="fas fa-edit"></i> Edit</a> -->
 	<!-- <button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button> -->
 	<button class="btn btn-outline-danger" name="a" type="submit" value="void"><i class="fas fa-ban"></i> Void</button>
 	<button class="btn btn-outline-danger" name="a" type="submit" value="drop"><i class="fas fa-trash"></i> Delete</button>
 </div>
-</form>
 
 </div>
+</form>
 {% endblock %}
