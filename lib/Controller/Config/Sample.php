@@ -16,23 +16,23 @@ class Sample extends \App\Controller\Base
 		$dbc = $this->_container->DB;
 
 		switch ($_POST['a']) {
-			case 'reset-seq0':
-			case 'reset-seq1':
-			case 'reset-seq2':
-			case 'reset-seq3':
+			case 'reset-seq-g':
+			case 'reset-seq-y':
+			case 'reset-seq-q':
+			case 'reset-seq-m':
 
 				var_dump($_POST);
 
-				$i = substr($_POST['a'], -1);
+				$c = substr($_POST['a'], -1);
 
-				$s = sprintf('seq_%s_%d', $_SESSION['Company']['id'], $i );
+				$s = sprintf('seq_%s_%s', $_SESSION['Company']['id'], $c );
 				$s = strtolower($s);
 
-				$d = intval($_POST[sprintf('sequence%d', $i)]);
+				$d = intval($_POST[sprintf('seq-%s-min', $c)]);
 				$d = max(1, $d);
 
 				$res = $dbc->query(sprintf('DROP SEQUENCE IF EXISTS %s', $s));
-				$res = $dbc->query(sprintf('CREATE SEQUENCE %s', $s ));
+				$res = $dbc->query(sprintf('CREATE SEQUENCE %s MINVALUE %d START WITH %d', $s, $d, $d ));
 
 				$res = $dbc->query('SELECT setval(:s, :d, false)', [
 					':s' => $s,
@@ -60,10 +60,10 @@ class Sample extends \App\Controller\Base
 		}
 
 
-		for ($idx=0; $idx<4; $idx++) {
+		foreach ([ 'G','Y','Q','M'] as $c) { // $idx=0; $idx<4; $idx++) {
 			try {
 
-				$s = sprintf('seq_%s_%d', $_SESSION['Company']['id'], $idx );
+				$s = sprintf('seq_%s_%s', $_SESSION['Company']['id'], $c );
 				$s = strtolower($s);
 				$arg = [ ':s' => $s ];
 
