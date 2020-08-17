@@ -31,7 +31,8 @@
 -->
 <div class="sample-stat form-inline">
 	<div class="btn-group mr-2">
-		<a class="btn btn-outline-secondary" href="?stat=100">Active: {{ sample_stat.100 }}</a>
+		<a class="btn btn-outline-secondary" href="?stat=100">Incoming: {{ sample_stat.100 }}</a>
+		<a class="btn btn-outline-secondary" href="?stat=200">Active: {{ sample_stat.200 }}</a>
 		<a class="btn btn-outline-success" href="?stat=302">Completed: {{ sample_stat.302 }}</a>
 		<a class="btn btn-outline-danger" href="?stat=410">Void: {{ sample_stat.410 }}</a>
 		<a class="btn btn-outline-secondary" href="?stat=*">All</a>
@@ -60,9 +61,9 @@
 	<tr>
 		<!-- Sample Item ID / Name -->
 		<td>
-			<strong><a href="/sample/{{ s.id }}">{{ s.id }}</a></strong>
+			<strong><a href="/sample/{{ s.id }}">{{ s.id_nice }}</a></strong>
 			<div>
-				Origin: {{ s.meta.global_inventory_id ?: s.meta.Lot.global_original_id }}
+				<!-- Origin: {{ s.meta.global_inventory_id ?: s.meta.Lot.global_original_id }} -->
 			</div>
 		</td>
 

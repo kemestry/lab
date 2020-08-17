@@ -21,6 +21,7 @@ class Home extends \OpenTHC\Controller\Base
 			'sample_list' => [],
 			'sample_stat' => [
 				Lab_Sample::STAT_OPEN => 0,
+				Lab_Sample::STAT_LIVE => 0,
 				Lab_Sample::STAT_DONE => 0,
 				Lab_Sample::STAT_VOID => 0,
 			]
@@ -55,6 +56,7 @@ SQL;
 
 		$sql_select = <<<SQL
 SELECT lab_sample.*
+, coalesce(lab_sample.guid, lab_sample.id) AS id_nice
 , product.name AS product_name
 , strain.name AS variety_name
 FROM lab_sample

@@ -5,7 +5,7 @@
 
 namespace App\Controller\Sample;
 
-// use Edoceo\Radix\DB\SQL;
+use Edoceo\Radix\Session;
 
 use App\Lab_Sample;
 
@@ -36,8 +36,10 @@ class View extends \App\Controller\Base
 				// need to return the $RES object from these methods to do anything
 				return $this->_dropSample($RES, $ARG, $Lab_Sample);
 			break;
+			case 'accept-sample':
+				return $this->_accept($RES, $Lab_Sample);
 			case 'save':
-				$this->_saveSample($RES, $Lab_Sample);
+				return $this->_saveSample($RES, $Lab_Sample);
 			break;
 			case 'void':
 				return $this->_voidSample($RES, $ARG, $Lab_Sample);
@@ -67,7 +69,7 @@ class View extends \App\Controller\Base
 		$dbc_main = $this->_container->DBC_Main;
 		$L_Source = new \OpenTHC\License($dbc_main, $Lab_Sample['license_id_source']);
 
-		$data = $data = $this->loadSiteData([
+		$data = $this->loadSiteData([
 			'Page' => array('title' => 'Sample :: View'),
 			// 'Lab_Sample' => $Lab_Sample->toArray(), // @deprecated
 			// 'Sample' => $Lab_Sample_Meta['Lot'], // @deprecated
@@ -98,6 +100,66 @@ class View extends \App\Controller\Base
 		$data['lab_result_list'] = $dbc->fetchAll('SELECT id, name FROM lab_result WHERE lab_sample_id = :ls0', [ ':ls0' => $Lab_Sample['id'] ]);
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
+
+	}
+
+	function _accept($RES, $Lab_Sample)
+	{
+		$dbc = $this->_container->DB;
+
+		// Assign Sequence
+		$dt0 = new \DateTime();
+		$dt0->setTimeZone(new \DateTimeZone('America/Chicago'));
+
+		$cfg = $dbc->fetchOne("SELECT val FROM base_option WHERE key = 'lab-sample-seq-format'");
+		$cfg = json_decode($cfg);
+
+		// $cfg = 'YYYY:{YYYY}; YY:{YY}; MM{MM}; DDD:{DDD}; HH:{HH}; II:{II}; SS:{SS}; SEQ_G:{SEQ_G}; SEQ_Y:{SEQ_Y}; SEQ_Q:{SEQ_Q}; SEQ_M:{SEQ_M}';
+
+		if (!empty($cfg)) {
+			$cfg = str_replace('{YYYY}', $dt0->format('Y'), $cfg);
+			$cfg = str_replace('{YY}', $dt0->format('y'), $cfg);
+			$cfg = str_replace('{MM}', $dt0->format('m'), $cfg);
+			$cfg = str_replace('{MA}', chr(64 + $dt0->format('m')), $cfg);
+			$cfg = str_replace('{DDD}', sprintf('%03d', $dt0->format('z') + 1), $cfg);
+			$cfg = str_replace('{DD}', $dt0->format('d'), $cfg);
+			$cfg = str_replace('{HH}', $dt0->format('H'), $cfg);
+			$cfg = str_replace('{II}', $dt0->format('i'), $cfg);
+			$cfg = str_replace('{SS}', $dt0->format('s'), $cfg);
+
+			if (preg_match_all('/(\{SEQ\w+?\})/', $cfg, $m)) {
+				$seq_list = $m[1];
+				foreach ($seq_list as $seq) {
+
+					$fmt = '%d';
+
+					$len = preg_match('/(\d+)\}$/', $seq, $m) ? $m[1] : 0;
+					if (!empty($len)) {
+						$fmt = sprintf('%%0%dd', $len);
+					}
+
+					$seq_mode = preg_match('/_(G|Y|Q|M)/', $seq, $m) ? $m[1] : 'G';
+
+					$seq_name = sprintf('seq_%s_%s', $_SESSION['Company']['id'], $seq_mode);
+					$seq_name = strtolower($seq_name);
+					$val = $dbc->fetchOne('SELECT nextval(:s)', [':s' => $seq_name ]);
+
+					$rep = sprintf($fmt, $val);
+
+					$cfg = str_replace($seq, $rep, $cfg);
+				}
+			}
+
+			$Lab_Sample['guid'] = $cfg;
+
+		}
+
+		$Lab_Sample['stat'] = Lab_Sample::STAT_LIVE;
+		$Lab_Sample->save();
+
+		Session::flash('Sample Accepted, Internal ID Assigned');
+
+		return $RES->withRedirect(sprintf('/sample/%s', $Lab_Sample['id']));
 
 	}
 

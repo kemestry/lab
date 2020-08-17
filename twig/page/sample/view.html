@@ -134,8 +134,15 @@ Sample :: {{ Sample.id_nice }}
 
 
 <div class="form-actions">
-	<!-- <a class="btn btn-outline-primary" href="/sample/{{ Sample.id }}/sync"><i class="fas fa-sync"></i> Sync</a> -->
-	<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.id }}"><i class="fas fa-plus"></i> Add Results</a>
+
+	{% if 200 == Sample.stat %}
+		<button class="btn btn-outline-primary" name="a" type="submit" value="accept-sample"><i class="fas fa-sync"></i> Accept</button>
+	{% endif %}
+
+	{% if 200 == Sample.stat %}
+		<a class="btn btn-outline-primary" href="/result/create?sample_id={{ Sample.id }}"><i class="fas fa-plus"></i> Add Results</a>
+	{% endif %}
+
 	<button class="btn btn-outline-secondary" name="a" type="submit" value="save"><i class="fas fa-save"></i> Save</button>
 	<!-- <a class="btn btn-outline-secondary" href="/sample/{{ Sample.id }}/edit"><i class="fas fa-edit"></i> Edit</a> -->
 	<!-- <button class="btn btn-outline-secondary" name="a" type="submit" value="done"><i class="fas fa-check-square"></i> Finish</button> -->

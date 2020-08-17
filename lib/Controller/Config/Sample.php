@@ -21,8 +21,6 @@ class Sample extends \App\Controller\Base
 			case 'reset-seq-q':
 			case 'reset-seq-m':
 
-				var_dump($_POST);
-
 				$c = substr($_POST['a'], -1);
 
 				$s = sprintf('seq_%s_%s', $_SESSION['Company']['id'], $c );
@@ -70,12 +68,12 @@ class Sample extends \App\Controller\Base
 				// $seq_data[$idx] = $dbc->fetchOne(sprintf('SELECT currval(%s)', $s));
 				// $seq_data[$idx] = $dbc->fetchOne('SELECT currval(:s)', $arg);
 				// $seq_data[$idx] = $dbc->fetchOne('SELECT nextval(:s)', $arg);
-				$seq_data[$idx] = $dbc->fetchOne(sprintf('SELECT last_value FROM "%s"', $s));
+				$seq_data[$c] = $dbc->fetchOne(sprintf('SELECT last_value FROM "%s"', $s));
 			} catch (\Exception $e) {
 				// Ignore
 				// _exit_html($e->getMessage());
 				$err = $e->getMessage();
-				$seq_data[$idx] = '-not-set-';
+				$seq_data[$c] = '-not-set-';
 			}
 		}
 
@@ -97,12 +95,12 @@ class Sample extends \App\Controller\Base
 			'HH' => date('H'),
 			'II' => date('i'),
 			'SS' => date('s'),
-			'g' => $seq_data[0],
-			'y' => $seq_data[1],
-			'y6' => sprintf('%06d', $seq_data[1]),
-			'q' => $seq_data[2],
-			'q9' => sprintf('%06d', $seq_data[2]),
-			'm' => $seq_data[3],
+			'g' => $seq_data['G'],
+			'y' => $seq_data['Y'],
+			'y6' => sprintf('%06d', $seq_data['Y']),
+			'q' => $seq_data['Q'],
+			'q9' => sprintf('%06d', $seq_data['Q']),
+			'm' => $seq_data['M'],
 		];
 
 		$file = 'page/config/sample.html';
