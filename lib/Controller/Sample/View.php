@@ -50,7 +50,7 @@ class View extends \App\Controller\Base
 		$ProductType = $dbc->fetchRow('SELECT * FROM product_type WHERE id = ?', [ $Product['product_type_id'] ]);
 		$Variety = $dbc->fetchRow('SELECT * FROM strain WHERE id = ?', [ $Lab_Sample['strain_id'] ]);
 
-		$LSm = json_decode($Lab_Sample['meta'], true);
+		$Lab_Sample_Meta = json_decode($Lab_Sample['meta'], true);
 
 		// Get Fresh Lot Data?
 		// $res = $this->cre->get('/lot/' . $Lab_Sample['id']);
@@ -70,12 +70,13 @@ class View extends \App\Controller\Base
 		$data = $data = $this->loadSiteData([
 			'Page' => array('title' => 'Sample :: View'),
 			// 'Lab_Sample' => $Lab_Sample->toArray(), // @deprecated
-			// 'Sample' => $LSm['Lot'], // @deprecated
+			// 'Sample' => $Lab_Sample_Meta['Lot'], // @deprecated
 			'Sample' => $Lab_Sample->toArray(),
+			'Sample_Meta' => $Lab_Sample_Meta,
 			'Product' => $Product,
 			'ProductType' => $ProductType,
 			'Variety' => $Variety,
-			// 'Result' => $LSm['Result'],
+			// 'Result' => $Lab_Sample_Meta['Result'],
 			'License_Source' => $L_Source->toArray(),
 		]);
 		$data['Sample']['id'] = $ARG['id'];
@@ -150,15 +151,32 @@ class View extends \App\Controller\Base
 	{
 		$dbc = $this->_container->DBC_User;
 
-		if (!empty($_POST['product-name'])) {
-			$arg = [];
-			$arg[':p0'] = trim($_POST['product-name']);
-			$PR = $dbc->fetchRow('SELECT id FROM product WHERE name = :p0', $arg);
-			if (!empty($PR['id'])) {
-				$Lab_Sample['product_id'] = $PR['id'];
+		$_POST['product-name'] = trim($_POST['product-name']);
+		$_POST['variety-name'] = trim($_POST['variety-name']);
+
+		// Product Change?
+		if ($_POST['product-id'] != $Lab_Sample['product_id']) {
+			if (!empty($_POST['product-name'])) {
+				$arg = [];
+				$arg[':p0'] = $_POST['product-name'];
+				$PR = $dbc->fetchRow('SELECT id FROM product WHERE name = :p0', $arg);
+				if (!empty($PR['id'])) {
+					$Lab_Sample['product_id'] = $PR['id'];
+				} else {
+					$PR = [];
+					$PR['id'] = _ulid();
+					$PR['guid'] = $PR['id'];
+					$PR['license_id'] = $Lab_Sample['license_id'];
+					$PR['product_type_id'] = 117; // Flower
+					$PR['name'] = $_POST['product-name'];
+					$PR['stub'] = _text_stub($PR['name']);
+					$dbc->insert('product', $PR);
+					$Lab_Sample['product_id'] = $PR['id'];
+				}
 			}
 		}
 
+		// Variety Change?
 		if (!empty($_POST['variety-id'])) {
 			$arg = [];
 			$arg[':v0'] = $_POST['variety-id'];
@@ -179,6 +197,12 @@ class View extends \App\Controller\Base
 
 		if (!empty($_POST['sample-qty'])) {
 			$Lab_Sample['qty'] = floatval($_POST['sample-qty']);
+		}
+
+		if (!empty($_POST['lot-id-source'])) {
+			$m = json_decode($Lab_Sample['meta'], true);
+			$m['Lot_Source']['id'] = $_POST['lot-id-source'];
+			$Lab_Sample['meta'] = json_encode($m);
 		}
 
 		$Lab_Sample['license_id_source'] = $_POST['license-id-source'];

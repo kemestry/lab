@@ -91,25 +91,3 @@
 </div>
 </form>
 {% endblock %}
-
-
-
-{% block foot_script %}
-{{ parent() }}
-<script>
-$(function() {
-
-	// $('.product-autocomplete').autocomplete({
-	// 	source: 'https://pdb.openthc.com/api/autocomplete',
-	// 	search: function(e, ui) {
-	// 		$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
-	// 		debugger;
-	// 	},
-	// 	close: function(e, ui) {
-	// 		$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
-	// 	}
-	// });
-
-});
-</script>
-{% endblock %}

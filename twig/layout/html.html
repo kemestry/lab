@@ -3,6 +3,21 @@
 {% block html_head_link %}
 {{ parent() }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.0.6/css/fileinput.min.css" integrity="sha256-0jMzmu+xN8Lxr0wvRizwxIPe/KGY3E6kYYC4UoiYMGc=" crossorigin="anonymous" />
+<style>
+.config-wrap {
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+}
+
+.config-wrap .config-card {
+	flex: 1 1 50%;
+	min-width: 32em;
+	padding: 2vh 2vw;
+}
+</style>
 {% endblock %}
 
 {% block head_script %}
@@ -32,6 +47,17 @@ window.Page_State = {
 </script>
 {% endblock %}
 
+{% block body %}
+{{ parent() }}
+
+<div class="modal" id="modal-zero" role="dialog" tabindex="-1">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<!-- Filled By HTML over AJAX -->
+		</div>
+	</div>
+</div>
+{% endblock %}
 
 {% block foot_script %}
 {{ parent() }}
@@ -106,6 +132,96 @@ $(function() {
 		}, 2000);
 
 	});
+
+	// License Autocomplete Everywhere
+	$('.license-autocomplete').autocomplete({
+		source: 'https://directory.openthc.com/api/autocomplete/license',
+		search: function(e, ui) {
+			$(this.parentElement).data('pick', false);
+			$(this.parentElement).find('input[type="hidden"]').val('');
+			$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
+			$(this.parentElement).find('.btn-autocomplete-hint').addClass('btn-outline-secondary').removeClass('btn-outline-success btn-outline-warning');
+		},
+		response: function(e, ui) {
+			if (0 == ui.content.length) {
+				$(this).autocomplete('close');
+			}
+		},
+		close: function (e,ui) {
+			$(this.parentElement).find('.btn-autocomplete-hint i').removeClass('fa-spin');
+		},
+		select: function (e,ui) {
+			debugger;
+			$(this.parentElement).data('pick', true);
+			$(this.parentElement).find('.autocomplete-data-id').val(ui.item.id);
+			$(this.parentElement).find('.btn-autocomplete-hint').addClass('btn-outline-success').removeClass('btn-outline-secondary')
+		}
+	});
+
+	// Product
+	// @todo should this be local first?
+	$('.product-autocomplete').autocomplete({
+		source: 'https://pdb.openthc.org/api/autocomplete',
+		search: function(e, ui) {
+			var $pe = $(this.parentElement);
+			$pe.data('pick', false);
+			$pe.find('input[type="hidden"]').val('');
+			$pe.find('.btn-autocomplete-hint i').addClass('fa-spin');
+			$pe.find('.btn-autocomplete-hint').addClass('btn-outline-secondary').removeClass('btn-outline-success btn-outline-warning');
+		},
+		response: function(e, ui) {
+			if (0 == ui.content.length) {
+				$(this).autocomplete('close');
+			}
+		},
+		select: function(e, ui) {
+			debugger;
+			var $pe = $(this.parentElement);
+			$pe.data('pick', true);
+			$pe.find('input[type="hidden"]').val(ui.item.id);
+			$pe.find('.btn-autocomplete-hint').addClass('btn-outline-success').removeClass('btn-outline-secondary')
+		},
+		close: function(e, ui) {
+			var $pe = $(this.parentElement);
+			$pe.find('.btn-autocomplete-hint i').removeClass('fa-spin');
+			var pick = $pe.data('pick');
+			if (!pick) {
+				$pe.find('.btn-autocomplete-hint').addClass('btn-outline-warning').removeClass('btn-outline-secondary');
+			}
+		}
+	});
+
+	// Variety
+	$('.variety-autocomplete').autocomplete({
+		source: 'https://sdb.openthc.org/api/autocomplete',
+		search: function(e, ui) {
+			$(this.parentElement).data('pick', false);
+			$(this.parentElement).find('input[type="hidden"]').val('');
+			$(this.parentElement).find('.btn-autocomplete-hint i').addClass('fa-spin');
+			$(this.parentElement).find('.btn-autocomplete-hint').addClass('btn-outline-secondary').removeClass('btn-outline-success btn-outline-warning');
+		},
+		response: function(e, ui) {
+			if (0 == ui.content.length) {
+				$(this).autocomplete('close');
+			}
+		},
+		select: function(e, ui) {
+			debugger;
+			$(this.parentElement).data('pick', true);
+			$(this.parentElement).find('input[type="hidden"]').val(ui.item.strain.id);
+			$(this.parentElement).find('.btn-autocomplete-hint').addClass('btn-outline-success').removeClass('btn-outline-secondary')
+		},
+		close: function(e, ui) {
+			var $pe = $(this.parentElement);
+			$pe.find('.btn-autocomplete-hint i').removeClass('fa-spin');
+			var pick = $pe.data('pick');
+			if (!pick) {
+				$pe.find('.btn-autocomplete-hint').addClass('btn-outline-warning').removeClass('btn-outline-secondary');
+			}
+		}
+	});
+
+
 
 });
 </script>

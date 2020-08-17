@@ -48,7 +48,7 @@ Sample :: {{ Sample.id_nice }}
 	<div class="form-group">
 		<label>Product</label>
 		<div class="input-group">
-			<input class="form-control" value="{{ Product.name }}">
+			<input class="form-control product-autocomplete" name="product-name" value="{{ Product.name }}">
 			<input id="product-id" name="product-id" type="hidden" value="{{ Product.id }}">
 			<div class="input-group-append">
 				<div class="input-group-text">{{ Sample.flag_medical ? 'Med' : 'Rec' }}</div>
@@ -103,7 +103,7 @@ Sample :: {{ Sample.id_nice }}
 	<div class="col-md-6">
 		<div class="form-group">
 			<label>Source Lot Identifier:</label>
-			<input class="form-control" value="{{ Sample.meta.Lot_Source.id }}">
+			<input class="form-control" name="lot-id-source" value="{{ Sample_Meta.Lot_Source.id }}">
 		</div>
 	</div>
 
