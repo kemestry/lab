@@ -1,6 +1,6 @@
 <?php
 /**
- * Return One Lab Result, Inflated
+ * Update Lab Result
  */
 
 namespace App\Controller\API\Result;

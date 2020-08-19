@@ -5,30 +5,34 @@
 {% extends "layout/html.html" %}
 
 {% block body %}
+<style>
+.metric-general-wrap h2 {
+	background: #343434;
+	color: #fefefe;
+	margin: 0 0 0.50rem 0;
+	padding: 0.25rem 0.50rem;
+}
+
+.metric-general-wrap .col {
+	text-align: center;
+}
+</style>
+
+
 <div class="container mt-4">
+<h1>Result: {{ Result.id }}</h1>
+<h3>Sample: {{ Sample.id }}</h3>
 
-<div class="row">
-<div class="col">
-	<h1>Result: {{ Result.id }}</h1>
-	<h2>Status: {{ Result.testing_status }} / {{ Result.status }}</h2>
-</div>
-<div class="col">
-	<h3>Sample: {{ Sample.id }}</h4>
-	<p style="margin:0;">Origin: {{ Result.global_for_inventory_id }}</p>
-	<p style="margin:0;">Lab Inventory ID: {{ Result.global_inventory_id }}</p>
-</div>
-</div>
-
-{% include "block/qa-product-summary.html" %}
+{% include "block/product-summary.html" %}
 
 <div class="row">
 <div class="col-md-8">
 	<div class="form-group">
 		<label>Share Link</label>
 		<div class="input-group">
-			<input class="form-control" readonly value="https://{{ Site.host }}/share/{{ Result.global_id }}.html">
+			<input class="form-control" readonly value="https://{{ Site.hostname }}/share/{{ Result.id }}.html">
 			<div class="input-group-append">
-				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://{{ Site.host }}/share/{{ Result.global_id }}.html" type="button"><i class="fas fa-clipboard"></i></button>
+				<button class="btn btn-outline-secondary btn-clipcopy" data-clipboard-text="https://{{ Site.hostname }}/share/{{ Result.id }}.html" type="button"><i class="fas fa-clipboard"></i></button>
 			</div>
 		</div>
 	</div>
@@ -42,28 +46,56 @@
 		</label>
 		<div class="input-group">
 			{% if Result.coa_file %}
-				<a class="btn btn-block btn-outline-primary" href="https://{{ Site.host }}/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a>
+				<a class="btn btn-block btn-outline-primary" href="https://{{ Site.hostname }}/share/{{ Result.id }}.pdf" target="_blank"><i class="fas fa-print"></i> Print COA</a>
 			{% else %}
-				<!-- <a class="btn btn-block btn-outline-secondary disabled" href="https://{{ Site.host }}/share/{{ Result.global_id }}.pdf"><i class="fas fa-print"></i> Print COA</a> -->
-				<div class="btn btn-block btn-outline-secondary disabled"><i class="fas fa-print"></i> Waiting for Documents</div>
+				{% if mine %}
+					<a class="btn btn-block btn-outline-warning" href="https://{{ Site.hostname }}/result/{{ Result.id }}"><i class="fas fa-print"></i> Upload COA</a>
+				{% else %}
+					<div class="btn btn-block btn-outline-secondary disabled"><i class="fas fa-print"></i> Waiting for Documents</div>
+				{% endif %}
 			{% endif %}
 		</div>
 	</div>
 </div>
 </div>
 
-{% include "block/qa-potency-summary.html" %}
+{% include "block/potency-summary.html" %}
 
 <hr>
 
-{% include "block/qa-result.html" %}
+<div class="metric-general-wrap" style="border: 1px solid #999; margin-bottom: 1rem;">
+	{% include "coa/general.html" %}
+</div>
+
+<div class="d-flex flex-row flex-fill" style="margin-bottom: 1rem;">
+
+	<div style="border: 1px solid #999; flex: 1 1 50%;">
+	{% include "coa/cannabinoid.html" %}
+	</div>
+
+	<div style="border: 1px solid #999; flex: 1 1 50%;">
+	{% include "coa/terpene-mini.html" %}
+	</div>
+</div>
+
+<div class="d-flex flex-row flex-fill" style="margin-bottom: 1rem;">
+	<div style="border: 1px solid #999; flex: 1 1 50%;">
+		{% include "coa/solvent.html" %}
+	</div>
+
+	<div style="border: 1px solid #999; flex: 1 1 50%;">
+		{% include "coa/microbe.html" %}
+		{% include "coa/heavy-metal.html" %}
+	</div>
+</div>
 
 
-<div class="form-actions">
+
+<!-- <div class="form-actions">
 	<button class="btn btn-outline-primary" name="a" data-toggle="modal" data-target="#modal-result-email" type="button"><i class="far fa-envelope"></i> Email</button>
 	<button class="btn btn-outline-primary" data-toggle="modal" data-target="#modal-scan-qr" type="button"><i class="fas fa-qrcode"></i> QR Code</button>
-	<a class="btn btn-outline-secondary" href="https://{{ Site.host }}/share/{{ Result.global_id }}.json"> JSON</a>
-</div>
+	<a class="btn btn-outline-secondary" href="https://{{ Site.hostname }}/share/{{ Result.id }}.json"> JSON</a>
+</div> -->
 
 </div>
 

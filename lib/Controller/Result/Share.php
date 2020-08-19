@@ -16,10 +16,10 @@ class Share extends \App\Controller\Base
 			$ext = trim($m[2], '.');
 		}
 
-		$dbc = $this->_container->DBC_Main;
+		$dbc_main = $this->_container->DBC_Main;
 
 		// Get Result
-		$LR = new Lab_Result($dbc, $ARG['id']);
+		$LR = new Lab_Result($dbc_main, $ARG['id']);
 		if (empty($LR['id'])) {
 			$data = array(
 				'Page' => array('title' => 'Not Found [CRS#030]'),
@@ -30,11 +30,15 @@ class Share extends \App\Controller\Base
 		}
 
 		$data = $this->loadSiteData();
-		$data['Page'] = array('title' => 'Result :: View');
 		$meta = json_decode($LR['meta'], true);
 		$data = array_merge($data, $meta);
 		// _exit_text($data);
+		if ($_SESSION['License']['id'] == $LR['license_id']) {
+			// I'm the Owner
+			$data['mine'] = true;
+		}
 
+		// @deprecated should be on Result Create
 		if (empty($data['Result']['sum'])) {
 			$data['Result']['sum'] = $data['Result']['thc'] + $data['Result']['cbd'];
 		}
@@ -59,6 +63,14 @@ class Share extends \App\Controller\Base
 			$data['Sample']['id'] = '- Not Found -';
 			$data['Sample']['id'] = $data['Result']['global_for_inventory_id'];
 		}
+
+		$chk = $dbc_main->fetchRow('SELECT * FROM license WHERE id = :l0', [ ':l0' => $data['License_Source']['id'] ]);
+		$data['License_Source'] = [
+			'id' => $chk['id'],
+			'name' => $chk['name'],
+			'code' => $chk['code'],
+			'guid' => $chk['guid'],
+		];
 
 		$data['Product'] = $meta['Product'];
 		if (empty($data['Product']['name'])) {
@@ -126,13 +138,39 @@ class Share extends \App\Controller\Base
 
 		// _exit_text($data);
 
+		$data['Page'] = array('title' => sprintf('Result :: %s', $LR['id']));
+		$data['License_Current'] = $_SESSION['License'];
+
 		// return $this->_container->view->render($RES, 'coa/default.html', $data);
 		return $this->_container->view->render($RES, 'page/result/share.html', $data);
 
 	}
 
+	/**
+	 * Clean the Data for JSON
+	 */
 	function _clean_data($data)
 	{
+		unset($data['Result']['cbd']);
+		unset($data['Result']['coa_file']);
+		unset($data['Result']['external_id']);
+		unset($data['Result']['for_inventory_id']);
+		unset($data['Result']['global_user_id']);
+		unset($data['Result']['sum']);
+		unset($data['Result']['thc']);
+
+		unset($data['Sample']['additives']);
+		unset($data['Sample']['cost']);
+		unset($data['Sample']['external_id']);
+		unset($data['Sample']['global_user_id']);
+		unset($data['Sample']['is_initial_inventory']);
+		unset($data['Sample']['lab_result_file_path']);
+		unset($data['Sample']['legacy_id']);
+		unset($data['Sample']['serving_num']);
+		unset($data['Sample']['serving_size']);
+		unset($data['Sample']['total_marijuana_in_grams']);
+		unset($data['Sample']['value']);
+
 		unset($data['Product']['allergens']);
 		unset($data['Product']['contains']);
 		unset($data['Product']['cost']);
@@ -145,29 +183,21 @@ class Share extends \App\Controller\Base
 		unset($data['Product']['storage_instructions']);
 		unset($data['Product']['total_marijuana_in_grams']);
 		unset($data['Product']['value']);
-		unset($data['Result']['cbd']);
-		unset($data['Result']['coa_file']);
-		unset($data['Result']['external_id']);
-		unset($data['Result']['for_inventory_id']);
-		unset($data['Result']['global_user_id']);
-		unset($data['Result']['sum']);
-		unset($data['Result']['thc']);
-		unset($data['Sample']['additives']);
-		unset($data['Sample']['cost']);
-		unset($data['Sample']['external_id']);
-		unset($data['Sample']['global_user_id']);
-		unset($data['Sample']['is_initial_inventory']);
-		unset($data['Sample']['lab_result_file_path']);
-		unset($data['Sample']['legacy_id']);
-		unset($data['Sample']['serving_num']);
-		unset($data['Sample']['serving_size']);
-		unset($data['Sample']['total_marijuana_in_grams']);
-		unset($data['Sample']['value']);
-		unset($data['Strain']['external_id']);
-		//_ksort_r($data);
+
+		unset($data['Strain']);
+
+		unset($data['Variety']['external_id']);
+		unset($data['Variety']['meta']);
+
+		unset($data['OpenTHC']);
+		unset($data['Site']);
+		unset($data['mine']);
 		return $data;
 	}
 
+	/**
+	 * Manually remap some shit from LeafData
+	 */
 	function _map_leafdata($data)
 	{
 		$type_list = [ 'Cannabinoid', 'General', 'Metal', 'Microbe', 'Mycotoxin', 'Pesticide', 'Solvent', 'Terpene' ];
