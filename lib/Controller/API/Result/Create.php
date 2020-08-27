@@ -1,9 +1,11 @@
 <?php
 /**
- * Return One Lab Result, Inflated
+ * Create a Lab Result
  */
 
 namespace App\Controller\API\Result;
+
+use App\Lab_Result;
 
 class Create extends \OpenTHC\Controller\Base
 {
@@ -52,6 +54,10 @@ class Create extends \OpenTHC\Controller\Base
 			], 409);
 		}
 
+		if (empty($data['type'])) {
+			$data['type'] = 'Flower';
+		}
+
 		// Now Add the Result
 		$rec = $dbc->insert('lab_result', [
 			'id' => $data['id'],
@@ -60,6 +66,11 @@ class Create extends \OpenTHC\Controller\Base
 			'name' => $data['name'],
 			'meta' => json_encode($data['meta'])
 		]);
+
+		$LR = new Lab_Result(null, [
+			'id' => $data['id'],
+		]);
+		$LR->importCOA($data['meta']['Result']['meta']['pdf_path']);
 
 		return $RES->withJSON([
 			'data' => $rec,

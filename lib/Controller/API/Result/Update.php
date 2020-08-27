@@ -1,9 +1,11 @@
 <?php
 /**
- * Update Lab Result
+ * Update a Lab Result
  */
 
 namespace App\Controller\API\Result;
+
+use App\Lab_Result;
 
 class Update extends \OpenTHC\Controller\Base
 {
@@ -62,7 +64,12 @@ class Update extends \OpenTHC\Controller\Base
 		];
 		$res = $dbc->update('lab_result', $mod, $where);
 
-		// Update METRICs
+		$LR = new Lab_Result(null, [
+			'id' => $data['id'],
+		]);
+		$LR->importCOA($data['meta']['Result']['meta']['pdf_path']);
+
+		// @todo Update METRICs
 
 		return $RES->withJSON([
 			'data' => $data,

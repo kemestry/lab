@@ -5,9 +5,6 @@
 
 namespace App;
 
-use Edoceo\Radix\DB\SQL;
-use Edoceo\Radix\Net\HTTP;
-
 class Lab_Result extends \OpenTHC\SQL\Record
 {
 	const FLAG_SYNC = 0x00100000;
@@ -58,16 +55,18 @@ SQL;
 	function getCOAFile()
 	{
 		if (empty($this->_data['id'])) {
-			throw new \Exception('Invalid Result [LQR#044]');
+			throw new \Exception('Invalid Result [ALR#044]');
 		}
+
+		$id = $this->_data['id'];
 
 		// if (!empty($coa_file) && is_file($coa_file) && is_readable($coa_file)) {
 		// 	return $coa_file;
 		// }
 
 		// One True Method
-		$coa_hash = implode('/', str_split(sprintf('%08x', crc32($this->_data['id'])), 2));
-		$coa_file = sprintf('%s/coa/%s/%s.pdf', APP_ROOT, $coa_hash, $this->_data['id']);
+		$coa_hash = implode('/', str_split(sprintf('%08x', crc32($id)), 2));
+		$coa_file = sprintf('%s/coa/%s/%s.pdf', APP_ROOT, $coa_hash, $id);
 
 		return $coa_file;
 
@@ -91,15 +90,14 @@ SQL;
 
 		// @todo Inspect the document
 
-
 		// /usr/bin/pdf2txt
 		// Then evaluate Text Content?
 
 		// Evaluate PDF
-		$cmd = array();
-		$cmd[] = '/usr/bin/pdftk';
-		$cmd[] = escapeshellarg($coa_file);
-		$cmd[] = 'dump_data';
+		// $cmd = array();
+		// $cmd[] = '/usr/bin/pdftk';
+		// $cmd[] = escapeshellarg($coa_file);
+		// $cmd[] = 'dump_data';
 		// $buf = shell_exec(implode(' ', $cmd));
 
 		// PageMediaRect: 0 0 612 792
@@ -138,24 +136,53 @@ SQL;
 
 	}
 
-	function tryCOAImport()
+	/**
+	 * Try to Import the COA
+	 * @param $ufb URL or FILE Path/Handle or Bytes of PDF as String
+	 */
+	function importCOA($ufb)
 	{
-		$tmp_file = _tmp_file();
+		if (empty($ufb)) {
+			return(false);
+		}
 
-		if (!empty($this->_Result['pdf_path'])) {
-			$res = HTTP::get($this->_Result['pdf_path']);
-			switch ($res['info']['http_code']) {
-			case 200:
-				file_put_contents($tmp_file, $res['body']);
-				$this->setCOAFile($tmp_file);
-				return true;
+		$pdf_output = $this->getCOAFile();
+		$pdf_source = null;
+
+		if (is_string($ufb)) {
+			$type = strtolower(substr($ufb, 0, 4));
+			switch ($type) {
+				case '%pdf':
+					// PDF Bytes
+					$pdf_source = sprintf('%s/var/%s.pdf', APP_ROOT, _ulid());
+					file_put_contents($pdf_source, $raw);
 				break;
-			default:
-				_exit_text($res);
+				case 'http':
+					// Fetch This
+					$req = __curl_init($ufb);
+					$raw = curl_exec($req);
+					$inf = curl_getinfo($req);
+					if (200 == $inf['http_code']) {
+						$pdf_source = sprintf('%s/var/%s.pdf', APP_ROOT, _ulid());
+						file_put_contents($pdf_source, $raw);
+					}
+				break;
+				default:
+					// Ok, Likely a File String?
+					if (is_file($ufb)) {
+						$pdf_source = $ufb;
+					}
+				break;
 			}
 		}
 
-		return false;
+		$dir = dirname($pdf_output);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0755, true);
+		}
+
+		\App\PDF\Base::import($pdf_source, $pdf_output);
+
 	}
 
 }
