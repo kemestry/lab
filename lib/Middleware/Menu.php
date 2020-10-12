@@ -36,18 +36,10 @@ class Menu extends \OpenTHC\Middleware\Base
 			$menu['main'] = array();
 			$menu['show_search'] = true;
 
-			// Only Labs Do This?
-			switch ($_SESSION['License']['type']) {
-			case '':
-			case 'Laboratory':
-
-				$menu['main'][] = array(
-					'link' => '/sample',
-					'html' => '<i class="fas fa-flask"></i> Samples',
-				);
-
-				break;
-			}
+			$menu['main'][] = array(
+				'link' => '/sample',
+				'html' => '<i class="fas fa-flask"></i> Samples',
+			);
 
 			$menu['main'][] = array(
 				'link' => '/result',

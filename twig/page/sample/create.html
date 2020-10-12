@@ -34,6 +34,7 @@
 				<div class="input-group-text">Product Type:</div>
 			</div>
 			<select class="form-control" name="product-type">
+				<option value="">- Select Product Type -</option>
 				{% for pi, pt in product_type %}
 					<option value="{{ pi }}">{{ pt }}</option>
 				{% endfor %}

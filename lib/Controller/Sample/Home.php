@@ -14,7 +14,7 @@ class Home extends \OpenTHC\Controller\Base
 	function __invoke($REQ, $RES, $ARG)
 	{
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$data = array(
 			'Page' => [ 'title' => 'Samples' ],
@@ -56,12 +56,13 @@ SQL;
 
 		$sql_select = <<<SQL
 SELECT lab_sample.*
-, coalesce(lab_sample.guid, lab_sample.id) AS id_nice
+, lab_sample.id AS id_nice
 , product.name AS product_name
 , strain.name AS variety_name
 FROM lab_sample
-LEFT JOIN product ON lab_sample.product_id = product.id
-LEFT JOIN strain ON lab_sample.strain_id = strain.id
+JOIN inventory ON lab_sample.lot_id = inventory.id::text
+JOIN product ON inventory.product_id = product.id
+JOIN strain ON inventory.strain_id = strain.id
 SQL;
 
 		if ('*' == $stat) {

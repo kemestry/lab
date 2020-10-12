@@ -19,7 +19,7 @@ class View extends \App\Controller\Base
 			_exit_text('Invalid Request', 400);
 		}
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// $this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
 
@@ -97,7 +97,7 @@ class View extends \App\Controller\Base
 			$data['Sample']['medically_compliant'] = true;
 		}
 
-		$data['lab_result_list'] = $dbc->fetchAll('SELECT id, name FROM lab_result WHERE lab_sample_id = :ls0', [ ':ls0' => $Lab_Sample['id'] ]);
+		// $data['lab_result_list'] = $dbc->fetchAll('SELECT id, name FROM lab_result WHERE lab_sample_id = :ls0', [ ':ls0' => $Lab_Sample['id'] ]);
 
 		return $this->_container->view->render($RES, 'page/sample/view.html', $data);
 

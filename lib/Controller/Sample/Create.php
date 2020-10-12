@@ -12,6 +12,7 @@ class Create extends \App\Controller\Base
 	function __invoke($REQ, $RES, $ARG)
 	{
 		$data = $this->loadSiteData();
+		$data['Page']['title'] = 'Sample :: Create';
 
 		switch ($_POST['a']) {
 			case 'create-sample':
@@ -19,12 +20,18 @@ class Create extends \App\Controller\Base
 				$_POST['product'] = trim($_POST['product']);
 				$_POST['strain'] = trim($_POST['strain']);
 
-				$dbc = $this->_container->DB;
+				$dbc = $this->_container->DBC_User;
 
 				$ls = new \App\Lab_Sample($dbc);
 				$ls['id'] = _ulid();
 				$ls['license_id'] = $_SESSION['License']['id'];
 				$ls['license_id_source'] = $_POST['license-id'];
+				$ls['qty'] = floatval($_POST['qty']);
+				$ls['meta'] = json_encode([
+					'Lot_Source' => [
+						'id' => $_POST['lot-id-source']
+					],
+				]);
 
 				// $P1 = new Product()
 				$P1 = $dbc->fetchRow('SELECT * FROM product WHERE license_id = :l0 AND name = :n0', [
@@ -42,7 +49,7 @@ class Create extends \App\Controller\Base
 					$P1['guid'] = $P1['id'];
 					$dbc->insert('product', $P1);
 				}
-				$ls['product_id'] = $P1['id'];
+				// $ls['product_id'] = $P1['id'];
 
 				$S1 = $dbc->fetchRow('SELECT * FROM strain WHERE license_id = :l0 AND name = :n0', [
 					':l0' => $_SESSION['License']['id'],
@@ -57,14 +64,20 @@ class Create extends \App\Controller\Base
 					$S1['guid'] = $S1['id'];
 					$dbc->insert('strain', $S1);
 				}
-				$ls['strain_id'] = $S1['id'];
-				$ls['qty'] = floatval($_POST['qty']);
-				$ls['meta'] = json_encode([
-					'Lot_Source' => [
-						'id' => $_POST['lot-id-source']
-					],
+				// $ls['strain_id'] = $S1['id'];
+
+				$l0['id'] = $dbc->insert('inventory', [
+					// 'id' => $ls['id'],
+					'license_id' => $_SESSION['License']['id'],
+					'product_id' => $P1['id'],
+					'strain_id' => $S1['id'],
+					'room_id' => '-1',
+					'guid' => $ls['id'],
+					'stat' => 200,
+					'qty' => $ls['qty'],
 				]);
-				$ls['hash'] = $ls->getHash();
+				$ls['lot_id'] = $l0['id'];
+				// $ls['hash'] = $ls->getHash();
 				$ls->save();
 
 				return $RES->withRedirect('/sample/' . $ls['id']);
@@ -72,7 +85,8 @@ class Create extends \App\Controller\Base
 			break;
 		}
 
-		$data['product_type'] = $this->_container->DB->fetchMix('SELECT id, name FROM product_type WHERE stat = 200 ORDER BY name');
+		$sql = 'SELECT id, name FROM product_type WHERE stat = 200 ORDER BY name';
+		$data['product_type'] = $this->_container->DBC_User->fetchMix($sql);
 
 		return $this->_container->view->render($RES, 'page/sample/create.html', $data);
 	}
