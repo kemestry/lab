@@ -120,7 +120,7 @@ class Sync extends \OpenTHC\Controller\Base
 
 			// Sample Item
 			// $LR = new \App\Lab_Result($rec['guid']);
-			// $LR->tryCOAImport();
+			// $LR->importCOA($Result['pdf_path']);
 
 		}
 
@@ -308,7 +308,7 @@ class Sync extends \OpenTHC\Controller\Base
 			$QAR->save();
 		}
 
-		$QAR->tryCOAImport();
+		// $LR->importCOA($Result['pdf_path']);
 
 		// _ksort_r($ret);
 		// _exit_text($ret);

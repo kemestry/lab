@@ -44,6 +44,8 @@ class Queue extends \App\Controller\Result\Upload
 
 	function linkCOA($RES, $arg)
 	{
+		$dbc = $this->_container->DBC_Main;
+
 		$data = [];
 		$data['lot_link'] = $arg[1];
 		$data['pdf_file'] = $this->resolveFile($_GET['f']);
@@ -54,19 +56,19 @@ class Queue extends \App\Controller\Result\Upload
 
 		if (preg_match('/^WA\w+\.IN\w+/', $data['lot_link'])) {
 			// Sample
-			$LS = new \App\Lab_Sample($data['lot_link']);
+			$LS = new \App\Lab_Sample($dbc, $data['lot_link']);
 			if (empty($LS['id'])) {
 				_exit_html(sprintf('Lab Sample Not Found, please <a href="/sample/%s/sync">sync this result</a>', $data['lot_link']), 404);
 			}
 			$LSm = json_decode($LS['meta'], true);;
 			// _exit_text($LSm);
 			// var_dump($LSm); exit;
-			$LR = new \App\Lab_Result($LSm['Lot']['global_lab_result_id']);
+			$LR = new \App\Lab_Result($dbc, $LSm['Lot']['global_lab_result_id']);
 
 		} elseif (preg_match('/WA\w+\.LR\w+/', $data['lot_link'])) {
 
 			// Result
-			$LR = new \App\Lab_Result($data['lot_link']);
+			$LR = new \App\Lab_Result($dbc, $data['lot_link']);
 			if (empty($LR['id'])) {
 				_exit_html(sprintf('Lab Result Not Found, please <a href="/result/%s/sync">sync this result</a>', $data['lot_link']), 404);
 			}

@@ -127,14 +127,9 @@ class Share extends \App\Controller\Base
 
 		}
 
-		$body = sprintf("\n\nHere is the link: https://%s/share/%s.html",
-			$_SERVER['SERVER_NAME'],
-			$data['Result']['id']);
-
-		$data['share_mail_link'] = http_build_query(array(
-			'subject' => sprintf('Lab Results %s', $data['Result']['id']),
-			'body' => $body,
-		), null, '&', PHP_QUERY_RFC3986);
+		// $body = sprintf("\n\nHere is the link: https://%s/share/%s.html",
+		// 	$_SERVER['SERVER_NAME'],
+		// 	$data['Result']['id']);
 
 		// _exit_text($data);
 

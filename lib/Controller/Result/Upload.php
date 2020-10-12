@@ -14,6 +14,7 @@ class Upload extends \OpenTHC\Controller\Base
 
 		switch ($_SERVER['REQUEST_METHOD']) {
 		case 'GET':
+			// @todo use dbc_auth and create an auth_context_ticket
 			$data['coa_upload_hash'] = _encrypt(json_encode(array(
 				'a' => 'coa-upload-bulk',
 				'company_id' => $_SESSION['gid'],
