@@ -19,7 +19,7 @@ class Home extends \OpenTHC\Controller\Base
 			]
 		);
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$sql_limit = 100;
 		$sql_offset = 0;
@@ -53,8 +53,9 @@ SQL;
 
 		// Stuff my Company is linked to?
 		$sql = <<<SQL
-SELECT lab_result.*
+SELECT lab_result.*, inventory.guid AS lab_sample_guid
 FROM lab_result
+JOIN inventory ON lab_result.inventory_id = inventory.id
 --   LEFT JOIN lab_result_license ON lab_result.id = lab_result_license.lab_result_id
 -- WHERE lab_result.license_id = :l0
 --   OR lab_result_license.license_id = :l0
@@ -66,13 +67,11 @@ SQL;
 		$res = $dbc->fetchAll($sql, $arg);
 		foreach ($res as $rec) {
 
-			$QAR = new \App\Lab_Result($dbc, $rec);
-
 			$rec['_id'] = $rec['id'];
 			$rec['id'] = $rec['guid'];
 			$rec['meta'] = \json_decode($rec['meta'], true);
-			// _exit_json($rec);
 
+			$QAR = new \App\Lab_Result($dbc, $rec);
 			$rec['coa_file'] = $QAR->getCOAFile();
 
 			// Try to Read first from META -- our preferred data

@@ -58,7 +58,8 @@
 <table class="table table-sm">
 <thead class="thead-dark">
 	<tr>
-		<th>ID</th>
+		<th>Result ID</th>
+		<th>Sample ID</th>
 		<th>Date</th>
 		<th>Type</th>
 		<th>Options</th>
@@ -75,13 +76,15 @@
 {% for s in result_list %}
 	<tr>
 		<td>
-			<a href="/result/{{ s.id }}">{{ s.id }}</a>
-			<br><a href="/sample/{{ s.meta.Result.global_for_inventory_id }}">{{ s.meta.Result.global_for_inventory_id }}</a>
-<!--
-			<br>G:{{ s.meta.Result.global_inventory_id }}
-			<br>F:{{ s.meta.Result.global_for_inventory_id }}
-			<br>L:{{ s.meta.Sample.global_original_id }}
--->
+			<strong><a href="/result/{{ s.id }}">{{ s.id }}</a></strong>
+		</td>
+		<td>
+			<a href="/sample/{{ s.lab_sample_guid }}">{{ s.lab_sample_guid }}</a>
+			<!--
+						<br>G:{{ s.meta.Result.global_inventory_id }}
+						<br>F:{{ s.meta.Result.global_for_inventory_id }}
+						<br>L:{{ s.meta.Sample.global_original_id }}
+			-->
 		</td>
 		<td>{{ s.created_at }}</td>
 		<td>{{ s.type_nice }}</td>
