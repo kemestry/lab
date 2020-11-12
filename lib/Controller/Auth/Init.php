@@ -13,7 +13,7 @@ class Init extends \App\Controller\Auth\oAuth2
 	{
 		// Lookup the DSN
 		$dbc = $this->_container->DBC_Auth;
-		$C1 = $dbc->fetchRow('SELECT * FROM auth_company WHERE id_ulid = ?', $_SESSION['Company']['id']);
+		$C1 = $dbc->fetchRow('SELECT * FROM auth_company WHERE id = ?', $_SESSION['Company']['id']);
 		if (empty($C1['dsn'])) {
 			return $RES->withJSON([
 				'data' => [],

@@ -13,8 +13,11 @@ class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-
+		// Check Connect
 		$dbc = $this->_container->DBC_User;
+		if (empty($dbc)) {
+			_exit_text('Invalid Session [CSH#019]', 500);
+		}
 
 		$data = array(
 			'Page' => [ 'title' => 'Samples' ],

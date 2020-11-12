@@ -9,6 +9,11 @@ class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
+		$dbc = $this->_container->DBC_User;
+		if (empty($dbc)) {
+			_exit_text('Invalid Session [CSH#019]', 500);
+		}
+
 		$data = array(
 			'Page' => array('title' => 'Lab Results'),
 			'result_list' => array(),
@@ -19,7 +24,6 @@ class Home extends \OpenTHC\Controller\Base
 			]
 		);
 
-		$dbc = $this->_container->DBC_User;
 
 		$sql_limit = 100;
 		$sql_offset = 0;
