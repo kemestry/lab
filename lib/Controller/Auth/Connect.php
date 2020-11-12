@@ -67,6 +67,13 @@ class Connect extends \OpenTHC\Controller\Auth\Connect
 
 		}
 
+		// User Specifed Redirect?
+		if (!empty($_GET['r'])) {
+			if (preg_match('/^\/share\/\w+/', $_GET['r'])) {
+				return $RES->withRedirect($_GET['r']);
+			}
+		}
+
 		return $RES->withRedirect('/auth/init');
 
 	}

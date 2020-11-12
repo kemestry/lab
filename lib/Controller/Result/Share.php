@@ -127,12 +127,6 @@ class Share extends \App\Controller\Base
 
 		}
 
-		// $body = sprintf("\n\nHere is the link: https://%s/share/%s.html",
-		// 	$_SERVER['SERVER_NAME'],
-		// 	$data['Result']['id']);
-
-		// _exit_text($data);
-
 		$data['Page'] = array('title' => sprintf('Result :: %s', $LR['id']));
 		$data['License_Current'] = $_SESSION['License'];
 
