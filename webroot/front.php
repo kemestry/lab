@@ -29,18 +29,33 @@ $app = new \OpenTHC\App($cfg);
 
 // Container
 $con = $app->getContainer();
-$con['DB'] = function($c) {
+$con['DBC_Auth'] = function() {
+	// $url = getenv('OPENTHC_POSTGRES_URL'):
+	$cfg = \OpenTHC\Config::get('database/auth');
+	$dsn = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	return new \Edoceo\Radix\DB\SQL($dsn, $cfg['username'], $cfg['password']);
+};
+$con['DBC_Main'] = function() {
+	// $url = getenv('OPENTHC_POSTGRES_URL'):
+	$cfg = \OpenTHC\Config::get('database/main');
+	$dsn = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	return new \Edoceo\Radix\DB\SQL($dsn, $cfg['username'], $cfg['password']);
+};
+$con['DBC_User'] = function() {
 
-	$dbc = null;
-
+	static $dbc;
+	// $url = getenv('OPENTHC_POSTGRES_URL'):
+	// $cfg = \OpenTHC\Config::get('database/main');
+	// $dsn = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	// return new \Edoceo\Radix\DB\SQL($dsn, $cfg['username'], $cfg['password']);
 	if (!empty($_SESSION['dsn'])) {
 		$dbc = new SQL($_SESSION['dsn']);
-	} else {
-		$cfg = \OpenTHC\Config::get('database_main');
-		$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
-		$u = $cfg['username'];
-		$p = $cfg['password'];
-		$dbc = new SQL($c, $u, $p);
+	// } else {
+	// 	$cfg = \OpenTHC\Config::get('database_main');
+	// 	$c = sprintf('pgsql:host=%s;dbname=%s', $cfg['hostname'], $cfg['database']);
+	// 	$u = $cfg['username'];
+	// 	$p = $cfg['password'];
+	// 	$dbc = new SQL($c, $u, $p);
 	}
 
 	return $dbc;
@@ -109,7 +124,7 @@ $app->group('/config', 'App\Module\Config')
 
 
 // Dashboard
-$app->get('/dashboard', 'App\Controller\Dashboard')
+$app->get('/home', 'App\Controller\Home')
 	->add('App\Middleware\Menu')
 	->add('App\Middleware\Auth')
 	->add('App\Middleware\Session');
