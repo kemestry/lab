@@ -3,7 +3,7 @@
  *
  */
 
-namespace Test\A_System;
+namespace Test\System;
 
 class B_Config_Test extends \Test\Base
 {
