@@ -53,10 +53,10 @@ class Auth extends \OpenTHC\Middleware\Base
 		$tok = base64_decode($tok, true);
 
 		if (empty($tok)) {
-			return $RES->withJSON(array(
-				'status' => 'failure',
-				'detail' => 'Invalid Authentication [AMA#104]'
-			), 403);
+			return $RES->withJSON([
+				'data' => null,
+				'meta' => [ 'detail' => 'Invalid Authentication [AMA#104]' ]
+			], 403);
 		}
 
 		// Basic Token should be Two Parts, which may also be in these PHP vars
@@ -66,7 +66,7 @@ class Auth extends \OpenTHC\Middleware\Base
 		$dbc = $this->_container->DBC_Auth;
 
 		// Should be a Software Vendor
-		$sql = 'SELECT * FROM auth_context_token WHERE id = ?';
+		$sql = 'SELECT * FROM auth_context_ticket WHERE id = ?';
 		$arg = array($service_key);
 		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
@@ -87,7 +87,7 @@ class Auth extends \OpenTHC\Middleware\Base
 		$REQ = $REQ->withAttribute('Company_Vendor', $Company);
 
 		// Should be a Licensed Operator
-		$sql = 'SELECT * FROM auth_context_token WHERE id = ?';
+		$sql = 'SELECT * FROM auth_context_ticket WHERE id = ?';
 		$arg = array($company_key);
 		$res = $dbc->fetchRow($sql, $arg);
 		if (empty($res['id'])) {
@@ -118,7 +118,7 @@ class Auth extends \OpenTHC\Middleware\Base
 		$dbc = $this->_container->DBC_Auth;
 
 		// Find Directly Supplied Hash
-		$res = $dbc->fetchRow('SELECT * FROM auth_context_token WHERE id = :hash', array($tok));
+		$res = $dbc->fetchRow('SELECT * FROM auth_context_ticket WHERE id = :hash', array($tok));
 		if (!empty($res)) {
 
 			$data = json_decode($res['meta'], true);

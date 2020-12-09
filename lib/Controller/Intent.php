@@ -58,7 +58,7 @@ class Intent extends \App\Controller\Base
 				}
 			}
 
-			$dbc = $this->_container->DB;
+			$dbc = $this->_container->DBC_Main;
 
 			// Action
 			switch ($arg['a']) {

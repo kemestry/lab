@@ -11,7 +11,7 @@ class Single extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_Main;
 
 		// Get Result
 		$LR = new Lab_Result($dbc, $ARG['id']);
@@ -54,6 +54,8 @@ class Single extends \OpenTHC\Controller\Base
 		unset($ret['Page']);
 		unset($ret['Site']);
 
+		$ret['Result']['coa_link'] = sprintf('https://%s/share/%s.html', $_SERVER['SERVER_NAME'], $ARG['id']);
+
 		return $RES->withJSON($ret, 200, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
 
 	}
@@ -67,7 +69,7 @@ class Single extends \OpenTHC\Controller\Base
 	{
 		$tab = array();
 
-		$res_metric = $this->_container->DB->fetchAll('SELECT * FROM lab_metric');
+		$res_metric = $this->_container->DBC_Main->fetchAll('SELECT * FROM lab_metric');
 		foreach ($res_metric as $m) {
 
 			$m = array_merge($m, json_decode($m['meta'], true));

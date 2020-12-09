@@ -120,9 +120,9 @@ class Queue extends \App\Controller\Result\Upload
 			$data['lot_list'] = array_unique($lot_list);
 			foreach ($lot_list as $l) {
 
-				// $chk = $this->_container->DB->fetchRow('SELECT id FROM lab_sample WHERE id = ?');
-				// $chk = $this->_container->DB->fetchRow('SELECT id FROM lab_result WHERE id = ?');
-				// $chk = $this->_container->DB->fetchRow('SELECT id FROM lab_result WHERE meta->'Sample'->'global_id' = ?');
+				// $chk = $this->_container->DBC_User->fetchRow('SELECT id FROM lab_sample WHERE id = ?');
+				// $chk = $this->_container->DBC_User->fetchRow('SELECT id FROM lab_result WHERE id = ?');
+				// $chk = $this->_container->DBC_User->fetchRow('SELECT id FROM lab_result WHERE meta->'Sample'->'global_id' = ?');
 			}
 
 		}

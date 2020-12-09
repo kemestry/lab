@@ -33,7 +33,7 @@ class Create extends \OpenTHC\Controller\Base
 			], 400);
 		}
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_Main;
 
 		// Check Data
 		$chk = $dbc->fetchRow('SELECT id, license_id FROM lab_result WHERE id = :pk', [

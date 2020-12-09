@@ -66,7 +66,7 @@ class Sync extends \OpenTHC\Controller\Base
 			]);
 		}
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Import Lots (only once!)
 		foreach ($res['result'] as $rec) {
@@ -105,7 +105,7 @@ class Sync extends \OpenTHC\Controller\Base
 	{
 		$obj['guid'] = $obj['global_id'];
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$sql = 'SELECT id, stat, meta FROM lab_sample WHERE license_id = ? AND id = ?';
 		$arg = array($_SESSION['License']['id'], $obj['guid']);

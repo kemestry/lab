@@ -48,7 +48,7 @@ class Sync extends \OpenTHC\Controller\Base
 			), 500);
 		}
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$transfer_list = [];
 		foreach ($res['result'] as $midx => $rec) {
@@ -88,7 +88,7 @@ class Sync extends \OpenTHC\Controller\Base
 					'meta' => json_encode($rec),
 					'stat' => $this->_map_stat($rec)
 				);
-				$this->_container->DB->insert('b2b_incoming', $rec);
+				$this->_container->DBC_User->insert('b2b_incoming', $rec);
 
 			} else {
 
@@ -102,7 +102,7 @@ class Sync extends \OpenTHC\Controller\Base
 				$sql = 'UPDATE b2b_incoming SET hash = :h, meta = :m, stat = :s WHERE id = :id';
 				// var_dump($upd);
 
-				$this->_container->DB->query($sql, $upd);
+				$this->_container->DBC_User->query($sql, $upd);
 			}
 
 		}
@@ -152,7 +152,7 @@ class Sync extends \OpenTHC\Controller\Base
 		$sql.= ' WHERE b2b_incoming.id = :g';
 		$sql.= ' AND b2b_incoming.license_id = :l';
 		$arg = array(':l' => $_SESSION['License']['id'], ':g' => $ARG['id']);
-		$data['transfer'] = $this->_container->DB->fetchRow($sql, $arg);
+		$data['transfer'] = $this->_container->DBC_User->fetchRow($sql, $arg);
 
 		$res = $this->_cre->get('/transfer/incoming/' . $data['transfer']['id']);
 		// Load Transfer Items
@@ -168,7 +168,7 @@ class Sync extends \OpenTHC\Controller\Base
 		// Cleanup for re-add
 		$sql = 'DELETE FROM b2b_incoming_item WHERE transfer_id = :t';
 		$arg = array($data['transfer']['id']);
-		$this->_container->DB->query($sql, $arg);
+		$this->_container->DBC_User->query($sql, $arg);
 
 		$full_price = 0;
 		foreach ($res['result']['inventory_transfer_items'] as $rec) {
@@ -239,7 +239,7 @@ class Sync extends \OpenTHC\Controller\Base
 			);
 
 			$add['meta'] = json_encode($add['meta']);
-			$this->_container->DB->insert('b2b_incoming_item', $add);
+			$this->_container->DBC_User->insert('b2b_incoming_item', $add);
 
 			$full_price += floatval($rec['price']);
 
@@ -247,17 +247,17 @@ class Sync extends \OpenTHC\Controller\Base
 
 		$sql = 'SELECT count(id) FROM b2b_incoming_item WHERE transfer_id = :t';
 		$arg = array(':t' => $data['transfer']['id']);
-		$c0 = $this->_container->DB->fetchOne($sql, $arg);
+		$c0 = $this->_container->DBC_User->fetchOne($sql, $arg);
 
 		$sql = "SELECT count(id) FROM b2b_incoming_item WHERE transfer_id = :t AND meta->'Item'->>'is_sample' = '1'";
 		$arg = [':t' => $data['transfer']['id']];
-		$c1 = $this->_container->DB->fetchOne($sql, $arg);
+		$c1 = $this->_container->DBC_User->fetchOne($sql, $arg);
 
 		if (($c0 > 0) && ($c0 == $c1)) {
 			$data['transfer']['flag'] = $data['transfer']['flag'] | \App\Transfer::FLAG_SAMPLE;
 		}
 
-		$this->_container->DB->query('UPDATE b2b_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
+		$this->_container->DBC_User->query('UPDATE b2b_incoming SET flag = flag | :f1,  stat = :s WHERE id = :t', array(
 			':t' => $data['transfer']['id'],
 			':f1' => ($data['transfer']['flag'] | \App\Transfer::FLAG_SYNC),
 			':s' => $data['transfer']['stat'],

@@ -9,17 +9,19 @@ class API extends \OpenTHC\Module\Base
 {
 	function __invoke($a)
 	{
+		// Instructions
 		$a->get('', function($REQ, $RES) {
 			$data = array('Page' => array('title' => 'API'));
 			return $this->view->render($RES, 'page/api/index.html', $data);
 		})->add('App\Middleware\Menu');
 
+		// The Versioned Endpoint
 		$a->group('/v2015', function() {
 
 			$this->get('/metric', function($REQ, $RES, $ARG) {
 
 				$ret = array();
-				$res = $this->DB->fetchAll('SELECT * FROM lab_metric ORDER BY type, name');
+				$res = $this->DBC_Main->fetchAll('SELECT * FROM lab_metric ORDER BY type, name');
 				foreach ($res as $rec) {
 					$rec['meta'] = json_decode($rec['meta'], true);
 					$ret[ $rec['id'] ] = array(
@@ -71,7 +73,7 @@ class API extends \OpenTHC\Module\Base
 			// Update Result
 			$this->post('/result/{id}', 'App\Controller\API\Result\Update');
 
-		})
-			->add('App\Middleware\Auth');
+		});
+
 	}
 }

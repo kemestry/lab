@@ -9,7 +9,7 @@ class View extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$sql = 'SELECT * FROM b2b_incoming WHERE license_id_target = :l0 AND id = :id';
 		$arg = array(

@@ -12,8 +12,7 @@ class Sample extends \App\Controller\Base
 	function __invoke($REQ, $RES, $ARG)
 	{
 
-		// $default =
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		switch ($_POST['a']) {
 			case 'reset-seq-g':

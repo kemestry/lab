@@ -30,8 +30,6 @@ class Sync extends \OpenTHC\Controller\Base
 	 */
 	function syncAll($REQ, $RES, $ARG)
 	{
-		// $dbc = $this->_container->DB;
-
 		// Lab Results
 		$res = $this->cre->get('/lab?source=true');
 		if ('success' != $res['status']) {
@@ -61,7 +59,7 @@ class Sync extends \OpenTHC\Controller\Base
 	 */
 	function syncOne($REQ, $RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Filter Shit
 		if (preg_match('/^WAATTEST.+/', $ARG['id'])) {
@@ -104,7 +102,7 @@ class Sync extends \OpenTHC\Controller\Base
 	 */
 	function _sync_one($Result)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$chk = $dbc->fetchOne('SELECT id FROM lab_result WHERE id = ?', array($Result['id']));
 		if (empty($chk)) {
@@ -298,7 +296,7 @@ class Sync extends \OpenTHC\Controller\Base
 			$rec['flag'] = \App\Lab_Result::FLAG_SYNC;
 			$rec['type'] = $Product['type_nice'];
 			$rec['meta'] = json_encode($ret);
-			$this->_container->DB->insert('lab_result', $rec);
+			$this->_container->DBC_User->insert('lab_result', $rec);
 			$QAR = new \App\Lab_Result($rec['id']);
 		} else {
 			//$QAR['license_id'] = $License_Lab['id'];

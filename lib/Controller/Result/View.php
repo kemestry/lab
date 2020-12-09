@@ -159,7 +159,7 @@ class View extends \App\Controller\Base
 			case 'coa-create':
 			case 'coa-create-pdf':
 
-				$chk = $this->_container->DB->fetchAll('SELECT * FROM lab_layout');
+				$chk = $this->_container->DBC_User->fetchAll('SELECT * FROM lab_layout');
 				if (empty($chk)) {
 					// _exit_html('<p>You must <a href="/config/coa-layout">upload some COA Layouts</a> to get printable output</p>', 501);
 				}

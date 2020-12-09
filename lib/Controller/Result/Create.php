@@ -17,7 +17,7 @@ class Create extends \OpenTHC\Controller\Base
 		$data = array();
 		$data['Page'] = array('title' => 'Result :: Create');
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// @todo should be License ID
 		$sql = 'SELECT * FROM lab_sample WHERE license_id = :l0 AND id = :g0';
@@ -99,7 +99,7 @@ class Create extends \OpenTHC\Controller\Base
 
 	private function _save($REQ, $RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Get and validate the QA Sample
 		$sampleId = $_POST['sample_id'];

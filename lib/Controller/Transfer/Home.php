@@ -11,7 +11,7 @@ class Home extends \OpenTHC\Controller\Base
 {
 	function __invoke($REQ, $RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Load Transfer Stats
 		$transfer_stat = [

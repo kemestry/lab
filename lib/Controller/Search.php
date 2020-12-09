@@ -25,14 +25,14 @@ class Search extends \App\Controller\Base
 			// Search Specific Tables
 			$sql = 'SELECT * FROM lab_sample WHERE id = ?';
 			$arg = array($q);
-			$res = $this->_container->DB->fetchRow($sql, $arg);
+			$res = $this->_container->DBC_Main->fetchRow($sql, $arg);
 			if (!empty($res['id'])) {
 				return $RES->withRedirect('/result/' . $q);
 			}
 
 			$sql = 'SELECT * FROM lab_result WHERE id = ?';
 			$arg = array($q);
-			$res = $this->_container->DB->fetchRow($sql, $arg);
+			$res = $this->_container->DBC_Main->fetchRow($sql, $arg);
 			if (!empty($res['id'])) {
 				return $RES->withRedirect('/result/' . $q);
 			}
@@ -50,7 +50,7 @@ SQL;
 				':q0' => sprintf('%%%s%%', $q)
 			];
 
-			$res = $this->_container->DB->fetchAll($sql, $arg);
+			$res = $this->_container->DBC_Main->fetchAll($sql, $arg);
 			foreach($res as $r) {
 				switch ($r['type']) {
 				case 'lab_sample':

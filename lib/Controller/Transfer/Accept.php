@@ -20,7 +20,7 @@ class Accept extends \OpenTHC\Controller\Base
 		// }
 
 		$arg = array($_SESSION['License']['id'], $ARG['id']);
-		$T0 = $this->_container->DB->fetchRow('SELECT * FROM b2b_incoming WHERE license_id = ? AND id = ?', $arg);
+		$T0 = $this->_container->DBC_User->fetchRow('SELECT * FROM b2b_incoming WHERE license_id = ? AND id = ?', $arg);
 
 
 		// Fresh data from CRE
@@ -94,7 +94,7 @@ class Accept extends \OpenTHC\Controller\Base
 			_exit_text($res);
 		}
 
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Add Lots to my Samples
 		$lot_list = $res['result']['inventory_transfer_items'];

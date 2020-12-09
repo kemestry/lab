@@ -16,8 +16,10 @@ class View extends \OpenTHC\Controller\Base
 		$data = [];
 		$data['Page'] = [ 'title' => 'Client' ];
 
+		$dbc = $this->_container->DBC_User;
+
 		// Get Result
-		$Client = new \OpenTHC\License($ARG['id']);
+		$Client = new \OpenTHC\License($dbc, $ARG['id']);
 		if (empty($Client['id'])) {
 			_exit_html('Client Not Found', 404);
 		}
@@ -36,9 +38,8 @@ SQL;
 			':c0' => $_SESSION['Company']['id'],
 			':l0' => $Client['id'],
 		];
-		var_dump($arg);
 
-		$data['lab_result_list'] = $this->_container->DB->fetchAll($sql, $arg);
+		$data['lab_result_list'] = $dbc->fetchAll($sql, $arg);
 
 		$file = 'page/client/view.html';
 

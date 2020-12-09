@@ -105,7 +105,7 @@ class View extends \App\Controller\Base
 
 	function _accept($RES, $Lab_Sample)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// Assign Sequence
 		$dt0 = new \DateTime();
@@ -165,7 +165,7 @@ class View extends \App\Controller\Base
 
 	function _finishSample($RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		// $sql = 'SELECT * from lab_sample where id = :pk';
 		// $res = $dbc->fetchAll($sql, [
@@ -274,7 +274,7 @@ class View extends \App\Controller\Base
 
 	function _voidSample($RES, $ARG)
 	{
-		$dbc = $this->_container->DB;
+		$dbc = $this->_container->DBC_User;
 
 		$sql = 'UPDATE lab_sample SET stat = :s1, flag = flag | :f1 WHERE license_id = :l0 AND id = :pk';
 		$arg = array(
