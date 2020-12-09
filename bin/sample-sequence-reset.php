@@ -25,11 +25,11 @@ $dbc_auth = new \Edoceo\Radix\DB\SQL($c, $u, $p);
 // $dbc_auth = _dbc('auth');
 
 $sql = 'SELECT * FROM auth_company WHERE THEY_ARE_A_LAB';
-$res_company = $dbc_auth->fetchAll('SELECT id, id_int8, id_ulid, dsn FROM auth_company WHERE id = :x0', [ ':x0' => $argv[1] ]);
+$res_company = $dbc_auth->fetchAll('SELECT id, dsn FROM auth_company WHERE id = :x0', [ ':x0' => $argv[1] ]);
 
 foreach ($res_company as $c) {
 
-	$s = strtolower(sprintf('seq_%s_%s', $c['id_ulid'], $mode));
+	$s = strtolower(sprintf('seq_%s_%s', $c['id'], $mode));
 
 	$dbc_user = new \Edoceo\Radix\DB\SQL($c['dsn']);
 
