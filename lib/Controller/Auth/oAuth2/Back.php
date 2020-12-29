@@ -15,7 +15,7 @@ class Back extends \App\Controller\Auth\oAuth2
 		$p = $this->getProvider();
 
 		if (empty($_GET['code'])) {
-			_exit_text('Invalid Request [CAB#019]', 400);
+			_exit_text('Invalid Request [CAB-019]', 400);
 		}
 
 		// Check State
@@ -27,22 +27,22 @@ class Back extends \App\Controller\Auth\oAuth2
 				'code' => $_GET['code']
 			]);
 		} catch (\Exception $e) {
-			_exit_html('<h1>Invalid Access Token [CAB#030]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
+			_exit_html('<h1>Invalid Access Token [CAB-030]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		if (empty($tok)) {
-			_exit_html('<h1>Invalid Access Token [CAB#034]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
+			_exit_html('<h1>Invalid Access Token [CAB-034]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		// Array-ify
 		$tok_a = json_decode(json_encode($tok), true);
 
 		if (empty($tok_a['access_token'])) {
-			_exit_html('<h1>Invalid Access Token [CAB#041]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
+			_exit_html('<h1>Invalid Access Token [CAB-041]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		if (empty($tok_a['token_type'])) {
-			_exit_html('<h1>Invalid Access Token [CAB#045]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
+			_exit_html('<h1>Invalid Access Token [CAB-045]</h1><p>Please to to <a href="/auth/shut?r=/auth/open">sign-in again</a>.</p>', 400);
 		}
 
 		// Using the access token, we may look up details about the
@@ -106,19 +106,8 @@ class Back extends \App\Controller\Auth\oAuth2
 			if (!empty($res['data'])) {
 				$_SESSION['pipe-token'] = $res['data'];
 			} else {
-				_exit_text('CRE Connection Failure. Please contact support [AOB#092]', 500);
+				_exit_text('CRE Connection Failure. Please contact support [AOB-092]', 500);
 			}
-
-			// Find the License in the CRE
-			// $lic = '/config/license/' . $_SESSION['cre-auth']['license'];
-			// $res = $cre->get($lic);
-
-			// if ('success' == $res['status']) {
-			// 	$L = \OpenTHC\License::findByGUID($res['result']['guid']);
-			// 	// $_SESSION['License'] = $L->toArray();
-			// } else {
-			// 	_exit_text('License Not Found. Please contact support [AOB#107]', 500);
-			// }
 
 		} catch (\Exception $e) {
 			unset($_SESSION['cre']);

@@ -27,7 +27,6 @@ class Open extends \App\Controller\Auth\oAuth2
 		);
 		$url = $p->getAuthorizationUrl($arg);
 
-		// Get the state generated for you and store it to the session.
 		$_SESSION['oauth2-state'] = $p->getState();
 
 		return $RES->withRedirect($url);
