@@ -98,7 +98,7 @@ class Sample extends \App\Controller\Base
 			'y' => $seq_data['Y'],
 			'y6' => sprintf('%06d', $seq_data['Y']),
 			'q' => $seq_data['Q'],
-			'q9' => sprintf('%06d', $seq_data['Q']),
+			'q9' => sprintf('%09d', $seq_data['Q']),
 			'm' => $seq_data['M'],
 		];
 
