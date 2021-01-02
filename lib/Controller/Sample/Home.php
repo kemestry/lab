@@ -20,7 +20,7 @@ class Home extends \OpenTHC\Controller\Base
 		}
 
 		$data = array(
-			'Page' => [ 'title' => 'Samples' ],
+			'Page' => [ 'title' => 'Lab Samples' ],
 			'sample_list' => [],
 			'sample_stat' => [
 				Lab_Sample::STAT_OPEN => 0,

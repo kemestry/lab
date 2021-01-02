@@ -21,11 +21,9 @@ class View extends \App\Controller\Base
 
 		$dbc = $this->_container->DBC_User;
 
-		// $this->cre = new \OpenTHC\CRE($_SESSION['pipe-token']);
-
 		$Lab_Sample = new \App\Lab_Sample($dbc, $ARG['id']);
 		if (empty($Lab_Sample['id'])) {
-			_exit_text('Invalid Lab Sample [CSV#032]', 400);
+			_exit_text('Invalid Lab Sample [CSV-026]', 400);
 		}
 
 		switch ($_POST['a']) {
@@ -46,11 +44,10 @@ class View extends \App\Controller\Base
 			break;
 		}
 
-		// var_dump($Lab_Sample);
-
-		$Product = $dbc->fetchRow('SELECT * FROM product WHERE id = ?', [ $Lab_Sample['product_id'] ]);
+		$Lot = $dbc->fetchRow('SELECT * FROM inventory WHERE id = ?', [ $Lab_Sample['lot_id'] ]);
+		$Product = $dbc->fetchRow('SELECT * FROM product WHERE id = ?', [ $Lot['product_id'] ]);
 		$ProductType = $dbc->fetchRow('SELECT * FROM product_type WHERE id = ?', [ $Product['product_type_id'] ]);
-		$Variety = $dbc->fetchRow('SELECT * FROM strain WHERE id = ?', [ $Lab_Sample['strain_id'] ]);
+		$Variety = $dbc->fetchRow('SELECT * FROM strain WHERE id = ?', [ $Lot['strain_id'] ]);
 
 		$Lab_Sample_Meta = json_decode($Lab_Sample['meta'], true);
 
@@ -75,6 +72,7 @@ class View extends \App\Controller\Base
 			// 'Sample' => $Lab_Sample_Meta['Lot'], // @deprecated
 			'Sample' => $Lab_Sample->toArray(),
 			'Sample_Meta' => $Lab_Sample_Meta,
+			'Lot' => $Lot,
 			'Product' => $Product,
 			'ProductType' => $ProductType,
 			'Variety' => $Variety,
@@ -107,14 +105,14 @@ class View extends \App\Controller\Base
 	{
 		$dbc = $this->_container->DBC_User;
 
+		$dtz = $dbc->fetchOne("SELECT val FROM base_option WHERE key = 'timezone'");
+
 		// Assign Sequence
 		$dt0 = new \DateTime();
-		$dt0->setTimeZone(new \DateTimeZone('America/Chicago'));
+		$dt0->setTimeZone(new \DateTimeZone($dtz));
 
 		$cfg = $dbc->fetchOne("SELECT val FROM base_option WHERE key = 'lab-sample-seq-format'");
 		$cfg = json_decode($cfg);
-
-		// $cfg = 'YYYY:{YYYY}; YY:{YY}; MM{MM}; DDD:{DDD}; HH:{HH}; II:{II}; SS:{SS}; SEQ_G:{SEQ_G}; SEQ_Y:{SEQ_Y}; SEQ_Q:{SEQ_Q}; SEQ_M:{SEQ_M}';
 
 		if (!empty($cfg)) {
 			$cfg = str_replace('{YYYY}', $dt0->format('Y'), $cfg);
@@ -197,7 +195,7 @@ class View extends \App\Controller\Base
 			':pk' => $ARG['id'],
 		]);
 
-		$sql = 'UPDATE lab_sample SET stat = :s1, flag = flag | :FLAG_DEAD WHERE license_id = :l0 AND id = :pk';
+		$sql = 'UPDATE lab_sample SET stat = :s1, flag = flag | :f1 WHERE license_id = :l0 AND id = :pk';
 		$arg = array(
 			':pk' => $ARG['id'],
 			':l0' => $_SESSION['License']['id'],

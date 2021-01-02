@@ -89,7 +89,7 @@ class Pager
 		for ($page_idx = $out_min; $page_idx <= $out_max; $page_idx++) {
 
 			$t = null;
-			$c = 'btn-outline-primary';
+			$c = 'btn-outline-secondary';
 
 			if ($page_idx < $page_cur) {
 				$t = sprintf('&laquo;%d', $page_idx);
